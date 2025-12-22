@@ -22,31 +22,31 @@
           <p class="text-primary text-sm font-bold leading-normal">Dashboard</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="#">
+          href="{{ route('admin.clients') }}">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">groups</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Clients</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="#">
+          href="{{ route('admin.locations') }}">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">location_on</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Locations</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="#">
+          href="{{ route('admin.projects') }}">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">work</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Projects</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="#">
+          href="{{ route('admin.evaluations') }}">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">assignment</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Evaluations</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="#">
+          href="">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">settings</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Settings</p>
@@ -109,10 +109,10 @@
               class="bg-white dark:bg-[#2d3748] border border-[#e5e7eb] dark:border-[#4a5568] text-[#111418] dark:text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-[#4a5568] transition flex items-center gap-2">
               <span class="material-symbols-outlined text-sm">download</span> Export
             </button>
-            <button
+            <a href="{{ route('admin.projects') }}"
               class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-600 transition flex items-center gap-2">
               <span class="material-symbols-outlined text-sm">add</span> New Project
-            </button>
+            </a>
           </div>
         </div>
         <!-- Stats Cards -->

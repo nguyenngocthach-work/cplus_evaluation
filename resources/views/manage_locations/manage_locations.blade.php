@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title','manage_locations')
+@section('title','Manage Locations')
 @push('styles')
 <style>
 /* Custom scrollbar for better aesthetics in the sidebar */
@@ -35,14 +35,14 @@
     <div class="flex flex-1 justify-end gap-8">
       <div class="hidden lg:flex items-center gap-9">
         <a class="text-[#111418] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-          href="#">Dashboard</a>
-        <a class="text-primary text-sm font-bold leading-normal" href="#">Locations</a>
+          href="{{ route('admin.dashboard') }}">Dashboard</a>
+        <a class="text-primary text-sm font-bold leading-normal" href="{{ route('admin.locations') }}">Locations</a>
         <a class="text-[#111418] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-          href="#">Clients</a>
+          href="{{ route('admin.clients') }}">Clients</a>
         <a class="text-[#111418] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-          href="#">Projects</a>
+          href="{{ route('admin.projects') }}">Projects</a>
         <a class="text-[#111418] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-          href="#">Evaluations</a>
+          href="{{ route('admin.evaluations') }}">Evaluations</a>
       </div>
       <div class="flex items-center gap-4">
         <button class="flex items-center justify-center text-[#111418] dark:text-white lg:hidden">

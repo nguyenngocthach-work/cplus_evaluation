@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title','manage_projects')
+@section('title','Manage Projects')
 @push('styles')
 <style>
 body {
@@ -39,13 +39,13 @@ body {
   <div class="flex flex-1 justify-end gap-8">
     <div class="hidden md:flex items-center gap-9">
       <a class="text-[#111418] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="#">Dashboard</a>
+        href="{{ route('admin.dashboard') }}">Dashboard</a>
       <a class="text-[#111418] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="#">Projects</a>
+        href="{{ route('admin.projects') }}">Projects</a>
       <a class="text-[#111418] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="#">Clients</a>
+        href="{{ route('admin.clients') }}">Clients</a>
       <a class="text-[#111418] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="#">Reports</a>
+        href="{{ route('admin.reports') }}">Reports</a>
     </div>
     <div
       class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-transparent hover:border-primary cursor-pointer"

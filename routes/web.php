@@ -6,6 +6,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\API\ClientController;
 
+
 // be routers here
 Route::get('/', [DashboardController::class, 'index']);
 
@@ -29,7 +30,9 @@ Route::get('/', function () {
 Route::prefix('admin')->group(function () {
     Route::view('/', 'admin.admin_dashboard')->name('admin.dashboard');
     Route::view('/clients', 'manage_clients.manage_clients')->name('admin.clients');
-    Route::view('/locations', 'manage_locations.manage_locations');
-    Route::view('/projects', 'manage_projects.manage_projects');
+    Route::view('/locations', 'manage_locations.manage_locations')->name('admin.locations');
+    Route::view('/projects', 'manage_projects.manage_projects')->name('admin.projects');
+    Route::view('/evaluations', 'manage_evaluations.manage_evaluations')->name('admin.evaluations');
+    Route::view('/evaluations-reports-export', 'evaluation_report_export.evaluation_report_export')->name('admin.reports');
     Route::view('/clients-create', 'client_create.client_create')->name('admin.clients.create');
 });

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title','project_details_&_evaluation')
+@section('title','Project Details & Evaluation')
 @push('styles')
 <style>
 /* Custom styles for range slider to match primary color */

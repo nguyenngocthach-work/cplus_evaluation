@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title','manage_clients')
+@section('title','Manage Clients')
 @section('content')
 <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
   <!-- Top Navigation -->
@@ -15,14 +15,14 @@
       <div class="flex flex-1 justify-end gap-8">
         <div class="hidden md:flex items-center gap-9">
           <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            href="#">Dashboard</a>
+            href="{{ route('admin.dashboard') }}">Dashboard</a>
           <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            href="#">Locations</a>
-          <a class="text-primary text-sm font-bold leading-normal" href="#">Clients</a>
+            href="{{ route('admin.locations') }}">Locations</a>
+          <a class="text-primary text-sm font-bold leading-normal" href="{{ route('admin.clients') }}">Clients</a>
           <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            href="#">Projects</a>
+            href="{{ route('admin.projects') }}">Projects</a>
           <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            href="#">Evaluations</a>
+            href="{{ route('admin.evaluations') }}">Evaluations</a>
         </div>
         <div
           class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#f0f2f4] dark:border-gray-700"
