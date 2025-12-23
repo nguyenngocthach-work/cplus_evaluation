@@ -1,40 +1,6 @@
 @extends('layouts.app')
 @section('title','Evaluation Report Export')
 @section('content')
-<!-- Top Navigation -->
-<header
-  class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f4] dark:border-b-[#2a3441] bg-white dark:bg-[#1A2633] px-10 py-3 sticky top-0 z-50">
-  <div class="flex items-center gap-4 text-[#111418] dark:text-white">
-    <div class="size-8 flex items-center justify-center rounded-lg bg-primary/10 text-primary">
-      <span class="material-symbols-outlined text-2xl">assignment_turned_in</span>
-    </div>
-    <h2 class="text-[#111418] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Evaluation Manager
-    </h2>
-  </div>
-  <div class="flex flex-1 justify-end gap-8">
-    <div class="hidden md:flex items-center gap-9">
-      <a class="text-[#111418] dark:text-white text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="#">Dashboard</a>
-      <a class="text-[#111418] dark:text-white text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="#">Projects</a>
-      <a class="text-[#111418] dark:text-white text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="#">Clients</a>
-      <a class="text-[#111418] dark:text-white text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="#">Reports</a>
-    </div>
-    <div class="flex items-center gap-4">
-      <button
-        class="flex items-center justify-center rounded-full size-10 bg-gray-100 dark:bg-gray-800 text-[#111418] dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-        <span class="material-symbols-outlined">notifications</span>
-      </button>
-      <div
-        class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-gray-200 dark:border-gray-700"
-        data-alt="User profile picture placeholder"
-        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCBKUX5W45g_2XHh8cLB-jp5gD0wYIWrD4Bqd1Vk8g1A883ovKUaiLmni-ZPEIUo8qHC4xWqKR_PTb8DCjWtNqd83ixHsr2ffhC9gU-CNbQmLWn1I6D1n5zDFEuhsLc_Gj3dd1adABzxNCf_OPyw6EF-6pLtLv7La-2TllWpiMDsycP1xYCrMSt-hphTLz2Pv5vmfRZj_-UpPQdq3tY6D2v3wMYbS-29SXr9SNdnYaE_uHIvjT8WjnBgOl7KPW78BO16mtJ0fhRrURu");'>
-      </div>
-    </div>
-  </div>
-</header>
 <!-- Main Content Layout -->
 <div class="flex-1 flex flex-col w-full max-w-[1440px] mx-auto px-4 md:px-10 py-6 pb-24">
   <!-- Breadcrumbs -->

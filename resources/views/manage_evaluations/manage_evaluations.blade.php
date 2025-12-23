@@ -41,43 +41,6 @@ input[type=range]::-webkit-slider-runnable-track {
 </style>
 @endpush
 @section('content')
-<!-- Top Navigation -->
-<header
-  class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e5e7eb] dark:border-[#2d3748] px-4 lg:px-10 py-3 bg-surface-light dark:bg-surface-dark sticky top-0 z-50">
-  <div class="flex items-center gap-8">
-    <div class="flex items-center gap-4">
-      <div class="size-8 rounded bg-primary/10 flex items-center justify-center text-primary">
-        <span class="material-symbols-outlined text-2xl">grid_view</span>
-      </div>
-      <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">EvalApp</h2>
-    </div>
-    <div class="hidden md:flex items-center gap-9">
-      <a class="text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Dashboard</a>
-      <a class="text-sm font-medium leading-normal text-primary" href="#">Projects</a>
-      <a class="text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Clients</a>
-      <a class="text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Settings</a>
-    </div>
-  </div>
-  <div class="flex flex-1 justify-end gap-4 md:gap-8 items-center">
-    <label class="hidden md:flex flex-col min-w-40 !h-10 max-w-64">
-      <div class="flex w-full flex-1 items-stretch rounded-lg h-full relative">
-        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-[#617589]">
-          <span class="material-symbols-outlined text-[20px]">search</span>
-        </div>
-        <input
-          class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg focus:outline-0 focus:ring-2 focus:ring-primary/20 border-none bg-background-light dark:bg-[#2d3748] dark:text-white h-full placeholder:text-[#617589] px-4 pl-10 text-sm font-normal leading-normal transition-all"
-          placeholder="Search projects..." value="" />
-      </div>
-    </label>
-    <button
-      class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-white dark:border-[#2d3748] shadow-sm relative"
-      data-alt="User profile avatar showing a smiling person"
-      style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDTeY5egUcx1w0svOJFEMBw4XLnzt10f2b5ocij30UnH2M1vn3HxhdqAvR8I1bdRSmZC8RomgmPXNbGVkHKmbb8Ndzn9XWJtNilUZUhD0xF1L8mQxirbG6Q1UmWrCOSfE3L0gI1U0wuS-MGxCsStKLjwnj4vCfLyAvPIYBcqPS-3LUJLWdK4TtFrJhnM-_oAXk4xGbukCY7GKO0svBWoqAQiSBKrO-nfp7NwkhWc9cpkKY7w625ykoePBOzRNwp_oRfOxxyz28pEwb2");'>
-      <span
-        class="absolute bottom-0 right-0 size-2.5 bg-green-500 border-2 border-white dark:border-[#1a242d] rounded-full"></span>
-    </button>
-  </div>
-</header>
 <main class="flex-1 w-full max-w-[1440px] mx-auto p-4 md:p-8 lg:p-10 gap-6 flex flex-col">
   <!-- Breadcrumbs -->
   <div class="flex flex-wrap gap-2 items-center text-sm">

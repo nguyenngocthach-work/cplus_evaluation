@@ -173,7 +173,7 @@
         </div>
         <!-- Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button
+          <a href="{{ route('admin.clients') }}"
             class="flex items-center gap-4 p-4 bg-white dark:bg-[#1a202c] border border-[#e5e7eb] dark:border-[#2a3441] rounded-xl hover:border-primary/50 hover:shadow-md transition-all group text-left">
             <div
               class="size-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors text-primary">
@@ -183,8 +183,8 @@
               <h3 class="font-bold text-[#111418] dark:text-white">Register Client</h3>
               <p class="text-xs text-[#617589] dark:text-[#9ca3af]">Onboard a new client</p>
             </div>
-          </button>
-          <button
+          </a>
+          <a href="{{ route('admin.locations') }}"
             class="flex items-center gap-4 p-4 bg-white dark:bg-[#1a202c] border border-[#e5e7eb] dark:border-[#2a3441] rounded-xl hover:border-primary/50 hover:shadow-md transition-all group text-left">
             <div
               class="size-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors text-primary">
@@ -194,8 +194,8 @@
               <h3 class="font-bold text-[#111418] dark:text-white">Add Location</h3>
               <p class="text-xs text-[#617589] dark:text-[#9ca3af]">Create new site entry</p>
             </div>
-          </button>
-          <button
+          </a>
+          <a href="{{ route('admin.evaluations') }}"
             class="flex items-center gap-4 p-4 bg-white dark:bg-[#1a202c] border border-[#e5e7eb] dark:border-[#2a3441] rounded-xl hover:border-primary/50 hover:shadow-md transition-all group text-left">
             <div
               class="size-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors text-primary">
@@ -205,7 +205,7 @@
               <h3 class="font-bold text-[#111418] dark:text-white">Start Evaluation</h3>
               <p class="text-xs text-[#617589] dark:text-[#9ca3af]">Begin new assessment</p>
             </div>
-          </button>
+          </a>
         </div>
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

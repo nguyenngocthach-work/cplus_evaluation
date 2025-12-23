@@ -16,6 +16,10 @@
 </head>
 
 <body class="bg-background-light dark:bg-background-dark font-display text-[#111418] dark:text-white overflow-x-hidden">
+
+  {{-- Header --}}
+  @include('layouts.sessions.header.top')
+
   @yield('content')
 
   {{-- Global scripts --}}

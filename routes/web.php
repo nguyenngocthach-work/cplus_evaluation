@@ -7,22 +7,22 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\API\ClientController;
 
 
-// be routers here
+// controller routers here
 Route::get('/', [DashboardController::class, 'index']);
 
 Route::prefix('projects')->group(function () {
-    Route::get('/', [ProjectController::class, 'index']);
-    Route::get('{id}', [ProjectController::class, 'show']);
-    Route::get('{id}/report', [ReportController::class, 'export']);
+    Route::get('/', [ProjectController::class, 'index'])->name('projects.index');
+    Route::get('{id}', [ProjectController::class, 'show'])->name('projects.show');
+    Route::get('{id}/report', [ReportController::class, 'export'])->name('projects.report.export');
 });
 
 Route::prefix('clients')->group(function () {
     Route::get('/', [ClientController::class, 'index'])->name('admin.clients');
-    Route::get('/create', [ClientController::class, 'create'])->name('clients.create');
+    Route::get('/create1', [ClientController::class, 'create'])->name('clients.create');
     Route::post('/store', [ClientController::class, 'store'])->name('clients.store');
 });
 
-// fe routers here
+// screen routers here
 Route::get('/', function () {
     return view('welcome');
 });
@@ -30,9 +30,9 @@ Route::get('/', function () {
 Route::prefix('admin')->group(function () {
     Route::view('/', 'admin.admin_dashboard')->name('admin.dashboard');
     Route::view('/clients', 'manage_clients.manage_clients')->name('admin.clients');
+    Route::view('/clients/create', 'manage_clients.client_create')->name('admin.clients.create');
     Route::view('/locations', 'manage_locations.manage_locations')->name('admin.locations');
     Route::view('/projects', 'manage_projects.manage_projects')->name('admin.projects');
     Route::view('/evaluations', 'manage_evaluations.manage_evaluations')->name('admin.evaluations');
     Route::view('/evaluations-reports-export', 'evaluation_report_export.evaluation_report_export')->name('admin.reports');
-    Route::view('/clients-create', 'client_create.client_create')->name('admin.clients.create');
 });

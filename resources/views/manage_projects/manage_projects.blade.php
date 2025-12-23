@@ -28,32 +28,6 @@ body {
 @endpush
 @section('content')
 <!-- Top Navigation -->
-<header
-  class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f4] dark:border-gray-800 bg-white dark:bg-[#1a2632] px-10 py-3 sticky top-0 z-50">
-  <div class="flex items-center gap-4 text-[#111418] dark:text-white">
-    <div class="size-6 text-primary">
-      <span class="material-symbols-outlined text-2xl">admin_panel_settings</span>
-    </div>
-    <h2 class="text-[#111418] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Admin Portal</h2>
-  </div>
-  <div class="flex flex-1 justify-end gap-8">
-    <div class="hidden md:flex items-center gap-9">
-      <a class="text-[#111418] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="{{ route('admin.dashboard') }}">Dashboard</a>
-      <a class="text-[#111418] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="{{ route('admin.projects') }}">Projects</a>
-      <a class="text-[#111418] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="{{ route('admin.clients') }}">Clients</a>
-      <a class="text-[#111418] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors"
-        href="{{ route('admin.reports') }}">Reports</a>
-    </div>
-    <div
-      class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-transparent hover:border-primary cursor-pointer"
-      data-alt="User profile avatar image"
-      style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA1IUHqi-qaEshJUQGkfg8eUm_MulWE3mWwFPOjmwjv09VUrwBCTH24d7G8ZfCI-Wb5aXb3Sks6LPztI2RaUAiOL6VIH1-Q585lNUBO3KarHbHeGUsF7L3wVu9pNlfpC_h3Qr9cpAFBAIBcCxFKVfgq-exUnWI8inxuajbczYF1vDMYTMNmGG2usZfD3iMnw8VoW6E2GQOzpi2j6G23CfaJvRAKF4pzefszbe5C03K7Y_1TBRAMEfRKJQBPrBHotAQrCfj-9UIId58j");'>
-    </div>
-  </div>
-</header>
 <main class="flex-1 flex flex-col items-center py-8 px-4 md:px-10 lg:px-40">
   <div class="w-full max-w-[960px] flex flex-col gap-6">
     <!-- Breadcrumbs -->

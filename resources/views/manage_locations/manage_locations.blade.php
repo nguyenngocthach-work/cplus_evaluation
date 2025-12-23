@@ -23,38 +23,6 @@
 @endpush
 @section('content')
 <div class="relative flex h-screen w-full flex-col overflow-hidden">
-  <!-- Top Navigation -->
-  <header
-    class="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f4] dark:border-b-slate-800 bg-white dark:bg-slate-900 px-6 lg:px-10 py-3 z-20">
-    <div class="flex items-center gap-4 text-[#111418] dark:text-white">
-      <div class="size-8 flex items-center justify-center bg-primary/10 rounded-lg text-primary">
-        <span class="material-symbols-outlined text-2xl">admin_panel_settings</span>
-      </div>
-      <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Admin Portal</h2>
-    </div>
-    <div class="flex flex-1 justify-end gap-8">
-      <div class="hidden lg:flex items-center gap-9">
-        <a class="text-[#111418] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-          href="{{ route('admin.dashboard') }}">Dashboard</a>
-        <a class="text-primary text-sm font-bold leading-normal" href="{{ route('admin.locations') }}">Locations</a>
-        <a class="text-[#111418] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-          href="{{ route('admin.clients') }}">Clients</a>
-        <a class="text-[#111418] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-          href="{{ route('admin.projects') }}">Projects</a>
-        <a class="text-[#111418] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-          href="{{ route('admin.evaluations') }}">Evaluations</a>
-      </div>
-      <div class="flex items-center gap-4">
-        <button class="flex items-center justify-center text-[#111418] dark:text-white lg:hidden">
-          <span class="material-symbols-outlined">menu</span>
-        </button>
-        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-white shadow-sm"
-          data-alt="User profile picture showing a smiling professional"
-          style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBPJK7egpjejhHiWqFz4YUZNAxmftk_xNKui2cHwJST3-MtOI-i9bPV2hm1ZOjJhnX80RynVS-WlYgh8A3GFE0dnLvDgMX3jo0uy8iG73XxlRU4qa63OhiqitAva_wtQqBcVyvo9Eju0WPYMpHPrG8YLd0nvaPeUjunp_qtYfusbfcIeAAyi4Os1pCDMDtmm6L3iz3Qqq-KCpNpxAx9aW6j3iuHtBjBS40EUlVwVsY5RKJDCTy3d9aAl1JcLqHN0WGQNKA-h-bfwRjV");'>
-        </div>
-      </div>
-    </div>
-  </header>
   <!-- Main Layout -->
   <div class="flex flex-1 overflow-hidden">
     <!-- Left Sidebar (List View) -->
