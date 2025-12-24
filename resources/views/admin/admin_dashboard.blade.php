@@ -22,7 +22,7 @@
           <p class="text-primary text-sm font-bold leading-normal">Dashboard</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="{{ route('admin.clients') }}">
+          href="{{ route('admin.clients.screen') }}">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">groups</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Clients</p>
@@ -46,10 +46,10 @@
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Evaluations</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="">
+          href=" {{ route('admin.reports') }}">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">settings</span>
-          <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Settings</p>
+          <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Reports</p>
         </a>
       </div>
     </div>
@@ -173,7 +173,7 @@
         </div>
         <!-- Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a href="{{ route('admin.clients') }}"
+          <a href="{{ route('admin.clients.screen') }}"
             class="flex items-center gap-4 p-4 bg-white dark:bg-[#1a202c] border border-[#e5e7eb] dark:border-[#2a3441] rounded-xl hover:border-primary/50 hover:shadow-md transition-all group text-left">
             <div
               class="size-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors text-primary">

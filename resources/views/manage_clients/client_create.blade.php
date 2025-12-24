@@ -26,7 +26,7 @@
     </div>
 
     <div class="flex gap-3 mt-4 md:mt-0">
-      <a href="{{ route('admin.clients') }}"
+      <a href="{{ route('admin.clients.screen') }}"
         class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
         Cancel
       </a>
@@ -38,7 +38,7 @@
   </div>
 
   {{-- Main Form Card --}}
-  <form id="clientForm" method="POST" action="{{ route('clients.store') }}"
+  <form id="clientForm" method="POST" action="{{ route('admin.clients.store') }}"
     class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
     @csrf
 
@@ -56,13 +56,14 @@
             <label class="block text-sm font-medium text-gray-700">
               Client Name <span class="text-red-500">*</span>
             </label>
-            <input type="text" name="client_name" placeholder="e.g. Acme Corp"
+            <input type="text" name="client_name" placeholder="e.g. Acme Corp" required
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
 
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">Company Name</label>
-            <input type="text" name="company_name" placeholder="Legal Entity Name"
+            <label class="block text-sm font-medium text-gray-700">Company Name <span
+                class="text-red-500">*</span></label>
+            <input type="text" name="company_name" placeholder="Legal Entity Name" required
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
         </div>
@@ -79,18 +80,21 @@
         </h5>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">Contact Person</label>
-            <input type="text" name="contact_person" placeholder="Full Name"
+            <label class="block text-sm font-medium text-gray-700">Contact Person <span
+                class="text-red-500">*</span></label>
+            <input type="text" name="client_contact_name" placeholder="Full Name" require
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">Contact Person Email</label>
-            <input type="email" name="contact_person_email" placeholder="contact@company.com"
+            <label class="block text-sm font-medium text-gray-700">Contact Person Email <span
+                class="text-red-500">*</span></label>
+            <input type="email" name="email" placeholder="contact@company.com"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">Contact Person Phone</label>
-            <input type="text" name="contact_person_phone" placeholder="+1 (555) 000-0000"
+            <label class="block text-sm font-medium text-gray-700">Contact Person Phone <span
+                class="text-red-500">*</span></label>
+            <input type="text" name="contact_number" placeholder="+1 (555) 000-0000"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
         </div>
@@ -107,36 +111,41 @@
         </h5>
         <div class="grid grid-cols-1 gap-6">
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">Company Address</label>
-            <input type="text" name="company_address" placeholder="Headquarters Address"
+            <label class="block text-sm font-medium text-gray-700">Company Address <span
+                class="text-red-500">*</span></label>
+            <input type="text" name="client_HQ" placeholder="Headquarters Address"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
 
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">Billing Address</label>
-            <input type="text" name="billing_address" placeholder="Billing Street Address (if different)"
+            <label class="block text-sm font-medium text-gray-700">Billing Address <span
+                class="text-red-500">*</span></label>
+            <input type="text" name="client_billing"
+              placeholder="Billing Street Address (if different or input same as above)"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
 
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700">Country</label>
-              <input type="text" name="country" placeholder="Country"
+              <label class="block text-sm font-medium text-gray-700">Country <span class="text-red-500">*</span></label>
+              <input type="text" name="client_country" placeholder="Country"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
             </div>
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700">City</label>
-              <input type="text" name="city" placeholder="City"
+              <label class="block text-sm font-medium text-gray-700">City <span class="text-red-500">*</span></label>
+              <input type="text" name="client_city" placeholder="City"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
             </div>
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700">State / Province</label>
-              <input type="text" name="state_province" placeholder="State"
+              <label class="block text-sm font-medium text-gray-700">State / Province <span
+                  class="text-red-500">*</span></label>
+              <input type="text" name="client_state_province" placeholder="State"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
             </div>
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700">Zip / Postal Code</label>
-              <input type="text" name="zip_postal_code" placeholder="Zip Code"
+              <label class="block text-sm font-medium text-gray-700">Zip / Postal Code <span
+                  class="text-red-500">*</span></label>
+              <input type="text" name="client_zipcode" placeholder="Zip Code"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
             </div>
           </div>
@@ -155,15 +164,14 @@
         <div class="space-y-4">
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">Internal Notes</label>
-            <textarea name="internal_notes" rows="4"
-              placeholder="Enter any specific requirements or notes about this client..."
+            <textarea name="notes" rows="4" placeholder="Enter any specific requirements or notes about this client..."
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"></textarea>
           </div>
 
           {{-- Toggle Switch --}}
           <div class="flex items-center gap-3">
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" name="is_active" class="sr-only peer" checked>
+              <input type="checkbox" name="client_active" class="sr-only peer" checked>
               <div
                 class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
               </div>
@@ -176,7 +184,7 @@
 
     {{-- Footer --}}
     <div class="bg-gray-50 px-8 py-4 flex justify-end gap-3 border-t border-gray-100">
-      <a href="{{ route('admin.clients') }}"
+      <a href="{{ route('admin.clients.screen') }}"
         class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
         Cancel
       </a>

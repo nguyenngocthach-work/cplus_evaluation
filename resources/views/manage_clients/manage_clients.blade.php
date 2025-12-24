@@ -22,11 +22,11 @@
             <p class="text-[#617589] dark:text-gray-400 text-base font-normal leading-normal">View and manage your
               client list, contacts, and details.</p>
           </div>
-          <button
+          <a href="{{ route('admin.clients.create.screen') }}"
             class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white hover:bg-blue-600 transition-colors text-sm font-bold leading-normal tracking-[0.015em] shadow-sm">
             <span class="material-symbols-outlined mr-2 !text-lg">add</span>
             <span class="truncate">Add New Client</span>
-          </button>
+          </a>
         </div>
         <!-- Toolbar / Filters -->
         <div
