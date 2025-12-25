@@ -101,8 +101,7 @@ body {
         </div>
       </div>
       <!-- Section 2: Assignments -->
-      <div
-        class="bg-white dark:bg-[#1a2632] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-gray-700 overflow-hidden">
+      <div class="bg-white dark:bg-[#1a2632] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-gray-700 ">
         <h2
           class="text-[#111418] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-6 py-5 border-b border-[#f0f2f4] dark:border-gray-700">
           Assignments
@@ -116,12 +115,7 @@ body {
                 class="flex items-center w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] px-3 py-2 min-h-[48px] focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all cursor-text">
                 <span class="material-symbols-outlined text-[#617589] mr-2">search</span>
                 <div class="flex flex-wrap gap-2 flex-1">
-                  <div class="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium">
-                    Acme Corp
-                    <button class="hover:text-red-500 flex items-center" type="button"><span
-                        class="material-symbols-outlined text-sm">close</span></button>
-                  </div>
-                  <input
+                  <input id="client-search"
                     class="bg-transparent border-none outline-none focus:ring-0 p-0 text-sm flex-1 min-w-[120px] dark:text-white"
                     placeholder="Search clients..." type="text" />
                 </div>
@@ -129,8 +123,8 @@ body {
                   class="material-symbols-outlined text-[#617589] cursor-pointer hover:text-primary">expand_more</span>
               </div>
               <!-- Dropdown simulation -->
-              <div
-                class="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#253240] border border-[#dbe0e6] dark:border-gray-600 rounded-lg shadow-lg z-10 hidden group-focus-within:block max-h-48 overflow-y-auto">
+              <div id="client-dropdown"
+                class="absolute top-full z-40 left-0 w-full mt-1 bg-white dark:bg-[#253240] border border-[#dbe0e6] dark:border-gray-600 rounded-lg shadow-lg hidden group-focus-within:block max-h-48 overflow-y-auto">
                 <div
                   class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm dark:text-gray-200 flex items-center gap-2">
                   <input class="rounded border-gray-300 text-primary focus:ring-primary" type="checkbox" /> Globex Inc.
@@ -329,5 +323,56 @@ body {
       <div class="h-16 md:hidden"></div>
     </form>
   </div>
+  <script>
+  const input = document.getElementById('client-search');
+  const dropdown = document.getElementById('client-dropdown');
+
+  let selected = [];
+
+  input.addEventListener('input', async function() {
+    const keyword = this.value.trim();
+    if (keyword.length < 2) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+
+    const res = await fetch(`/clients/search?keyword=${encodeURIComponent(keyword)}`);
+    const data = await res.json();
+
+    dropdown.innerHTML = '';
+    data.forEach(client => {
+      const div = document.createElement('div');
+      div.className =
+        'px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm flex items-center gap-2';
+      div.textContent = client.client_name;
+
+      div.onclick = () => addClient(client);
+      dropdown.appendChild(div);
+    });
+
+    dropdown.classList.remove('hidden');
+  });
+
+  function addClient(client) {
+    if (selected.find(c => c.id === client.id)) return;
+    selected.push(client);
+
+    const container = input.parentElement;
+    const tag = document.createElement('div');
+    tag.className = 'flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium';
+    tag.innerHTML = `
+    ${client.client_name}
+    <button type="button" class="ml-1">✕</button>
+    <input type="hidden" name="clients[]" value="${client.id}">
+  `;
+
+    tag.querySelector('button').onclick = () => tag.remove();
+    container.insertBefore(tag, input);
+
+    input.value = '';
+    dropdown.classList.add('hidden');
+  }
+  </script>
+
 </main>
 @endsection

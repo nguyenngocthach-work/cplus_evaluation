@@ -12,14 +12,57 @@ use Illuminate\Support\Facades\DB;
 
 class ClientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('manage_clients.manage_clients');
+        try {
+            $data = $request->all();
+
+            $validator = Validator::make($data, [
+                'page' => 'nullable|numeric|min:1',
+                'keyword' => 'nullable|string|max:255',
+                'client_active' => 'nullable|numeric|max:5',
+            ]);
+            
+
+            $list = Client::select(
+                'id',
+                'client_name',
+                'company_name',
+                'contact_number',
+                'email',
+                'client_contact_name',
+                'client_active',
+                'notes',
+            );
+            
+            if(!empty($data['keyword'])) {
+                $keyword = $data['keyword'];
+                $list->where(function ($query) use ($keyword) {
+                    $query->where('client_name', 'like', "%$keyword%")
+                        ->orWhere('company_name', 'like', "%$keyword%")
+                        ->orWhere('email', 'like', "%$keyword%");
+                });
+                
+            }
+            if ($request->filled('client_active')) {
+                $list->where('client_active', $request->client_active);
+            }
+            $clients = $list->orderBy('created_at', 'desc')->paginate(4);
+            
+            return view('manage_clients.manage_clients', compact('clients'));
+        } catch (\Exception $e) {
+            Log::error('Error in: ' . __METHOD__, [
+                'message' => $e->getMessage(),
+                'Line' => $e->getLine(),
+                'File' => $e->getFile()
+            ]);
+            return response()->json(['error' => 'Failed to fetch clients'], 500);
+        }
     }
 
     public function create()
     {
-        return view('admin.clients.screen');
+        return view('manage_clients.client_create');
     }
 
     public function store(Request $request)
@@ -49,7 +92,6 @@ class ClientController extends Controller
             $data['userId'] = $userId;
             
             if($validator->fails()){
-                dd($validator->errors()->toArray());
                 return redirect()->back()->withErrors($validator)->withInput();
             }
     
@@ -71,7 +113,6 @@ class ClientController extends Controller
             DB::commit();
             
             $clientId = $client->id;
-            // dd($data);
             if(!$clientId){
                 DB::rollBack();
                 return redirect()->back()->with('error', 'Failed to create client location.')->withInput();
@@ -90,16 +131,22 @@ class ClientController extends Controller
             DB::commit();
             return redirect()->route('admin.clients.screen')->with('success', 'Client created successfully.');
         } catch (\Exception $e) {
-            dd($e->getMessage(), $e->getLine(), $e->getFile());
             Log::error('Error in: ' . __METHOD__, [
                 'message' => $e->getMessage(),
                 'Line' => $e->getLine(),
                 'File' => $e->getFile()
             ]);
-            return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra khi tạo client')
-                ->withInput();
         }
+    }
 
+    public function search(Request $request){
+        $request->validate([
+            'keyword' => 'required|string|max:255',
+        ]);
+
+        $clients = Client::where('client_name', 'like', '%' . $request->keyword . '%')
+            ->limit(10)
+            ->get(['id', 'client_name']);
+        return response()->json($clients);
     }
 } 

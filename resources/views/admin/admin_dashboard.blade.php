@@ -22,31 +22,31 @@
           <p class="text-primary text-sm font-bold leading-normal">Dashboard</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="{{ route('admin.clients.screen') }}">
+          href="{{ route('clients.screen') }}">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">groups</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Clients</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="{{ route('admin.locations') }}">
+          href="{{ route('locations.screen') }}">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">location_on</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Locations</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="{{ route('admin.projects') }}">
+          href="{{ route('projects.screen') }}">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">work</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Projects</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="{{ route('admin.evaluations') }}">
+          href="{{ route('evaluations.screen') }}">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">assignment</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Evaluations</p>
         </a>
         <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href=" {{ route('admin.reports') }}">
+          href=" {{ route('reports.screen') }}">
           <span
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">settings</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Reports</p>
@@ -109,7 +109,7 @@
               class="bg-white dark:bg-[#2d3748] border border-[#e5e7eb] dark:border-[#4a5568] text-[#111418] dark:text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-[#4a5568] transition flex items-center gap-2">
               <span class="material-symbols-outlined text-sm">download</span> Export
             </button>
-            <a href="{{ route('admin.projects') }}"
+            <a href="{{ route('projects.create.screen') }}"
               class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-600 transition flex items-center gap-2">
               <span class="material-symbols-outlined text-sm">add</span> New Project
             </a>
@@ -173,7 +173,7 @@
         </div>
         <!-- Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a href="{{ route('admin.clients.screen') }}"
+          <a href="{{ route('clients.create.screen') }}"
             class="flex items-center gap-4 p-4 bg-white dark:bg-[#1a202c] border border-[#e5e7eb] dark:border-[#2a3441] rounded-xl hover:border-primary/50 hover:shadow-md transition-all group text-left">
             <div
               class="size-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors text-primary">
@@ -184,7 +184,7 @@
               <p class="text-xs text-[#617589] dark:text-[#9ca3af]">Onboard a new client</p>
             </div>
           </a>
-          <a href="{{ route('admin.locations') }}"
+          <a href="{{ route('locations.create.screen') }}"
             class="flex items-center gap-4 p-4 bg-white dark:bg-[#1a202c] border border-[#e5e7eb] dark:border-[#2a3441] rounded-xl hover:border-primary/50 hover:shadow-md transition-all group text-left">
             <div
               class="size-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors text-primary">
@@ -195,7 +195,7 @@
               <p class="text-xs text-[#617589] dark:text-[#9ca3af]">Create new site entry</p>
             </div>
           </a>
-          <a href="{{ route('admin.evaluations') }}"
+          <a href="{{ route('evaluations.create.screen') }}"
             class="flex items-center gap-4 p-4 bg-white dark:bg-[#1a202c] border border-[#e5e7eb] dark:border-[#2a3441] rounded-xl hover:border-primary/50 hover:shadow-md transition-all group text-left">
             <div
               class="size-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors text-primary">

@@ -26,7 +26,7 @@
     </div>
 
     <div class="flex gap-3 mt-4 md:mt-0">
-      <a href="{{ route('admin.clients.screen') }}"
+      <a href="{{ route('admin.screen') }}"
         class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
         Cancel
       </a>
@@ -38,7 +38,7 @@
   </div>
 
   {{-- Main Form Card --}}
-  <form id="clientForm" method="POST" action="{{ route('admin.clients.store') }}"
+  <form id="clientForm" method="POST" action="{{ route('clients.store') }}"
     class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
     @csrf
 
@@ -184,7 +184,7 @@
 
     {{-- Footer --}}
     <div class="bg-gray-50 px-8 py-4 flex justify-end gap-3 border-t border-gray-100">
-      <a href="{{ route('admin.clients.screen') }}"
+      <a href="{{ route('clients.screen') }}"
         class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
         Cancel
       </a>
