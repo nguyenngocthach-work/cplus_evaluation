@@ -108,8 +108,10 @@
                 <div class="text-xs text-[#617589] dark:text-gray-400">{{ $client->email }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-[#111418] dark:text-white">Los Angeles, CA</div>
-                <div class="text-xs text-[#617589] dark:text-gray-400">1024 SkyNet Blvd</div>
+                <div class="text-sm text-[#111418] dark:text-white">{{ $client->location->client_city ?? ''}},
+                  {{ $client->location->client_state_province ?? ''}}</div>
+                <div class="text-xs text-[#617589] dark:text-gray-400">{{ $client->location->client_billing ?? '' }}
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 @if($client->client_active == 1)
@@ -155,7 +157,7 @@
       </div>
       <!-- Pagination -->
       <div
-        class="flex items-center justify-between border-t border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-[#111a22] px-4 py-3 sm:px-6 rounded-b-lg mt-1">
+        class="border flex items-center justify-between border-t border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-[#111a22] px-4 py-3 sm:px-6 rounded-b-lg mt-1">
         <div class="hidden sm:flex flex-1 sm:items-center sm:justify-between">
           <div class="mt-4 flex justify-end">
             {{ $clients->withQueryString()->links() }}

@@ -32,5 +32,8 @@ class Client extends Model
     {
         return $this->belongsTo(User::class, 'userId');
     }   
-    
+    public function location()
+    {
+        return $this->hasOne(ClientLocation::class, 'client_id', 'id');
+    }
 }

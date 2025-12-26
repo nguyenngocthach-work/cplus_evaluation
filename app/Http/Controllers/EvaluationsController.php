@@ -13,14 +13,14 @@ class EvaluationsController extends Controller
 {
   public function index()
   {
-    return view('manage_evaluations.manage_evaluations');
+    return view('evaluations.evaluations');
   } 
   public function create()
   {
-    return view('manage_evaluations.manage_evaluations');
+    return view('evaluations.evaluations');
   }
   public function store()
   {
-    return view('manage_evaluations.manage_evaluations');
+    return view('evaluations.evaluations');
   }  
 }

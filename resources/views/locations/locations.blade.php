@@ -121,11 +121,11 @@
       </div>
       <!-- Sidebar Footer -->
       <div class="p-4 border-t border-[#f0f2f4] dark:border-slate-800">
-        <button
+        <a href="{{route('locations.create.screen')}}"
           class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-blue-600 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors shadow-sm">
           <span class="material-symbols-outlined mr-2 text-lg">add</span>
           <span class="truncate">Add New Location</span>
-        </button>
+        </a>
       </div>
     </aside>
     <!-- Right Content Area (Detail View) -->

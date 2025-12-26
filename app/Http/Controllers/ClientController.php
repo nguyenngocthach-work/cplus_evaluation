@@ -23,8 +23,7 @@ class ClientController extends Controller
                 'client_active' => 'nullable|numeric|max:5',
             ]);
             
-
-            $list = Client::select(
+            $list = Client::with('location')->select(
                 'id',
                 'client_name',
                 'company_name',
@@ -49,20 +48,20 @@ class ClientController extends Controller
             }
             $clients = $list->orderBy('created_at', 'desc')->paginate(4);
             
-            return view('manage_clients.manage_clients', compact('clients'));
+            return view('clients.clients', compact('clients'));
         } catch (\Exception $e) {
             Log::error('Error in: ' . __METHOD__, [
                 'message' => $e->getMessage(),
                 'Line' => $e->getLine(),
                 'File' => $e->getFile()
             ]);
-            return response()->json(['error' => 'Failed to fetch clients'], 500);
+            return response()->json(['error' => 'Failed to fetch clients'], 400);
         }
     }
 
     public function create()
     {
-        return view('manage_clients.client_create');
+        return view('clients.client_create');
     }
 
     public function store(Request $request)
@@ -129,7 +128,7 @@ class ClientController extends Controller
             $clientLocation->client_id = $data['client_id'];
             $clientLocation->save();
             DB::commit();
-            return redirect()->route('admin.clients.screen')->with('success', 'Client created successfully.');
+            return redirect()->route('clients.screen')->with('success', 'Client created successfully.');
         } catch (\Exception $e) {
             Log::error('Error in: ' . __METHOD__, [
                 'message' => $e->getMessage(),
