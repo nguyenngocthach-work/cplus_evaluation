@@ -45,6 +45,9 @@ Route::prefix('locations')->group(function () {
 
     Route::post('/', [LocationController::class, 'store'])
         ->name('locations.store');
+    
+    Route::put('/{id}', [LocationController::class, 'update'])
+        ->name('locations.update');
 });
     
 Route::prefix('reports')->group(function () {

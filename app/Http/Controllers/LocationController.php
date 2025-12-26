@@ -22,6 +22,7 @@ class LocationController extends Controller
             ]);
 
             $list = Industry::select(
+                'id',
                 'industry_name',
                 'description',
                 'street',
@@ -36,8 +37,7 @@ class LocationController extends Controller
                 $list->where('industry_name', 'like', "%{$keyword}%");
             }
 
-            $list = $list->orderBy('created_at', "desc")->get();
-            // dd($list);
+            $locations = $list->orderBy('created_at', "desc")->get();
             return view('locations.locations', compact("locations")); 
         } catch (\Exception $e){
             Log::error('Error in: ' . __METHOD__, [
@@ -88,7 +88,7 @@ class LocationController extends Controller
             $location->user_id = $data['user_id'];
 
             $location->save();
-            return redirect()->back()->with('success', 'Location created successfully.');   
+            return redirect()->route('locations.screen')->with('success', 'Location created successfully.');   
         } catch (\Exception $e) {
             Log::error('Error in: ' . __METHOD__, [
                 'message' => $e->getMessage(),
@@ -98,4 +98,8 @@ class LocationController extends Controller
             return response()->json(['error' => 'Failed to store location'], 400);
         }
     }  
+
+    public function update(){
+        
+    }
 }
