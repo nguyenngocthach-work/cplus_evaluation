@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Client;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ClientController extends Controller
 {
@@ -147,5 +148,87 @@ class ClientController extends Controller
             ->limit(10)
             ->get(['id', 'client_name']);
         return response()->json($clients);
+    }
+
+    public function exportCLientList(Request $request){
+        $data = $request->all();
+
+            $validator = Validator::make($data, [
+                'page' => 'nullable|numeric|min:1',
+                'keyword' => 'nullable|string|max:255',
+                'client_active' => 'nullable|numeric|max:5',
+            ]);
+            
+            $list = Client::with('location')->select(
+                'id',
+                'client_name',
+                'company_name',
+                'contact_number',
+                'email',
+                'client_contact_name',
+                'client_active',
+                'notes',
+            );
+            
+            if(!empty($data['keyword'])) {
+                $keyword = $data['keyword'];
+                $list->where(function ($query) use ($keyword) {
+                    $query->where('client_name', 'like', "%$keyword%")
+                        ->orWhere('company_name', 'like', "%$keyword%")
+                        ->orWhere('email', 'like', "%$keyword%");
+                });
+                
+            }
+            if ($request->filled('client_active')) {
+                $list->where('client_active', $request->client_active);
+            }
+        $clients = $list->orderBy('id', 'desc')->get();
+
+        $fileName = 'clients_' . now()->format('Ymd_His') . '.csv';
+
+        $headers = [
+            "Content-Type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=\"$fileName\"",
+        ];
+
+        $callback = function () use ($clients) {
+            $handle = fopen('php://output', 'w');
+            
+            fwrite($handle, "\xEF\xBB\xBF");
+            // Header CSV
+            fputcsv($handle, [
+                'ID',
+                'Client Name',
+                'Company',
+                'Contact Name',
+                'Email',
+                'Phone',
+                'Client Billing',
+                'City',
+                'State',
+                'Status',
+                'Notes',
+            ]);
+
+            foreach ($clients as $client) {
+                fputcsv($handle, [
+                    $client->id,
+                    $client->client_name,
+                    $client->company_name,
+                    $client->client_contact_name,
+                    $client->email,
+                    '="' . $client->contact_number . '"',
+                    $client->location->client_billing ?? 'none',
+                    $client->location->client_city ?? 'none',
+                    $client->location->client_state_province ?? 'none',
+                    $client->client_active == 1 ? 'Active' : 'Inactive',
+                    $client->notes,
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return new StreamedResponse($callback, 200, $headers);
     }
 } 

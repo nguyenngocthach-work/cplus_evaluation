@@ -34,6 +34,9 @@ Route::prefix('/clients')->group(function () {
 
     Route::get('/search', [ClientController::class, 'search'])
         ->name('clients.search');
+
+    Route::get('/export', [ClientController::class, 'exportCLientList'])
+        ->name('clients.export');
 });
 
 Route::prefix('locations')->group(function () {

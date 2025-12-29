@@ -61,11 +61,11 @@
               Filter
             </button>
         </form>
-        <button
+        <a href="{{ route('clients.export', request()->query()) }}"
           class="flex items-center justify-center overflow-hidden rounded-lg h-12 bg-white dark:bg-[#1a2632] border border-[#dbe0e6] dark:border-gray-600 text-[#111418] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 gap-2 text-sm font-bold leading-normal tracking-[0.015em] px-4 transition-colors">
           <span class="material-symbols-outlined !text-lg">download</span>
           <span class="truncate">Export CSV</span>
-        </button>
+        </a>
       </div>
       <!-- Client List Table -->
       <div class="overflow-x-auto rounded-b-xl border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-[#111a22]">
