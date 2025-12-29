@@ -102,4 +102,15 @@ class LocationController extends Controller
     public function update(){
         
     }
+
+    public function search(Request $request){
+        $request->validate([
+            'keyword' => 'required|string|max:255',
+        ]);
+
+        $industry = Industry::where('industry_name', 'like', '%' . $request->keyword . '%')
+            ->limit(10)
+            ->get(['id', 'industry_name']);
+        return response()->json($industry);
+    }
 }

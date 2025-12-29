@@ -48,6 +48,8 @@ Route::prefix('locations')->group(function () {
     
     Route::put('/{id}', [LocationController::class, 'update'])
         ->name('locations.update');
+    Route::get('/search', [LocationController::class, 'search'])
+        ->name('location.search');
 });
     
 Route::prefix('reports')->group(function () {

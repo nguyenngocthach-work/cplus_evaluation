@@ -152,7 +152,7 @@ body {
                 class="flex items-center w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] px-3 py-2 min-h-[48px] focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all cursor-text">
                 <span class="material-symbols-outlined text-[#617589] mr-2">location_on</span>
                 <div class="flex flex-wrap gap-2 flex-1">
-                  <input
+                  <input id="location-search"
                     class="bg-transparent border-none outline-none focus:ring-0 p-0 text-sm flex-1 min-w-[120px] dark:text-white"
                     placeholder="Search locations..." type="text" />
                 </div>
@@ -160,7 +160,7 @@ body {
                   class="material-symbols-outlined text-[#617589] cursor-pointer hover:text-primary">expand_more</span>
               </div>
               <!-- Dropdown simulation -->
-              <div
+              <div id="location-dropdown"
                 class="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#253240] border border-[#dbe0e6] dark:border-gray-600 rounded-lg shadow-lg z-10 hidden group-focus-within:block max-h-48 overflow-y-auto">
                 <div
                   class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm dark:text-gray-200 flex items-center gap-2">
@@ -323,39 +323,41 @@ body {
       <div class="h-16 md:hidden"></div>
     </form>
   </div>
+
   <script>
-  const input = document.getElementById('client-search');
-  const dropdown = document.getElementById('client-dropdown');
+  // clients list
+  const clientInput = document.getElementById('client-search');
+  const clientDropdown = document.getElementById('client-dropdown');
 
-  let selected = [];
+  let clientSelected = [];
 
-  input.addEventListener('input', async function() {
+  clientInput.addEventListener('input', async function() {
     const keyword = this.value.trim();
     if (keyword.length < 2) {
-      dropdown.classList.add('hidden');
+      clientDropdown.classList.add('hidden');
       return;
     }
 
     const res = await fetch(`/clients/search?keyword=${encodeURIComponent(keyword)}`);
-    const data = await res.json();
+    const dataClient = await res.json();
 
-    dropdown.innerHTML = '';
-    data.forEach(client => {
+    clientDropdown.innerHTML = '';
+    dataClient.forEach(client => {
       const div = document.createElement('div');
       div.className =
         'px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm flex items-center gap-2';
       div.textContent = client.client_name;
 
       div.onclick = () => addClient(client);
-      dropdown.appendChild(div);
+      clientDropdown.appendChild(div);
     });
 
-    dropdown.classList.remove('hidden');
+    clientDropdown.classList.remove('hidden');
   });
 
   function addClient(client) {
-    if (selected.find(c => c.id === client.id)) return;
-    selected.push(client);
+    if (clientSelected.find(c => c.id === client.id)) return;
+    clientSelected.push(client);
 
     const container = input.parentElement;
     const tag = document.createElement('div');
@@ -369,8 +371,61 @@ body {
     tag.querySelector('button').onclick = () => tag.remove();
     container.insertBefore(tag, input);
 
-    input.value = '';
-    dropdown.classList.add('hidden');
+    clientInput.value = '';
+    clientDropdown.classList.add('hidden');
+  }
+
+  // locations list
+  const locationInput = document.getElementById('location-search');
+  const locationDropdown = document.getElementById('location-dropdown');
+  let selectedLocations = [];
+
+  locationInput.addEventListener('input', async function() {
+    const keyword = this.value.trim();
+    if (keyword.length < 2) {
+      locationDropdown.classList.add('hidden');
+      return;
+    }
+
+    const res = await fetch(`/locations/search?keyword=${encodeURIComponent(keyword)}`);
+    console.log(res)
+    const data = await res.json();
+
+    locationDropdown.innerHTML = '';
+    data.forEach(location => {
+      const div = document.createElement('div');
+      div.className =
+        'px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm';
+      div.textContent = location.industry_name;
+      div.onclick = () => addLocation(location);
+      locationDropdown.appendChild(div);
+    });
+
+    locationDropdown.classList.remove('hidden');
+  });
+
+  function addLocation(location) {
+    if (selectedLocations.find(l => l.id === location.id)) return;
+    selectedLocations.push(location);
+
+    const container = locationInput.parentElement;
+
+    const tag = document.createElement('div');
+    tag.className = 'flex items-center gap-1 bg-green-500/10 text-green-600 px-2 py-1 rounded text-sm font-medium';
+    tag.innerHTML = `
+    ${location.industry_name}
+    <button type="button" class="ml-1">✕</button>
+    <input type="hidden" name="locations[]" value="${location.id}">
+  `;
+
+    tag.querySelector('button').onclick = () => {
+      selectedLocations = selectedLocations.filter(l => l.id !== location.id);
+      tag.remove();
+    };
+
+    container.insertBefore(tag, locationInput);
+    locationInput.value = '';
+    locationDropdown.classList.add('hidden');
   }
   </script>
 
