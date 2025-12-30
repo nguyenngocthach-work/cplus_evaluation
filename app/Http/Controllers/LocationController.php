@@ -118,10 +118,6 @@ class LocationController extends Controller
                 return back()->withErrors($validator)->withInput();
             }
 
-            // if ($validator->fails()) {
-            //     return response()->json(['errors' => $validator->errors()], 422);
-            // }
-
             $industry = Industry::findOrFail($request->input('id'));
             $industry->update([
                 'industry_name'  => $request->industry_name,
