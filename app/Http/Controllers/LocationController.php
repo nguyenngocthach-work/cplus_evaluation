@@ -99,18 +99,71 @@ class LocationController extends Controller
         }
     }  
 
-    public function update(){
-        
+    public function update(Request $request){
+        try{
+            $data = $request->all();
+
+            $validator = Validator::make($data,[
+                'id' => 'required|numeric',
+                'industry_name'   => 'required|string|max:255',
+                'description'     => 'nullable|string',
+                'street'          => 'required|string',
+                'city'            => 'required|string',
+                'state_province'  => 'nullable|string',
+                'zipcode'         => 'nullable|string',
+                'country'         => 'required|string',
+            ]);
+
+            if ($validator->fails()) {
+                return back()->withErrors($validator)->withInput();
+            }
+
+            // if ($validator->fails()) {
+            //     return response()->json(['errors' => $validator->errors()], 422);
+            // }
+
+            $industry = Industry::findOrFail($request->input('id'));
+            $industry->update([
+                'industry_name'  => $request->industry_name,
+                'description'    => $request->description,
+                'street'         => $request->street,
+                'city'           => $request->city,
+                'state_province' => $request->state_province,
+                'zipcode'        => $request->zipcode,
+                'country'        => $request->country,
+            ]);
+
+            return redirect()
+                ->route('locations.screen')
+                ->with('success', 'Location updated successfully');
+
+        } catch(\Exception $e){
+            Log::error('Error in: ' . __METHOD__, [
+                'message' => $e->getMessage(),
+                'Line' => $e->getLine(),
+                'File' => $e->getFile()
+            ]);
+            return response()->json(['error' => 'Failed to store location'], 400);
+        }
     }
 
     public function search(Request $request){
-        $request->validate([
-            'keyword' => 'required|string|max:255',
-        ]);
+        try{
+            $request->validate([
+                'keyword' => 'required|string|max:255',
+            ]);
 
-        $industry = Industry::where('industry_name', 'like', '%' . $request->keyword . '%')
-            ->limit(10)
-            ->get(['id', 'industry_name']);
-        return response()->json($industry);
+            $industry = Industry::where('industry_name', 'like', '%' . $request->keyword . '%')
+                ->limit(10)
+                ->get(['id', 'industry_name']);
+            return response()->json($industry);
+        } catch(\Exception $e){
+            Log::error('Error in: ' . __METHOD__, [
+                'message' => $e->getMessage(),
+                'Line' => $e->getLine(),
+                'File' => $e->getFile()
+            ]);
+            return response()->json(['error' => 'Failed to store location'], 400);
+        }
     }
 }

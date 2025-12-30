@@ -109,191 +109,191 @@
             <p class="text-[#617589] dark:text-slate-400 text-base font-normal mt-1">Manage details, geographic data,
               and media for this site.</p>
           </div>
-          <div class="flex gap-3">
-            <button type="button" id="btn-edit" onclick="toggleEdit(true)" class=" flex h-10 items-center justify-center rounded-lg border border-[#e5e7eb] dark:border-slate-700
+          <form id="locationForm" action="" method="POST" class="hidden">
+            @csrf
+            @method('PUT')
+            <div class="flex gap-3">
+              <button type="button" id="btn-edit" onclick="toggleEdit(true)" class=" flex h-10 items-center justify-center rounded-lg border border-[#e5e7eb] dark:border-slate-700
               bg-white dark:bg-slate-800 px-4 text-sm font-bold text-[#111418] dark:text-white hover:bg-slate-50
               dark:hover:bg-slate-700 transition-colors">
-              Edit
-            </button>
-            <button type="button" id="btn-cancel" class="hidden" onclick="toggleEdit(false)"
-              class="flex h-10 items-center justify-center rounded-lg border border-[#e5e7eb] dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-sm font-bold text-[#111418] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-              Cancel
-            </button>
-            <button type="submit" id="btn-save" class="hidden"
-              class="flex h-10 items-center justify-center rounded-lg bg-primary px-6 text-sm font-bold text-white hover:bg-blue-600 shadow-sm transition-colors">
-              Save Changes
-            </button>
-          </div>
+                Edit
+              </button>
+              <button type="button" id="btn-cancel" onclick="toggleEdit(false)"
+                class="hidden flex h-10 items-center justify-center rounded-lg border border-[#e5e7eb] dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-sm font-bold text-[#111418] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                Cancel
+              </button>
+              <button type="submit" id="btn-save"
+                class="hidden flex h-10 items-center justify-center rounded-lg bg-primary px-6 text-sm font-bold text-white hover:bg-blue-600 shadow-sm transition-colors">
+                Save Changes
+              </button>
+            </div>
         </div>
         <!-- Form Content -->
-        <form id="locationForm" action="" method="POST" class="hidden max-w-[960px] mx-auto flex flex-col gap-6">
-          @csrf
-          @method('PUT')
-          <input type="hidden" name="id" id="field-id">
-          <div class="flex flex-col gap-8">
-            <!-- Section 1: Basic Information -->
-            <div
-              class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-              <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">info</span>
-                Basic Information
-              </h3>
-              <div class="grid grid-cols-1 gap-6">
-                <div class="flex flex-col gap-2">
-                  <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Location Name</label>
-                  <input id="field-name" name="industry_name" readonly
-                    class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50 placeholder:text-[#617589]"
-                    type="text" value=" " />
-                </div>
-                <div class="flex flex-col gap-2">
-                  <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Description</label>
-                  <textarea id="field-description" name="description" readonly
-                    class="w-full resize-none rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50 placeholder:text-[#617589]"
-                    rows="3" type="text"></textarea>
-                </div>
+
+        <input type="hidden" name="id" id="field-id">
+        <div class="flex flex-col gap-8">
+          <!-- Section 1: Basic Information -->
+          <div
+            class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">info</span>
+              Basic Information
+            </h3>
+            <div class="grid grid-cols-1 gap-6">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Location Name</label>
+                <input id="field-name" name="industry_name" readonly
+                  class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50 placeholder:text-[#617589]"
+                  type="text" value=" " />
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Description</label>
+                <textarea id="field-description" name="description" readonly
+                  class="w-full resize-none rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50 placeholder:text-[#617589]"
+                  rows="3" type="text"></textarea>
               </div>
             </div>
-            <!-- Section 2: Geography & Map -->
-            <div
-              class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-              <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">location_on</span>
-                Location &amp; Geography
-              </h3>
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="flex flex-col gap-5">
+          </div>
+          <!-- Section 2: Geography & Map -->
+          <div
+            class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">location_on</span>
+              Location &amp; Geography
+            </h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div class="flex flex-col gap-5">
+                <div class="flex flex-col gap-2">
+                  <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Street Address</label>
+                  <input id="field-street" name="street" readonly
+                    class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
+                    type="text" value="" />
+                </div>
+                <div class="grid grid-cols-2 gap-4">
                   <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Street Address</label>
-                    <input id="field-street" name="street" readonly
+                    <label class="text-sm font-medium text-[#111418] dark:text-slate-200">City</label>
+                    <input id="field-city" name="city" readonly
                       class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
                       type="text" value="" />
                   </div>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-2">
-                      <label class="text-sm font-medium text-[#111418] dark:text-slate-200">City</label>
-                      <input id="field-city" name="city" readonly
-                        class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
-                        type="text" value="" />
-                    </div>
-                    <div class="flex flex-col gap-2">
-                      <label class="text-sm font-medium text-[#111418] dark:text-slate-200">State / Province</label>
-                      <input id="field-state" name="state_province" readonly
-                        class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
-                        type="text" value="" />
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-2">
-                      <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Zip Code</label>
-                      <input id="field-zip" name="zipcode" readonly
-                        class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
-                        type="text" value="" />
-                    </div>
-                    <div class="flex flex-col gap-2">
-                      <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Country</label>
-                      <input id="field-country" name="country" readonly
-                        class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50">
-                      </input>
-                    </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium text-[#111418] dark:text-slate-200">State / Province</label>
+                    <input id="field-state" name="state_province" readonly
+                      class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
+                      type="text" value="" />
                   </div>
                 </div>
-                <!-- Map Widget Placeholder -->
-                <div class="flex flex-col gap-2">
-                  <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Pin Location</label>
-                  <div
-                    class="relative w-full h-full min-h-[240px] rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 group cursor-crosshair border border-transparent hover:border-primary/50 transition-colors">
-                    <div
-                      class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity"
-                      data-alt="Map view of Springfield Illinois centered on industrial park"
-                      data-location="Springfield, Illinois"
-                      style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBaCu-tp1bfpQNnJ-IXFZTAVYOUJQDaU_tAISVmvT_niwU6TpF8VO_ETONeOU59ybeRvcHBl4OY32ie4cpGnU0rHIFwslazEw65JpCKxxz3NtitZgYrU9TkntmZXr784qh1DW-1rPiaTYfkE9FSyTLv4Us11KCUOSvZmucbHvM7qhKuXLwkoc85geT4MTLlrOLvULfRSo3-nXMsuotJn-3flhhBfo7NmL5vDkEjU9YolbgU8RDfTrHhQ-TKDKkYO2OQAhPlIg_tJjN7");'>
-                    </div>
-                    <!-- Map Pin -->
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                      <span class="material-symbols-outlined text-4xl text-red-600 drop-shadow-md">location_on</span>
-                      <div
-                        class="bg-white dark:bg-slate-900 text-xs font-bold px-2 py-1 rounded shadow-md mt-1 whitespace-nowrap">
-                        Lat: 39.78, Long: -89.65</div>
-                    </div>
-                    <!-- Map Controls -->
-                    <div class="absolute bottom-3 right-3 flex flex-col gap-2">
-                      <button
-                        class="size-8 bg-white dark:bg-slate-800 rounded shadow-md flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 text-[#111418] dark:text-white">
-                        <span class="material-symbols-outlined text-lg">add</span>
-                      </button>
-                      <button
-                        class="size-8 bg-white dark:bg-slate-800 rounded shadow-md flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 text-[#111418] dark:text-white">
-                        <span class="material-symbols-outlined text-lg">remove</span>
-                      </button>
-                    </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Zip Code</label>
+                    <input id="field-zip" name="zipcode" readonly
+                      class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
+                      type="text" value="" />
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Country</label>
+                    <input id="field-country" name="country" readonly
+                      class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50">
+                    </input>
                   </div>
                 </div>
               </div>
-            </div>
-            <!-- Section 3: Media -->
-            <div
-              class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-              <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">perm_media</span>
-                Site Photos
-              </h3>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <!-- Existing Photo 1 -->
-                <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
-                  <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-                    data-alt="Interior of warehouse with high shelves"
-                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwS-weNo5EPQoerlmi1KbD3tgSxQagqvvG-qPjtY7jTkAZVvXRu_vErJMPpQy5BGkEi5drFT4iQxrb0k6XmF9GDSBKGxZJRSsA5W-62N79e2I--QHqJkVNjCY2ilrGI9RgHe3f6d_BDdL2tY9DWKIMGZe6wvfMk3peWFhzFlmmZT-0gSFfVn-fc9y0lrYDM6oN1rally4T6f7gAPx4rGMDV0zVTeMY1_9s0fn_KFaT65QjFySd5MbA2L5tzcDezKNxBL9iAn2PNoTn");'>
-                  </div>
-                  <div
-                    class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
-                    <span class="material-symbols-outlined text-sm block">close</span>
-                  </div>
-                </div>
-                <!-- Existing Photo 2 -->
-                <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
-                  <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-                    data-alt="Loading dock area with trucks"
-                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDrtgpOc_19akL4p_9zguaN6kalQN1CdU9MbluA_tF03dg7dkVe9wQEn_SMGn0VJvMPZ_KrS9mnvR9_2LKHUGqRSBJlw4zbfkcWd07ZY5s7hQuCqFKHRIOCnpGwTL2s1jilPMxHuLqs4YcMpOH0PwpwfJIwkMzhLH2UiHivtQ-AEHOIe4f4k-8FE0JVjCsM_e8fQ6zR9xU3n7cBH_j2OCenypFfbp9fp1XwiXlfuMPPnNLeW8NwmP0ja52-aF9Jkvn4aI_sp83NHT0m");'>
-                  </div>
-                  <div
-                    class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
-                    <span class="material-symbols-outlined text-sm block">close</span>
-                  </div>
-                </div>
-                <!-- Existing Photo 3 -->
-                <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
-                  <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-                    data-alt="Office space inside warehouse"
-                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA0WH3kVrmWYxqhDNDkgZR2l9-hVhK7_9bh_085iQofrHTeKHBjJ8RAqAtidf_V0eb3WHpsxJ8SY5Jt4imkO4qAJSy4Z_41TMQJ00UisXMT-OUUKpvwKBFThjA0coBi-JnxU0DHQWlBDBbzxLClqS7KMhqBT3L-I3ad1Mu97ExQsX-6Af-Pf_w5TeiJpf4O0z_0rXZb7QBVxd0NIc8ukZbaiZac5wZ3DfkwX8tQh4n52yzClhA9SLe9EA9CFu5V0vj0l20wqUE16yKn");'>
-                  </div>
-                  <div
-                    class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
-                    <span class="material-symbols-outlined text-sm block">close</span>
-                  </div>
-                </div>
-                <!-- Upload New -->
+              <!-- Map Widget Placeholder -->
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Pin Location</label>
                 <div
-                  class="aspect-square rounded-lg border-2 border-dashed border-[#e5e7eb] dark:border-slate-700 bg-[#f9fafb] dark:bg-slate-800/50 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors group text-[#617589] hover:text-primary">
-                  <span
-                    class="material-symbols-outlined text-3xl mb-2 group-hover:scale-110 transition-transform">cloud_upload</span>
-                  <span class="text-xs font-bold">Upload Photo</span>
+                  class="relative w-full h-full min-h-[240px] rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 group cursor-crosshair border border-transparent hover:border-primary/50 transition-colors">
+                  <div class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity"
+                    data-alt="Map view of Springfield Illinois centered on industrial park"
+                    data-location="Springfield, Illinois"
+                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBaCu-tp1bfpQNnJ-IXFZTAVYOUJQDaU_tAISVmvT_niwU6TpF8VO_ETONeOU59ybeRvcHBl4OY32ie4cpGnU0rHIFwslazEw65JpCKxxz3NtitZgYrU9TkntmZXr784qh1DW-1rPiaTYfkE9FSyTLv4Us11KCUOSvZmucbHvM7qhKuXLwkoc85geT4MTLlrOLvULfRSo3-nXMsuotJn-3flhhBfo7NmL5vDkEjU9YolbgU8RDfTrHhQ-TKDKkYO2OQAhPlIg_tJjN7");'>
+                  </div>
+                  <!-- Map Pin -->
+                  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                    <span class="material-symbols-outlined text-4xl text-red-600 drop-shadow-md">location_on</span>
+                    <div
+                      class="bg-white dark:bg-slate-900 text-xs font-bold px-2 py-1 rounded shadow-md mt-1 whitespace-nowrap">
+                      Lat: 39.78, Long: -89.65</div>
+                  </div>
+                  <!-- Map Controls -->
+                  <div class="absolute bottom-3 right-3 flex flex-col gap-2">
+                    <button
+                      class="size-8 bg-white dark:bg-slate-800 rounded shadow-md flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 text-[#111418] dark:text-white">
+                      <span class="material-symbols-outlined text-lg">add</span>
+                    </button>
+                    <button
+                      class="size-8 bg-white dark:bg-slate-800 rounded shadow-md flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 text-[#111418] dark:text-white">
+                      <span class="material-symbols-outlined text-lg">remove</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-              <p class="text-xs text-[#617589] dark:text-slate-500">Supported formats: JPG, PNG. Max size: 5MB.</p>
-            </div>
-            <!-- Footer Actions -->
-            <div class="flex items-center justify-between pt-4 border-t border-[#e5e7eb] dark:border-slate-800">
-              <div class="flex flex-col">
-                <span class="text-xs text-[#617589] dark:text-slate-500">Last modified by Admin User</span>
-                <span class="text-xs text-[#617589] dark:text-slate-500">Oct 24, 2023 at 4:30 PM</span>
-              </div>
-              <button
-                class="text-red-600 hover:text-red-700 text-sm font-bold flex items-center gap-2 px-3 py-2 rounded hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
-                <span class="material-symbols-outlined">delete</span>
-                Delete Location
-              </button>
             </div>
           </div>
+          <!-- Section 3: Media -->
+          <div
+            class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">perm_media</span>
+              Site Photos
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <!-- Existing Photo 1 -->
+              <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
+                <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
+                  data-alt="Interior of warehouse with high shelves"
+                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwS-weNo5EPQoerlmi1KbD3tgSxQagqvvG-qPjtY7jTkAZVvXRu_vErJMPpQy5BGkEi5drFT4iQxrb0k6XmF9GDSBKGxZJRSsA5W-62N79e2I--QHqJkVNjCY2ilrGI9RgHe3f6d_BDdL2tY9DWKIMGZe6wvfMk3peWFhzFlmmZT-0gSFfVn-fc9y0lrYDM6oN1rally4T6f7gAPx4rGMDV0zVTeMY1_9s0fn_KFaT65QjFySd5MbA2L5tzcDezKNxBL9iAn2PNoTn");'>
+                </div>
+                <div
+                  class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
+                  <span class="material-symbols-outlined text-sm block">close</span>
+                </div>
+              </div>
+              <!-- Existing Photo 2 -->
+              <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
+                <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
+                  data-alt="Loading dock area with trucks"
+                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDrtgpOc_19akL4p_9zguaN6kalQN1CdU9MbluA_tF03dg7dkVe9wQEn_SMGn0VJvMPZ_KrS9mnvR9_2LKHUGqRSBJlw4zbfkcWd07ZY5s7hQuCqFKHRIOCnpGwTL2s1jilPMxHuLqs4YcMpOH0PwpwfJIwkMzhLH2UiHivtQ-AEHOIe4f4k-8FE0JVjCsM_e8fQ6zR9xU3n7cBH_j2OCenypFfbp9fp1XwiXlfuMPPnNLeW8NwmP0ja52-aF9Jkvn4aI_sp83NHT0m");'>
+                </div>
+                <div
+                  class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
+                  <span class="material-symbols-outlined text-sm block">close</span>
+                </div>
+              </div>
+              <!-- Existing Photo 3 -->
+              <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
+                <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
+                  data-alt="Office space inside warehouse"
+                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA0WH3kVrmWYxqhDNDkgZR2l9-hVhK7_9bh_085iQofrHTeKHBjJ8RAqAtidf_V0eb3WHpsxJ8SY5Jt4imkO4qAJSy4Z_41TMQJ00UisXMT-OUUKpvwKBFThjA0coBi-JnxU0DHQWlBDBbzxLClqS7KMhqBT3L-I3ad1Mu97ExQsX-6Af-Pf_w5TeiJpf4O0z_0rXZb7QBVxd0NIc8ukZbaiZac5wZ3DfkwX8tQh4n52yzClhA9SLe9EA9CFu5V0vj0l20wqUE16yKn");'>
+                </div>
+                <div
+                  class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
+                  <span class="material-symbols-outlined text-sm block">close</span>
+                </div>
+              </div>
+              <!-- Upload New -->
+              <div
+                class="aspect-square rounded-lg border-2 border-dashed border-[#e5e7eb] dark:border-slate-700 bg-[#f9fafb] dark:bg-slate-800/50 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors group text-[#617589] hover:text-primary">
+                <span
+                  class="material-symbols-outlined text-3xl mb-2 group-hover:scale-110 transition-transform">cloud_upload</span>
+                <span class="text-xs font-bold">Upload Photo</span>
+              </div>
+            </div>
+            <p class="text-xs text-[#617589] dark:text-slate-500">Supported formats: JPG, PNG. Max size: 5MB.</p>
+          </div>
+          <!-- Footer Actions -->
+          <div class="flex items-center justify-between pt-4 border-t border-[#e5e7eb] dark:border-slate-800">
+            <div class="flex flex-col">
+              <span class="text-xs text-[#617589] dark:text-slate-500">Last modified by Admin User</span>
+              <span class="text-xs text-[#617589] dark:text-slate-500">Oct 24, 2023 at 4:30 PM</span>
+            </div>
+            <button
+              class="text-red-600 hover:text-red-700 text-sm font-bold flex items-center gap-2 px-3 py-2 rounded hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
+              <span class="material-symbols-outlined">delete</span>
+              Delete Location
+            </button>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -333,15 +333,20 @@ const data = JSON.parse(element.getAttribute('data-json'));
 console.log(data);
 
 function toggleEdit(isEdit) {
-  const form = document.getElementById('locationForm');
-  const inputs = form.querySelectorAll('input, textarea');
+  const container = document.getElementById('detailWrapper');
+  const inputs = container.querySelectorAll('input, textarea');
 
   inputs.forEach(el => {
     if (el.id !== 'field-id') {
       el.readOnly = !isEdit;
+
+      if (isEdit) {
+        el.classList.add('ring-2', 'ring-primary/50');
+      } else {
+        el.classList.remove('ring-2', 'ring-primary/50');
+      }
     }
   });
-
 
   document.getElementById('btn-edit').classList.toggle('hidden', isEdit);
   document.getElementById('btn-cancel').classList.toggle('hidden', !isEdit);
