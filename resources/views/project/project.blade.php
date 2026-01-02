@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title','Manage Clients')
+@section('title','Manage Projects')
 @section('content')
 <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
   <!-- Top Navigation -->
@@ -12,20 +12,20 @@
           <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:underline"
             href="{{ route('admin.screen') }}">Dashboard</a>
           <span class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal">/</span>
-          <span class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Clients</span>
+          <span class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Projects</span>
         </div>
         <!-- Page Heading & Actions -->
         <div class="flex flex-col md:flex-row justify-between gap-6 p-4 items-start md:items-center">
           <div class="flex min-w-72 flex-col gap-2">
             <h1 class="text-[#111418] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Manage
-              Clients</h1>
+              Projects</h1>
             <p class="text-[#617589] dark:text-gray-400 text-base font-normal leading-normal">View and manage your
-              client list, contacts, and details.</p>
+              projects list, locations, and details.</p>
           </div>
-          <a href="{{ route('clients.create.screen') }}"
+          <a href="{{ route('projects.create.screen') }}"
             class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white hover:bg-blue-600 transition-colors text-sm font-bold leading-normal tracking-[0.015em] shadow-sm">
             <span class="material-symbols-outlined mr-2 !text-lg">add</span>
-            <span class="truncate">Add New Client</span>
+            <span class="truncate">Add New Project</span>
           </a>
         </div>
         <!-- Toolbar / Filters -->

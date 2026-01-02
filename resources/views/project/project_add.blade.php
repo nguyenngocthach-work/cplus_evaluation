@@ -53,15 +53,16 @@ body {
           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-transparent text-[#111418] dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 transition-all">
           <span class="truncate">Cancel</span>
         </button>
-        <button
+        <button type="button" onclick="document.getElementById('project-form').submit()"
           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 shadow-md transition-all">
           <span class="truncate">Save Project</span>
         </button>
       </div>
     </div>
     <!-- Main Form Content -->
-    <form class="flex flex-col gap-6">
+    <form id="project-form" method="POST" action="{{ route('projects.store') }}" class="flex flex-col gap-6">
       <!-- Section 1: General Information -->
+      @csrf
       <div
         class="bg-white dark:bg-[#1a2632] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-gray-700 overflow-hidden">
         <h2
@@ -72,20 +73,20 @@ body {
           <label class="flex flex-col gap-2 col-span-2 md:col-span-2">
             <span class="text-[#111418] dark:text-gray-200 text-base font-medium leading-normal">Project Name <span
                 class="text-red-500">*</span></span>
-            <input
+            <input name="project_name"
               class="form-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-[#617589] dark:placeholder:text-gray-500"
               placeholder="e.g. Q4 Regional Retail Expansion" required="" type="text" />
           </label>
           <label class="flex flex-col gap-2 col-span-2 md:col-span-2">
             <span class="text-[#111418] dark:text-gray-200 text-base font-medium leading-normal">Description</span>
-            <textarea
+            <textarea name="description"
               class="form-textarea w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white p-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-[#617589] dark:placeholder:text-gray-500 resize-none h-32"
               placeholder="Briefly describe the goals and scope of this project..."></textarea>
           </label>
           <label class="flex flex-col gap-2">
             <span class="text-[#111418] dark:text-gray-200 text-base font-medium leading-normal">Start Date</span>
             <div class="relative">
-              <input
+              <input id="start-date" name="start_date"
                 class="form-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                 type="date" />
             </div>
@@ -93,7 +94,7 @@ body {
           <label class="flex flex-col gap-2">
             <span class="text-[#111418] dark:text-gray-200 text-base font-medium leading-normal">End Date</span>
             <div class="relative">
-              <input
+              <input id="end-date" name="end_date"
                 class="form-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                 type="date" />
             </div>
@@ -125,20 +126,7 @@ body {
               <!-- Dropdown simulation -->
               <div id="client-dropdown"
                 class="absolute top-full z-40 left-0 w-full mt-1 bg-white dark:bg-[#253240] border border-[#dbe0e6] dark:border-gray-600 rounded-lg shadow-lg hidden group-focus-within:block max-h-48 overflow-y-auto">
-                <div
-                  class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm dark:text-gray-200 flex items-center gap-2">
-                  <input class="rounded border-gray-300 text-primary focus:ring-primary" type="checkbox" /> Globex Inc.
-                </div>
-                <div
-                  class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm dark:text-gray-200 flex items-center gap-2">
-                  <input class="rounded border-gray-300 text-primary focus:ring-primary" type="checkbox" /> Stark
-                  Industries
-                </div>
-                <div
-                  class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm dark:text-gray-200 flex items-center gap-2">
-                  <input class="rounded border-gray-300 text-primary focus:ring-primary" type="checkbox" /> Wayne
-                  Enterprises
-                </div>
+                <!-- Dropdown area -->
               </div>
             </div>
             <p class="text-xs text-[#617589] dark:text-gray-400">Select the clients associated with this project.</p>
@@ -162,19 +150,7 @@ body {
               <!-- Dropdown simulation -->
               <div id="location-dropdown"
                 class="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#253240] border border-[#dbe0e6] dark:border-gray-600 rounded-lg shadow-lg z-10 hidden group-focus-within:block max-h-48 overflow-y-auto">
-                <div
-                  class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm dark:text-gray-200 flex items-center gap-2">
-                  <input class="rounded border-gray-300 text-primary focus:ring-primary" type="checkbox" /> New York HQ
-                </div>
-                <div
-                  class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm dark:text-gray-200 flex items-center gap-2">
-                  <input class="rounded border-gray-300 text-primary focus:ring-primary" type="checkbox" /> London
-                  Office
-                </div>
-                <div
-                  class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm dark:text-gray-200 flex items-center gap-2">
-                  <input class="rounded border-gray-300 text-primary focus:ring-primary" type="checkbox" /> Tokyo Branch
-                </div>
+                <!-- dropdown location area -->
               </div>
             </div>
             <p class="text-xs text-[#617589] dark:text-gray-400">Specify where this project will be executed.</p>
@@ -182,7 +158,7 @@ body {
         </div>
       </div>
       <!-- Section 3: Evaluation Criteria -->
-      <div
+      <div id="evaluation-criteria-list"
         class="bg-white dark:bg-[#1a2632] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-gray-700 overflow-hidden">
         <div class="flex items-center justify-between px-6 py-5 border-b border-[#f0f2f4] dark:border-gray-700">
           <div class="flex flex-col">
@@ -191,14 +167,14 @@ body {
             <p class="text-sm text-[#617589] dark:text-gray-400 mt-1">Define the metrics used to evaluate success.
               Weights must sum to 100%.</p>
           </div>
-          <button
+          <button onclick="openCriteriaModal()"
             class="flex items-center gap-2 text-primary font-bold text-sm bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-lg transition-colors"
             type="button">
             <span class="material-symbols-outlined text-lg">add_circle</span>
             Add Criterion
           </button>
         </div>
-        <div class="p-6">
+        <div class="p-6" id="criteria-rows-container">
           <!-- Header Row -->
           <div
             class="hidden md:grid grid-cols-12 gap-4 pb-3 border-b border-[#f0f2f4] dark:border-gray-700 mb-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
@@ -207,108 +183,21 @@ body {
             <div class="col-span-5">Description</div>
             <div class="col-span-1 text-center">Action</div>
           </div>
-          <!-- Criterion Item 1 -->
-          <div
-            class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start mb-6 md:mb-4 pb-4 md:pb-0 border-b md:border-b-0 border-[#f0f2f4] dark:border-gray-700 last:mb-0">
-            <div class="col-span-1 md:col-span-4">
-              <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Name</label>
-              <input
-                class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary"
-                placeholder="e.g. Quality" type="text" value="Customer Satisfaction" />
-            </div>
-            <div class="col-span-1 md:col-span-2">
-              <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Weight (%)</label>
-              <div class="relative">
-                <input
-                  class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary pr-8"
-                  type="number" value="40" />
-                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">%</span>
-              </div>
-            </div>
-            <div class="col-span-1 md:col-span-5">
-              <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Description</label>
-              <input
-                class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary"
-                placeholder="Brief explanation..." type="text" value="Based on post-service surveys" />
-            </div>
-            <div class="col-span-1 flex justify-center items-center h-10">
-              <button
-                class="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
-                type="button">
-                <span class="material-symbols-outlined text-lg">delete</span>
-              </button>
+          <div id="criteria-items-list">
+            <div
+              class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start mb-6 md:mb-4 pb-4 md:pb-0 border-b md:border-b-0 border-[#f0f2f4] dark:border-gray-700 last:mb-0">
             </div>
           </div>
-          <!-- Criterion Item 2 -->
-          <div
-            class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start mb-6 md:mb-4 pb-4 md:pb-0 border-b md:border-b-0 border-[#f0f2f4] dark:border-gray-700 last:mb-0">
-            <div class="col-span-1 md:col-span-4">
-              <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Name</label>
-              <input
-                class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary"
-                placeholder="e.g. Quality" type="text" value="Time Efficiency" />
-            </div>
-            <div class="col-span-1 md:col-span-2">
-              <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Weight (%)</label>
-              <div class="relative">
-                <input
-                  class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary pr-8"
-                  type="number" value="30" />
-                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">%</span>
-              </div>
-            </div>
-            <div class="col-span-1 md:col-span-5">
-              <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Description</label>
-              <input
-                class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary"
-                placeholder="Brief explanation..." type="text" value="Delivery within SLA timeframe" />
-            </div>
-            <div class="col-span-1 flex justify-center items-center h-10">
-              <button
-                class="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
-                type="button">
-                <span class="material-symbols-outlined text-lg">delete</span>
-              </button>
-            </div>
-          </div>
-          <!-- Criterion Item 3 (New/Empty) -->
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-            <div class="col-span-1 md:col-span-4">
-              <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Name</label>
-              <input
-                class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary"
-                placeholder="Enter criterion name" type="text" />
-            </div>
-            <div class="col-span-1 md:col-span-2">
-              <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Weight (%)</label>
-              <div class="relative">
-                <input
-                  class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary pr-8"
-                  placeholder="0" type="number" />
-                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">%</span>
-              </div>
-            </div>
-            <div class="col-span-1 md:col-span-5">
-              <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Description</label>
-              <input
-                class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary"
-                placeholder="Optional description..." type="text" />
-            </div>
-            <div class="col-span-1 flex justify-center items-center h-10">
-              <button
-                class="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
-                type="button">
-                <span class="material-symbols-outlined text-lg">delete</span>
-              </button>
-            </div>
-          </div>
+          <!-- selectCriteria area -->
           <!-- Total Weight Summary -->
           <div class="mt-6 flex justify-end items-center gap-4 pt-4 border-t border-[#f0f2f4] dark:border-gray-700">
             <span class="text-sm font-medium text-[#617589] dark:text-gray-400">Total Weight:</span>
             <div class="flex items-center gap-2">
-              <span class="text-lg font-bold text-[#111418] dark:text-white">70%</span>
-              <span class="material-symbols-outlined text-amber-500 text-base" title="Total must be 100%">warning</span>
-              <span class="text-xs text-amber-500 font-medium">Must equal 100%</span>
+              <span id="total-weight-display" class="text-lg font-bold text-[#111418] dark:text-white">0%</span>
+              <span id="total-weight-warning" class="flex items-center gap-1 text-amber-500 hidden">
+                <span class="material-symbols-outlined text-amber-500 text-base"
+                  title="Total must be 100%">warning</span>
+                <span class="text-xs text-amber-500 font-medium">Must equal 100%</span>
             </div>
           </div>
         </div>
@@ -323,6 +212,42 @@ body {
       <div class="h-16 md:hidden"></div>
     </form>
   </div>
+
+  <!-- Criteria Modal -->
+  <div id="criteriaModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white dark:bg-[#1a2632] rounded-xl w-full max-w-lg shadow-lg">
+      <!-- Header -->
+      <div class="flex justify-between items-center px-6 py-4 border-b">
+        <h3 class="text-lg font-bold">Select Criteria</h3>
+        <button onclick="closeCriteriaModal()">✕</button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-4 max-h-80 overflow-y-auto">
+        @foreach($criteria as $item)
+        <div onclick="selectCriteria({{ json_encode($item) }})"
+          class="flex justify-between items-center px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
+          <div>
+            <p class="font-medium">{{ $item->criteria_name }}</p>
+            <p class="text-xs text-gray-500">{{ $item->description }}</p>
+          </div>
+          <span class="text-sm text-primary font-bold">
+            {{ $item->criteriaPercent }}%
+          </span>
+        </div>
+        @endforeach
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-3 border-t text-right">
+        <button onclick="closeCriteriaModal()" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
 
   <script>
   // clients list
@@ -357,23 +282,32 @@ body {
 
   function addClient(client) {
     if (clientSelected.find(c => c.id === client.id)) return;
+
     clientSelected.push(client);
 
-    const container = input.parentElement;
+    const container = clientInput.parentElement;
+
     const tag = document.createElement('div');
-    tag.className = 'flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium';
+    tag.className =
+      'flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium';
+
     tag.innerHTML = `
     ${client.client_name}
     <button type="button" class="ml-1">✕</button>
     <input type="hidden" name="clients[]" value="${client.id}">
   `;
 
-    tag.querySelector('button').onclick = () => tag.remove();
-    container.insertBefore(tag, input);
+    tag.querySelector('button').onclick = () => {
+      clientSelected = clientSelected.filter(c => c.id !== client.id);
+      tag.remove();
+    };
+
+    container.insertBefore(tag, clientInput);
 
     clientInput.value = '';
     clientDropdown.classList.add('hidden');
   }
+
 
   // locations list
   const locationInput = document.getElementById('location-search');
@@ -426,6 +360,134 @@ body {
     container.insertBefore(tag, locationInput);
     locationInput.value = '';
     locationDropdown.classList.add('hidden');
+  }
+
+  // criteria list
+  function openCriteriaModal() {
+    document.getElementById('criteriaModal').classList.remove('hidden');
+    document.getElementById('criteriaModal').classList.add('flex');
+  }
+
+  function closeCriteriaModal() {
+    document.getElementById('criteriaModal').classList.add('hidden');
+    document.getElementById('criteriaModal').classList.remove('flex');
+  }
+
+  // container criteria render
+  const criteriaContainer = document.querySelector('#evaluation-criteria-list');
+
+  function selectCriteria(criteria) {
+    if (document.getElementById(`criteria-${criteria.id}`)) return;
+
+
+    const rowsContainer = document.getElementById('criteria-items-list');
+
+    const row = document.createElement('div');
+    row.id = `criteria-${criteria.id}`;
+    row.className =
+      `grid grid-cols-1 md:grid-cols-12 gap-4 items-start mb-6 md:mb-4 pb-4 md:pb-0 border-b md:border-b-0 border-[#f0f2f4] dark:border-gray-700 last:mb-0`;
+
+    row.innerHTML = `
+        <input type="hidden" name="criteria_ids[]" value="${criteria.id}">
+        <div class="col-span-1 md:col-span-4">
+            <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Name</label>
+            <input class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary" 
+                  value="${criteria.criteria_name}" readonly>
+        </div>
+        <div class="col-span-1 md:col-span-2">
+            <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Weight (%)</label>
+            <div class="relative">
+                <input readonly class="criteria-weight-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary pr-8"
+                      name="criteria_percent[${criteria.id}]" type="number" 
+                      oninput="calculateTotalWeight()" value="${criteria.criteriaPercent}">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">%</span>
+            </div>
+        </div>
+        <div class="col-span-1 md:col-span-5">
+            <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Description</label>
+            <input class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary"
+                  name="criteria_description[${criteria.id}]" value="${criteria.description ?? ''}">
+        </div>
+        <div class="col-span-1 flex justify-center items-center h-10">
+            <button type="button" onclick="removeCriteria(${criteria.id})" class="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20">
+                <span class="material-symbols-outlined text-lg">delete</span>
+            </button>
+        </div>
+    `;
+
+    rowsContainer.appendChild(row);
+    calculateTotalWeight();
+    closeCriteriaModal();
+  }
+
+  function calculateTotalWeight() {
+    let total = 0;
+
+    const weights = document.querySelectorAll('.criteria-weight-input');
+
+    weights.forEach(input => {
+      const value = parseFloat(input.value);
+      if (!isNaN(value)) {
+        total += value;
+      }
+    });
+
+    const display = document.getElementById('total-weight-display');
+    const warning = document.getElementById('total-weight-warning');
+
+    if (display) {
+      display.textContent = total + '%';
+    }
+
+    if (warning) {
+      if (total === 100) {
+        warning.classList.add('hidden');
+      } else {
+        warning.classList.remove('hidden');
+      }
+    }
+  }
+
+  function removeCriteria(id) {
+    document.getElementById(`criteria-${id}`)?.remove();
+    calculateTotalWeight();
+  }
+
+  const startDateInput = document.getElementById('start-date');
+  const endDateInput = document.getElementById('end-date');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const todayStr = today.toISOString().split('T')[0];
+  startDateInput.min = todayStr;
+
+  startDateInput.addEventListener('change', validateDates);
+  endDateInput.addEventListener('change', validateDates);
+
+  function validateDates() {
+    const startDateValue = startDateInput.value;
+    const endDateValue = endDateInput.value;
+
+    if (!startDateValue || !endDateValue) return;
+
+    const startDate = new Date(startDateValue);
+    const endDate = new Date(endDateValue);
+
+
+    const minEndDate = new Date(startDate);
+    minEndDate.setDate(minEndDate.getDate() + 3);
+
+    if (startDate < today) {
+      alert('Start Date must be today or later');
+      startDateInput.value = '';
+      return;
+    }
+
+    if (endDate < minEndDate) {
+      alert('End Date must be at least 3 days after Start Date');
+      endDateInput.value = '';
+      return;
+    }
   }
   </script>
 

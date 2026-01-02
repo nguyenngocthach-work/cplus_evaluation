@@ -12,15 +12,15 @@ Route::get('/', [DashboardController::class, 'admin'])->name('admin.screen');
 
 
 Route::prefix('projects')->group(function () {
-        Route::get('/', [ProjectController::class, 'index'])
-            ->name('projects.screen');
+    Route::get('/', [ProjectController::class, 'index'])
+        ->name('projects.screen');
 
-        Route::get('/create', [ProjectController::class, 'create'])
-            ->name('projects.create.screen');
+    Route::get('/create', [ProjectController::class, 'create'])
+        ->name('projects.create.screen');
 
-        Route::post('/', [ProjectController::class, 'store'])
-            ->name('projects.store');
-    });
+    Route::post('/', [ProjectController::class, 'store'])
+        ->name('projects.store');
+});
 
 Route::prefix('/clients')->group(function () {
     Route::get('/', [ClientController::class, 'index'])
@@ -68,12 +68,17 @@ Route::prefix('reports')->group(function () {
 });
 
 Route::prefix('evaluations')->group(function () {
-        Route::get('/', [EvaluationsController::class, 'index'])
-            ->name('evaluations.screen');
+    Route::get('/', [EvaluationsController::class, 'index'])
+        ->name('evaluations.screen');
 
-        Route::get('/create', [EvaluationsController::class, 'create'])
-            ->name('evaluations.create.screen');
+    Route::get('/create', [EvaluationsController::class, 'create'])
+        ->name('evaluations.create.screen');
 
-        Route::post('/', [EvaluationsController::class, 'store'])
-            ->name('evaluations.store');
+    Route::post('/', [EvaluationsController::class, 'store'])
+        ->name('evaluations.store');
+});
+
+Route::prefix('criteria')->group(function (){
+    Route::get('/', [CriteriaController::class, 'index'])
+        ->name('get');
 });

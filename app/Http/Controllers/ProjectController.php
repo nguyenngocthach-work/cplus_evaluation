@@ -3,7 +3,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Validator;
 use App\Models\Project;
+use App\Models\Criteria;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProjectController extends Controller
 {
@@ -22,8 +24,8 @@ class ProjectController extends Controller
                 'project_name',
                 'clientId',
                 'industry_id',
-                'start_day',
-                'end_day',
+                'start_date',
+                'end_date',
             );
         
             if(!empty($data['keyword'])){
@@ -50,10 +52,74 @@ class ProjectController extends Controller
     }
     public function create()
     {
-        return view('project.project_add');
+        $criteria = Criteria::select(
+            'id',
+            'criteria_name',
+            'criteriaPercent',
+            'description'
+        )
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+        return view('project.project_add', compact('criteria'));
     }
-    public function store()
+    
+    public function store(Request $request)
     {
-        return view('project.project');
+        try{
+            // dd($request->all());
+            $validated = $request->validate([
+                'project_name' => 'required|string|max:255',
+                'description'  => 'nullable|string',
+                'start_date'   => 'required|date',
+                'end_date'     => 'required|date|after_or_equal:start_date',
+                'criteria_ids' => 'required|array',
+                'criteria_ids.*' => 'exists:criteria,id',
+            ]);
+            // sau khi xong auth sẽ gởi user id từ view về
+            $userId = 2;
+
+            $project = Project::create([
+                'project_name' => $request->project_name,
+                'description'  => $request->description,
+                'start_date'    => $request->start_date,
+                'end_date'      => $request->end_date,
+                'userId'       => $userId,
+                'clientId'     => $request->clients[0] ?? null,
+                'industry_id'  => $request->locations[0] ?? null,
+            ]);
+
+            $criteriaData = [];
+            if ($request->has('criteria_ids')) {
+                foreach ($request->criteria_ids as $id) {
+                    $criteriaData[$id] = [
+                        'weight' => $request->criteria_percent[$id] ?? 0,
+                        'custom_description' => $request->criteria_description[$id] ?? '',
+                    ];
+                }
+                
+                $project->criteria()->sync($criteriaData);
+            }
+
+            $project->criteria()->sync($criteriaData);
+
+            $project->clientId = $request->clients[0] ?? null;
+            $project->industry_id = $request->locations[0] ?? null;
+            $project->save();
+            
+            return redirect()->route('project.project');
+        } catch(\Exception $e){
+            dd([
+                'message'  => $e->getMessage(),
+                'sql'      => $e->getSql(),
+                'bindings' => $e->getBindings(),
+            ]);
+            Log::error('Error in: ' . __METHOD__, [
+                'message' => $e->getMessage(),
+                'Line' => $e->getLine(),
+                'File' => $e->getFile()
+            ]);
+            return back()->withInput()->with('error', 'Error: ' . $e->getMessage());
+        }
     }
 }

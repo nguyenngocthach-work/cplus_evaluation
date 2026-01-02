@@ -11,26 +11,39 @@ class Project extends Model
 
     protected $fillable = [
         'project_name',
+        'description',
+        'userId',
         'clientId',
         'industry_id',
-        'start_day',
-        'end_day',
+        'start_date',
+        'end_date',
     ];
 
     public $timestamps = true;
 
     public function user()
     {
-        return $this->belongTo(User::class, 'userId');
+        return $this->belongsTo(User::class, 'userId');
     }
 
     public function industry()
     {
-        return $this->belongTo(Industry::class, 'industry_id');
+        return $this->belongsTo(Industry::class, 'industry_id');
     }
 
     public function client()
     {
-        return $this->belongTo(Client::class, 'clientId');
+        return $this->belongsTo(Client::class, 'clientId');
     }
+
+    public function criteria()
+{
+    return $this->belongsToMany(
+        Criteria::class,
+        'project_criteria',
+        'project_id',
+        'criteria_id'
+    )->withPivot(['weight', 'custom_description'])
+        ->withTimestamps();
+}
 }
