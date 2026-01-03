@@ -19,21 +19,28 @@ class ProjectController extends Controller
                 'keyword' => 'nullable|string|max:255',
             ]);
 
-            $list = Project::select(
+            $query = Project::with([
+                'client:id,client_name',
+                'industry:id,industry_name',
+                'projectCriteria.criteria:id,criteria_name'
+            ])
+            ->select(
                 'id',
                 'project_name',
                 'clientId',
                 'industry_id',
                 'start_date',
                 'end_date',
+                'created_at'
             );
-        
-            if(!empty($data['keyword'])){
-                $keyword = $data['keyword'];
-                $list->where('project_name', 'like', "%{$keyword}%");
+
+            if (!empty($data['keyword'])) {
+                $query->where('project_name', 'like', '%' . $data['keyword'] . '%');
             }
 
-            $projects = $list->orderBy('created_at', "desc")->paginate(4);
+            $projects = $query
+                ->orderBy('created_at', 'desc')
+                ->paginate(4);
 
             return view('project.project', compact('projects'));
         } catch(\Exception $e){
@@ -67,7 +74,6 @@ class ProjectController extends Controller
     public function store(Request $request)
     {
         try{
-            // dd($request->all());
             $validated = $request->validate([
                 'project_name' => 'required|string|max:255',
                 'description'  => 'nullable|string',

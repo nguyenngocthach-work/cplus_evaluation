@@ -18,15 +18,11 @@ class ProjectCriteria extends Model
 
     public function criteria()
     {
-        return $this->belongsToMany(Criteria::class, 'project_criteria')
-            ->withPivot(['weight', 'custom_description'])
-            ->withTimestamps();
+        return $this->belongsTo(Criteria::class, 'criteria_id');
     }
 
-    public function projects()
+    public function project()
     {
-        return $this->belongsToMany(Project::class, 'project_criteria')
-            ->withPivot(['weight', 'custom_description'])
-            ->withTimestamps();
+        return $this->belongsTo(Project::class, 'project_id');
     }
 }

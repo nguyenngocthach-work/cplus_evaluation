@@ -36,14 +36,8 @@ class Project extends Model
         return $this->belongsTo(Client::class, 'clientId');
     }
 
-    public function criteria()
-{
-    return $this->belongsToMany(
-        Criteria::class,
-        'project_criteria',
-        'project_id',
-        'criteria_id'
-    )->withPivot(['weight', 'custom_description'])
-        ->withTimestamps();
-}
+    public function projectCriteria()
+    {
+        return $this->hasMany(ProjectCriteria::class, 'project_id');
+    }
 }

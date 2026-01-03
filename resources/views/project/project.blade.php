@@ -39,22 +39,6 @@
                   class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111418] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#1a2632] focus:border-primary h-12 placeholder:text-[#617589] pl-12 pr-4 text-sm font-normal leading-normal transition-all"
                   placeholder="Search project by name" value="" />
               </label>
-              <div class="flex gap-2">
-                <div class="relative">
-                  <select name="client_active"
-                    class="h-12 pl-4 pr-10 rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#1a2632] text-[#111418] dark:text-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none cursor-pointer min-w-[160px]">
-                    <option value="">Status: All</option>
-                    <option value="1" {{ request('client_active') === '1' ? 'selected' : '' }}>Active</option>
-                    <option value="2" {{ request('client_active') === '2' ? 'selected' : '' }}>Pending</option>
-                    <option value="0" {{ request('client_active') === '0' ? 'selected' : '' }}>Inactive</option>
-                  </select>
-                </div>
-                <button
-                  class="h-12 w-12 flex items-center justify-center rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#1a2632] text-[#111418] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  title="More filters">
-                  <span class="material-symbols-outlined">tune</span>
-                </button>
-              </div>
             </div>
             <button type="submit" class="h-12 px-4 rounded-lg border border-[#dbe0e6] dark:border-gray-600
               bg-white dark:bg-[#1a2632] text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
@@ -73,13 +57,15 @@
           <thead>
             <tr class="bg-[#f0f2f4] dark:bg-[#1a2632] border-b border-[#dbe0e6] dark:border-gray-700">
               <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
-                Client / Company</th>
+                Project Name</th>
               <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
-                Primary Contact</th>
+                Client Name</th>
               <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
                 Location</th>
               <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
-                Status</th>
+                Start Date</th>
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
+                End Date</th>
               <th
                 class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
                 Actions</th>
@@ -91,39 +77,33 @@
             <tr class="group hover:bg-gray-50 dark:hover:bg-[#1f2b37] transition-colors">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-3">
-                  <div
-                    class="h-10 w-10 flex-shrink-0 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary font-bold text-lg">
-                    A
-                  </div>
                   <div>
                     <div class="text-sm font-bold text-[#111418] dark:text-white">{{ $project->project_name }}</div>
-                    <!-- đoạn này đổi thành id "ID: #CL-0024 ở {{ $project->client_id }}" -->
-                    <div class="text-xs text-[#617589] dark:text-gray-400">{{ $project->clientId }}</div>
+                    <div class="text-xs text-[#617589] dark:text-gray-400">ID: {{ $project->id }}</div>
                   </div>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-[#111418] dark:text-white">{{ $project->industry_id }}
+                <div class="text-sm font-medium text-[#111418] dark:text-white">
+                  <div class="text-sm font-medium text-[#111418] dark:text-white">
+                    {{ $project->client->client_name ?? '-' }}
+                  </div>
                 </div>
-                <!-- <div class="text-xs text-[#617589] dark:text-gray-400">{{ $project->email }}</div> -->
               </td>
-              <!-- <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-[#111418] dark:text-white">{{ $project->location->client_city ?? ''}},
-                  {{ $project->location->client_state_province ?? ''}}</div>
-                <div class="text-xs text-[#617589] dark:text-gray-400">{{ $project->location->client_billing ?? '' }}
-                </div>
-              </td> -->
               <td class="px-6 py-4 whitespace-nowrap">
-                <!-- @if($project->client_active == 1) -->
-                <span
-                  class="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800">
-                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Active
-                </span>
-                <!-- @else -->
-                <span
-                  class="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
-                  <span class="h-1.5 w-1.5 rounded-full bg-gray-500"></span> Inactive
-                  <!-- @endif -->
+                <div class="text-sm text-[#111418] dark:text-white">
+                  {{ $project->industry->industry_name ?? '-' }}
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-[#111418] dark:text-white">
+                  {{ \Carbon\Carbon::parse($project->start_date)->format('d/m/Y') }}
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-[#111418] dark:text-white">
+                  {{ \Carbon\Carbon::parse($project->end_date)->format('d/m/Y') }}
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
