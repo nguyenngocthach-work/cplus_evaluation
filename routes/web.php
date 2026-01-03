@@ -20,6 +20,9 @@ Route::prefix('projects')->group(function () {
 
     Route::post('/', [ProjectController::class, 'store'])
         ->name('projects.store');
+        
+    Route::get('/export', [ProjectController::class, 'exportProjectList'])
+        ->name('projects.export');
 });
 
 Route::prefix('/clients')->group(function () {

@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Criteria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProjectController extends Controller
 {
@@ -127,5 +128,75 @@ class ProjectController extends Controller
             ]);
             return back()->withInput()->with('error', 'Error: ' . $e->getMessage());
         }
+    }
+
+    public function exportProjectList(Request $request){
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
+            'keyword' => 'nullable|string|max:255',
+        ]);
+        
+        $list = Project::with([
+            'client:id,client_name',
+            'industry:id,industry_name',
+        ])
+        ->select(
+            'id',
+            'project_name',
+            'clientId',
+            'industry_id',
+            'start_date',
+            'end_date',
+            'created_at'
+        );
+        if (!empty($data['keyword'])) {
+            $list->where('project_name', 'like', '%' . $data['keyword'] . '%');
+        }
+
+        $projects = $list
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $fileName = 'project' . now()->format('Ymd_His') . '.csv';
+
+        $headers = [
+            "Content-Type" => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=\"$fileName\"",
+        ];
+
+        $callback = function () use ($projects) {
+            $handle = fopen('php://output', 'w');
+            
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            fputcsv($handle, [
+                'Project Name',
+                'Project ID',
+                'Client Name',
+                'Industry',
+                'Start Date',
+                'End Date',
+            ]);
+
+            foreach ($projects as $project) {
+                fputcsv($handle, [
+                    $project->project_name,
+                    $project->id,
+                    $project->client->client_name ?? '-',
+                    $project->industry->industry_name ?? '-',
+                    optional($project->start_date)
+                        ? \Carbon\Carbon::parse($project->start_date)->format('d/m/Y')
+                        : '',
+                    optional($project->end_date)
+                        ? \Carbon\Carbon::parse($project->end_date)->format('d/m/Y')
+                        : '',
+                ]);
+            }
+
+            fclose($handle);
+        };
+        
+        return new StreamedResponse($callback, 200, $headers);
     }
 }
