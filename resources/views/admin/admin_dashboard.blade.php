@@ -154,7 +154,7 @@
               </span>
             </div>
             <p class="text-[#617589] dark:text-[#9ca3af] text-sm font-medium">Ongoing Projects</p>
-            <p class="text-[#111418] dark:text-white text-2xl font-bold mt-1">15</p>
+            <p class="text-[#111418] dark:text-white text-2xl font-bold mt-1">{{ $totalProject }}</p>
           </div>
           <div
             class="bg-white dark:bg-[#1a202c] rounded-xl p-5 border border-[#e5e7eb] dark:border-[#2a3441] shadow-sm hover:shadow-md transition-shadow">
@@ -231,12 +231,17 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-[#e5e7eb] dark:divide-[#2a3441]">
+                  @forelse($activeProjectList as $projectList)
                   <tr class="hover:bg-[#f9fafb] dark:hover:bg-[#2d3748]/50 transition-colors">
                     <td class="p-4">
-                      <div class="font-bold text-[#111418] dark:text-white">Q3 Infrastructure Upgrade</div>
-                      <div class="text-xs text-[#617589] dark:text-[#9ca3af]">Due: Oct 24, 2023</div>
+                      <div class="font-bold text-[#111418] dark:text-white">
+                        {{ $projectList->industry->industry_name ?? '-' }}
+                      </div>
+                      <div class="text-xs text-[#617589] dark:text-[#9ca3af]">Due: Oct 24, 2023
+                        {{ $projectList->end_date}}</div>
                     </td>
-                    <td class="p-4 text-sm text-[#111418] dark:text-white">Acme Corp</td>
+                    <td class="p-4 text-sm text-[#111418] dark:text-white">
+                      {{ $projectList->client->client_name ?? '-' }}</td>
                     <td class="p-4">
                       <span
                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">
@@ -251,6 +256,13 @@
                         <span class="text-xs font-medium text-[#617589] dark:text-[#9ca3af]">75%</span>
                       </div>
                     </td>
+                    @empty
+                  <tr>
+                    <td colspan="5" class="text-center py-6 text-gray-500">
+                      No projects found.
+                    </td>
+                  </tr>
+                  @endforelse
                   </tr>
                   <tr class="hover:bg-[#f9fafb] dark:hover:bg-[#2d3748]/50 transition-colors">
                     <td class="p-4">

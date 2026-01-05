@@ -86,7 +86,6 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-[#dbe0e6] dark:divide-gray-700">
-            <!-- Row 1 -->
             @forelse($clients as $client)
             <tr class="group hover:bg-gray-50 dark:hover:bg-[#1f2b37] transition-colors">
               <td class="px-6 py-4 whitespace-nowrap">

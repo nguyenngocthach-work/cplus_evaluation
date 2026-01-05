@@ -26,7 +26,7 @@ class ProjectController extends Controller
                 'projectCriteria.criteria:id,criteria_name'
             ])
             ->select(
-                'id',
+                'project_id',
                 'project_name',
                 'clientId',
                 'industry_id',
@@ -142,7 +142,7 @@ class ProjectController extends Controller
             'industry:id,industry_name',
         ])
         ->select(
-            'id',
+            'project_id',
             'project_name',
             'clientId',
             'industry_id',

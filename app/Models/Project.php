@@ -17,6 +17,7 @@ class Project extends Model
         'industry_id',
         'start_date',
         'end_date',
+        'status'
     ];
 
     public $timestamps = true;
