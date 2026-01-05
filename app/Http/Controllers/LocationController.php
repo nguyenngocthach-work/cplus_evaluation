@@ -162,4 +162,5 @@ class LocationController extends Controller
             return response()->json(['error' => 'Failed to store location'], 400);
         }
     }
+
 }

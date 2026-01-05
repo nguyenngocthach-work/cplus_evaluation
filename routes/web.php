@@ -40,6 +40,9 @@ Route::prefix('/clients')->group(function () {
 
     Route::get('/export', [ClientController::class, 'exportCLientList'])
         ->name('clients.export');
+        
+    Route::put('/{id}/delete', [ClientController::class, 'delete'])
+        ->name('clients.delete');
 });
 
 Route::prefix('locations')->group(function () {

@@ -231,4 +231,33 @@ class ClientController extends Controller
 
         return new StreamedResponse($callback, 200, $headers);
     }
+    
+    public function delete($id)
+    {
+        try {
+            $client = Client::with('location')->findOrFail($id);
+
+            // Soft delete client
+            $client->delete();
+
+            // Soft delete location nếu tồn tại
+            if ($client->location) {
+                $client->location->delete();
+            }
+
+            return redirect()
+                ->route('clients.screen')
+                ->with('success', 'Client deleted successfully.');
+        } catch (\Exception $e) {
+            dd($e);
+            Log::error('Delete client failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Delete client failed.');
+        }
+    }
 } 

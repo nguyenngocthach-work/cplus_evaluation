@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends Model
 {
-    //
+    use SoftDeletes;
+    
     protected $table = 'clients';
     
     protected $fillable = [
@@ -21,6 +23,8 @@ class Client extends Model
         'project_id',
     ];
 
+    protected $dates = ['deleted_at'];
+    
     public $timestamps = true;
 
     public function projects()

@@ -129,7 +129,7 @@
               </span>
             </div>
             <p class="text-[#617589] dark:text-[#9ca3af] text-sm font-medium">Total Clients</p>
-            <p class="text-[#111418] dark:text-white text-2xl font-bold mt-1">124</p>
+            <p class="text-[#111418] dark:text-white text-2xl font-bold mt-1">{{ $totalClients }}</p>
           </div>
           <div
             class="bg-white dark:bg-[#1a202c] rounded-xl p-5 border border-[#e5e7eb] dark:border-[#2a3441] shadow-sm hover:shadow-md transition-shadow">
@@ -140,7 +140,7 @@
               <span class="text-[#617589] dark:text-[#9ca3af] text-xs font-bold px-2 py-1">0%</span>
             </div>
             <p class="text-[#617589] dark:text-[#9ca3af] text-sm font-medium">Active Locations</p>
-            <p class="text-[#111418] dark:text-white text-2xl font-bold mt-1">8</p>
+            <p class="text-[#111418] dark:text-white text-2xl font-bold mt-1">{{ $totalLocation }}</p>
           </div>
           <div
             class="bg-white dark:bg-[#1a202c] rounded-xl p-5 border border-[#e5e7eb] dark:border-[#2a3441] shadow-sm hover:shadow-md transition-shadow">

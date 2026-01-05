@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Industry extends Model
 {
+    use SoftDeletes;
     //
     protected $table = 'industry';
     
@@ -19,6 +21,8 @@ class Industry extends Model
         'country',
     ];
 
+    protected $dates = ['deleted_at'];
+    
     public $timestamps = true;
 
     public function user()
