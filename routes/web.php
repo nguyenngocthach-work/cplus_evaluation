@@ -23,6 +23,9 @@ Route::prefix('projects')->group(function () {
         
     Route::get('/export', [ProjectController::class, 'exportProjectList'])
         ->name('projects.export');
+    
+    Route::put('/{id}/delete', [ProjectController::class, 'delete'])
+        ->name('projects.delete');
 });
 
 Route::prefix('/clients')->group(function () {

@@ -214,7 +214,8 @@
             class="lg:col-span-2 bg-white dark:bg-[#1a202c] rounded-xl border border-[#e5e7eb] dark:border-[#2a3441] shadow-sm overflow-hidden flex flex-col">
             <div class="p-5 border-b border-[#e5e7eb] dark:border-[#2a3441] flex justify-between items-center">
               <h3 class="text-lg font-bold text-[#111418] dark:text-white">Active Projects</h3>
-              <a class="text-sm font-bold text-primary hover:text-blue-700" href="#">View All</a>
+              <a class="text-sm font-bold text-primary hover:text-blue-700" href="{{ route('projects.screen') }}">View
+                All</a>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
@@ -231,29 +232,76 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-[#e5e7eb] dark:divide-[#2a3441]">
+                  @php
+                  $statusMap = [
+                  0 => [
+                  'label' => 'On Hold',
+                  'badge' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+                  'progress' => 0,
+                  'bar' => 'bg-gray-400'
+                  ],
+                  1 => [
+                  'label' => 'In Progress',
+                  'badge' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+                  'progress' => 25,
+                  'bar' => 'bg-primary'
+                  ],
+                  2 => [
+                  'label' => 'Pending Review',
+                  'badge' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
+                  'progress' => 50,
+                  'bar' => 'bg-yellow-500'
+                  ],
+                  3 => [
+                  'label' => 'Progressing',
+                  'badge' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+                  'progress' => 75,
+                  'bar' => 'bg-primary'
+                  ],
+                  4 => [
+                  'label' => 'Success',
+                  'badge' => 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
+                  'progress' => 100,
+                  'bar' => 'bg-green-500'
+                  ],
+                  5 => [
+                  'label' => 'Reject',
+                  'badge' => 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
+                  'progress' => 100,
+                  'bar' => 'bg-red-500'
+                  ],
+                  ];
+                  @endphp
                   @forelse($activeProjectList as $projectList)
+                  @php
+                  $status = $statusMap[$projectList->status] ?? $statusMap[0];
+                  @endphp
                   <tr class="hover:bg-[#f9fafb] dark:hover:bg-[#2d3748]/50 transition-colors">
                     <td class="p-4">
                       <div class="font-bold text-[#111418] dark:text-white">
                         {{ $projectList->industry->industry_name ?? '-' }}
                       </div>
-                      <div class="text-xs text-[#617589] dark:text-[#9ca3af]">Due: Oct 24, 2023
-                        {{ $projectList->end_date}}</div>
+                      <div class="text-xs text-[#617589] dark:text-[#9ca3af]">Due:
+                        {{ \Carbon\Carbon::parse($projectList->end_date)->format('M d, Y') }}</div>
                     </td>
                     <td class="p-4 text-sm text-[#111418] dark:text-white">
                       {{ $projectList->client->client_name ?? '-' }}</td>
                     <td class="p-4">
                       <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">
-                        In Progress
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 {{ $status['badge'] }}">
+                        {{ $status['label'] }}
                       </span>
                     </td>
                     <td class="p-4 w-32">
                       <div class="flex items-center gap-2">
                         <div class="w-full bg-[#e5e7eb] dark:bg-[#4a5568] rounded-full h-1.5">
-                          <div class="bg-primary h-1.5 rounded-full" style="width: 75%"></div>
+                          <div class="{{ $status['bar'] }} h-1.5 rounded-full"
+                            style="width: {{ $status['progress'] }}%">
+                          </div>
                         </div>
-                        <span class="text-xs font-medium text-[#617589] dark:text-[#9ca3af]">75%</span>
+                        <span class="text-xs font-medium text-[#617589] dark:text-[#9ca3af]">
+                          {{ $status['progress'] }}%
+                        </span>
                       </div>
                     </td>
                     @empty
@@ -263,90 +311,6 @@
                     </td>
                   </tr>
                   @endforelse
-                  </tr>
-                  <tr class="hover:bg-[#f9fafb] dark:hover:bg-[#2d3748]/50 transition-colors">
-                    <td class="p-4">
-                      <div class="font-bold text-[#111418] dark:text-white">Downtown Office Reno</div>
-                      <div class="text-xs text-[#617589] dark:text-[#9ca3af]">Due: Nov 01, 2023</div>
-                    </td>
-                    <td class="p-4 text-sm text-[#111418] dark:text-white">Stark Ind.</td>
-                    <td class="p-4">
-                      <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200">
-                        Pending Review
-                      </span>
-                    </td>
-                    <td class="p-4 w-32">
-                      <div class="flex items-center gap-2">
-                        <div class="w-full bg-[#e5e7eb] dark:bg-[#4a5568] rounded-full h-1.5">
-                          <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 90%"></div>
-                        </div>
-                        <span class="text-xs font-medium text-[#617589] dark:text-[#9ca3af]">90%</span>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr class="hover:bg-[#f9fafb] dark:hover:bg-[#2d3748]/50 transition-colors">
-                    <td class="p-4">
-                      <div class="font-bold text-[#111418] dark:text-white">Server Migration - East</div>
-                      <div class="text-xs text-[#617589] dark:text-[#9ca3af]">Due: Nov 15, 2023</div>
-                    </td>
-                    <td class="p-4 text-sm text-[#111418] dark:text-white">Globex Inc.</td>
-                    <td class="p-4">
-                      <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">
-                        In Progress
-                      </span>
-                    </td>
-                    <td class="p-4 w-32">
-                      <div class="flex items-center gap-2">
-                        <div class="w-full bg-[#e5e7eb] dark:bg-[#4a5568] rounded-full h-1.5">
-                          <div class="bg-primary h-1.5 rounded-full" style="width: 45%"></div>
-                        </div>
-                        <span class="text-xs font-medium text-[#617589] dark:text-[#9ca3af]">45%</span>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr class="hover:bg-[#f9fafb] dark:hover:bg-[#2d3748]/50 transition-colors">
-                    <td class="p-4">
-                      <div class="font-bold text-[#111418] dark:text-white">Mobile App Beta</div>
-                      <div class="text-xs text-[#617589] dark:text-[#9ca3af]">Due: Dec 10, 2023</div>
-                    </td>
-                    <td class="p-4 text-sm text-[#111418] dark:text-white">Wayne Ent.</td>
-                    <td class="p-4">
-                      <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                        On Hold
-                      </span>
-                    </td>
-                    <td class="p-4 w-32">
-                      <div class="flex items-center gap-2">
-                        <div class="w-full bg-[#e5e7eb] dark:bg-[#4a5568] rounded-full h-1.5">
-                          <div class="bg-gray-400 h-1.5 rounded-full" style="width: 15%"></div>
-                        </div>
-                        <span class="text-xs font-medium text-[#617589] dark:text-[#9ca3af]">15%</span>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr class="hover:bg-[#f9fafb] dark:hover:bg-[#2d3748]/50 transition-colors">
-                    <td class="p-4">
-                      <div class="font-bold text-[#111418] dark:text-white">Security Audit</div>
-                      <div class="text-xs text-[#617589] dark:text-[#9ca3af]">Due: Dec 22, 2023</div>
-                    </td>
-                    <td class="p-4 text-sm text-[#111418] dark:text-white">Umbrella Corp</td>
-                    <td class="p-4">
-                      <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">
-                        In Progress
-                      </span>
-                    </td>
-                    <td class="p-4 w-32">
-                      <div class="flex items-center gap-2">
-                        <div class="w-full bg-[#e5e7eb] dark:bg-[#4a5568] rounded-full h-1.5">
-                          <div class="bg-primary h-1.5 rounded-full" style="width: 60%"></div>
-                        </div>
-                        <span class="text-xs font-medium text-[#617589] dark:text-[#9ca3af]">60%</span>
-                      </div>
-                    </td>
                   </tr>
                 </tbody>
               </table>

@@ -199,4 +199,27 @@ class ProjectController extends Controller
         
         return new StreamedResponse($callback, 200, $headers);
     }
+
+    public function delete($project_id)
+    {
+        try{
+            $project = Project::findOrFail($project_id);
+            // dd($project);
+            $project->delete();
+
+            return redirect()
+                ->route('projects.screen')
+                ->with('success', 'Project deleted successfully.');
+        } catch(\Exception $e){
+            dd($e);
+            Log::error('Delete project failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Delete project failed.');
+        }
+    }
 }

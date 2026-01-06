@@ -79,7 +79,7 @@
                 <div class="flex items-center gap-3">
                   <div>
                     <div class="text-sm font-bold text-[#111418] dark:text-white">{{ $project->project_name }}</div>
-                    <div class="text-xs text-[#617589] dark:text-gray-400">ID: {{ $project->id }}</div>
+                    <div class="text-xs text-[#617589] dark:text-gray-400">ID: {{ $project->project_id }}</div>
                   </div>
                 </div>
               </td>
@@ -112,7 +112,7 @@
                     title="Edit">
                     <span class="material-symbols-outlined !text-lg">edit</span>
                   </button>
-                  <button
+                  <button type="button" onclick="openDeleteModal({{ $project->project_id }})"
                     class="p-2 text-[#617589] hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
                     title="Delete">
                     <span class="material-symbols-outlined !text-lg">delete</span>
@@ -147,5 +147,47 @@
   </div>
   </main>
 </div>
+<div id="deleteProjectModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-[#111a22] rounded-xl p-6 w-[420px]">
+    <h3 class="text-lg font-bold text-red-600 mb-3">
+      Confirm Delete
+    </h3>
+
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+      Are you sure you want to delete this project?
+      This action can be undone later.
+    </p>
+
+    <div class="flex justify-end gap-3">
+      <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600">
+        No
+      </button>
+
+      <form id="deleteProjectForm" method="POST">
+        @csrf
+        @method('PUT')
+        <button type="submit" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">
+          Yes, Delete
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+function openDeleteModal(project_id) {
+  const form = document.getElementById('deleteProjectForm');
+  form.action = `/projects/${project_id}/delete`;
+
+  const modal = document.getElementById('deleteProjectModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closeDeleteModal() {
+  const modal = document.getElementById('deleteProjectModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+}
+</script>
 </div>
 @endsection

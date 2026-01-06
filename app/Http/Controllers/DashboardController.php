@@ -27,6 +27,7 @@ class DashboardController extends Controller
             'clientId',
             'industry_id',
             'end_date',
+            'status'
         );
 
         $activeProjectList = $query

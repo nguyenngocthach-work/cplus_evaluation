@@ -237,10 +237,8 @@ class ClientController extends Controller
         try {
             $client = Client::with('location')->findOrFail($id);
 
-            // Soft delete client
             $client->delete();
 
-            // Soft delete location nếu tồn tại
             if ($client->location) {
                 $client->location->delete();
             }
@@ -249,7 +247,6 @@ class ClientController extends Controller
                 ->route('clients.screen')
                 ->with('success', 'Client deleted successfully.');
         } catch (\Exception $e) {
-            dd($e);
             Log::error('Delete client failed', [
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
