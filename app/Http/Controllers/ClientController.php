@@ -231,6 +231,40 @@ class ClientController extends Controller
 
         return new StreamedResponse($callback, 200, $headers);
     }
+
+    public function getById(Client $client){
+        try{
+            // sua dung Route Model Binding thi khoi find or fail
+            // $client = Client::with('location')->findOrFail($id);
+            $client->load('location');
+            return view('clients.client_update', compact('client'));
+        } catch(\Exception $e){
+            dd($e);
+            Log::error('get client detail failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+            return redirect()
+                ->back()
+                ->with('error', 'get client detail failed.');
+        }
+    }
+
+    public function update($id)
+    {
+        try{
+            $client = Client::with('location')->findOrFail($id);
+        } catch(\Exception $e){
+            Log::error('Update client failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Update client failed.');
+        }
+    }
     
     public function delete($id)
     {

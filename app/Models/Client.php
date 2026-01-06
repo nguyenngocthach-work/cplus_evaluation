@@ -10,6 +10,7 @@ class Client extends Model
     use SoftDeletes;
     
     protected $table = 'clients';
+    protected $primaryKey = 'id';
     
     protected $fillable = [
         'client_name',

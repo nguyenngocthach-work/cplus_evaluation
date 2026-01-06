@@ -204,7 +204,7 @@ class ProjectController extends Controller
     {
         try{
             $project = Project::findOrFail($project_id);
-            // dd($project);
+            
             $project->delete();
 
             return redirect()

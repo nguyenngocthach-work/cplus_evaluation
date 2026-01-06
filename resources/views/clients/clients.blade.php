@@ -126,11 +126,11 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
+                  <a href=" {{ route('clients.getId', $client) }} "
                     class="p-2 text-[#617589] hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
                     title="Edit">
                     <span class="material-symbols-outlined !text-lg">edit</span>
-                  </button>
+                  </a>
                   <button type="button" onclick="openDeleteModal({{ $client->id }})"
                     class="p-2 text-[#617589] hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
                     title="Delete">
