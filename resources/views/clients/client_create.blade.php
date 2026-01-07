@@ -188,7 +188,7 @@
         class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
         Cancel
       </a>
-      <button
+      <button form="clientForm"
         class="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 transition">
         Save Client
       </button>

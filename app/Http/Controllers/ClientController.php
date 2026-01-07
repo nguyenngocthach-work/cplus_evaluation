@@ -85,7 +85,7 @@ class ClientController extends Controller
                 'client_city' => 'required|string|max:100',
                 'client_state_province' => 'required|string|max:255',
                 'client_zipcode' => 'required|string|max:20',
-                // 'userId' => 'required|integer',
+                // 'userId' => 'required',
             ]);
 
             $userId = 2;
@@ -239,7 +239,6 @@ class ClientController extends Controller
             $client->load('location');
             return view('clients.client_update', compact('client'));
         } catch(\Exception $e){
-            dd($e);
             Log::error('get client detail failed', [
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
@@ -250,11 +249,69 @@ class ClientController extends Controller
         }
     }
 
-    public function update($id)
+    public function update(Request $request, $id)
     {
         try{
             $client = Client::with('location')->findOrFail($id);
+            DB::beginTransaction();
+            $data=$request->all();
+
+            $validator = Validator::make($data, [
+                'client_name' => 'required|string|max:255',
+                'contact_number' => 'required|string|max:255|regex:/^\+?[0-9\s\-\(\)]+$/',
+                'notes' => 'nullable|string|max:255',
+                'email' => 'required|email|max:255|regex:/^[\w\.-]+@[\w\.-]+\.\w{2,4}$/',
+                'company_name' => 'required|string|max:255|',
+                'client_contact_name' => 'required|string|max:255',
+                'client_active' => 'required|string|max:20',
+                'client_HQ' => 'required|string|max:255',
+                'client_billing' => 'required|string|max:255',
+                'client_country' => 'required|string|max:255',
+                'client_city' => 'required|string|max:100',
+                'client_state_province' => 'required|string|max:255',
+                'client_zipcode' => 'required|string|max:20',
+                // 'userId' => 'required',
+            ]);
+
+            $userId = 2;
+            $data['userId'] = $userId;
+            
+            if($validator->fails()){
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+            
+            $client->update([
+                'client_name' => $data['client_name'],
+                'company_name' => $data['company_name'],
+                'client_contact_name' => $data['client_contact_name'],
+                'email' => $data['email'],
+                'contact_number' => $data['contact_number'],
+                'notes' => $data['notes'] ?? null,
+                'client_active' => $request->has('client_active') ? 1 : 0,
+                'userId' => $userId,
+            ]);
+
+            $client->location()->updateOrCreate(
+                ['client_id' => $client->id],
+                [
+                    'client_HQ' => $data['client_HQ'],
+                    'client_billing' => $data['client_billing'],
+                    'client_country' => $data['client_country'],
+                    'client_city' => $data['client_city'],
+                    'client_state_province' => $data['client_state_province'],
+                    'client_zipcode' => $data['client_zipcode'],
+                ]
+            );
+
+            DB::commit();
+
+            return redirect()
+                ->route('clients.screen')
+                ->with('success', 'Client updated successfully');
+                
         } catch(\Exception $e){
+            dd($e);
+            DB::rollBack();
             Log::error('Update client failed', [
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),

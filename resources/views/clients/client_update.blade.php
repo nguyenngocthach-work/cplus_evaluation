@@ -38,10 +38,10 @@
   </div>
 
   {{-- Main Form Card --}}
-  <form id="clientForm" method="POST" action="{{ route('clients.store') }}"
+  <form id="clientForm" method="POST" action="{{ route('clients.update', $client->id) }}"
     class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
     @csrf
-
+    @method('PUT')
     <div class="p-8 space-y-8">
 
       {{-- Section 1: Client & Company Information --}}
@@ -57,13 +57,15 @@
               Client Name <span class="text-red-500">*</span>
             </label>
             <input type="text" name="client_name" placeholder="e.g. Acme Corp" required
+              value="{{ old('client_name', $client->client_name) }}"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
 
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">Company Name <span
                 class="text-red-500">*</span></label>
-            <input type="text" name="company_name" placeholder="Legal Entity Name" required
+            <input type="text" name="company_name" value="{{old('company_name', $client->company_name) }}"
+              placeholder="Legal Entity Name" required
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
         </div>
@@ -73,7 +75,7 @@
 
       {{-- Section 2: Contact Person Details --}}
       <section>
-        <h5 class="flex items-center gap-2 text-blue-600 font-semibold mb-6">
+        <h5 class=" flex items-center gap-2 text-blue-600 font-semibold mb-6">
           <span class="material-symbols-outlined !text-[20px]">person</span>
           <i class="bi bi-person"></i>
           Contact Person Details
@@ -82,19 +84,21 @@
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">Contact Person <span
                 class="text-red-500">*</span></label>
-            <input type="text" name="client_contact_name" placeholder="Full Name" require
+            <input type="text" name="client_contact_name"
+              value="{{ old('client_contact_name', $client->client_contact_name) }}" placeholder="Full Name" require
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">Contact Person Email <span
                 class="text-red-500">*</span></label>
-            <input type="email" name="email" placeholder="contact@company.com"
+            <input type="email" name="email" value="{{ old('email', $client->email) }}"
+              placeholder="contact@company.com"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">Contact Person Phone <span
                 class="text-red-500">*</span></label>
-            <input type="text" name="contact_number" placeholder="+1 (555) 000-0000"
+            <input type="text" name="contact_number" value="{{ old('contact_number', $client->contact_number) }}"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
         </div>
@@ -104,7 +108,7 @@
 
       {{-- Section 3: Location Details --}}
       <section>
-        <h5 class="flex items-center gap-2 text-blue-600 font-semibold mb-6">
+        <h5 class=" flex items-center gap-2 text-blue-600 font-semibold mb-6">
           <span class="material-symbols-outlined !text-[20px]">location_on</span>
           <i class="bi bi-geo-alt"></i>
           Location Details
@@ -113,7 +117,8 @@
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">Company Address <span
                 class="text-red-500">*</span></label>
-            <input type="text" name="client_HQ" placeholder="Headquarters Address"
+            <input type="text" name="client_HQ" value="{{ old('client_HQ', optional($client->location)->client_HQ) }}"
+              placeholder="Headquarters Address"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
 
@@ -121,6 +126,7 @@
             <label class="block text-sm font-medium text-gray-700">Billing Address <span
                 class="text-red-500">*</span></label>
             <input type="text" name="client_billing"
+              value="{{ old('client_billing', optional($client->location)->client_billing) }}"
               placeholder="Billing Street Address (if different or input same as above)"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
           </div>
@@ -128,24 +134,29 @@
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="space-y-2">
               <label class="block text-sm font-medium text-gray-700">Country <span class="text-red-500">*</span></label>
-              <input type="text" name="client_country" placeholder="Country"
+              <input type="text" name="client_country"
+                value="{{ old('client_country', optional($client->location)->client_country) }}" placeholder="Country"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
             </div>
             <div class="space-y-2">
               <label class="block text-sm font-medium text-gray-700">City <span class="text-red-500">*</span></label>
-              <input type="text" name="client_city" placeholder="City"
+              <input type="text" name="client_city"
+                value="{{ old('client_city', optional($client->location)->client_city) }}" placeholder="City"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
             </div>
             <div class="space-y-2">
               <label class="block text-sm font-medium text-gray-700">State / Province <span
                   class="text-red-500">*</span></label>
-              <input type="text" name="client_state_province" placeholder="State"
+              <input type="text" name="client_state_province"
+                value="{{ old('client_state_province', optional($client->location)->client_state_province) }}"
+                placeholder="State"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
             </div>
             <div class="space-y-2">
               <label class="block text-sm font-medium text-gray-700">Zip / Postal Code <span
                   class="text-red-500">*</span></label>
-              <input type="text" name="client_zipcode" placeholder="Zip Code"
+              <input type="text" name="client_zipcode"
+                value="{{ old('client_zipcode', optional($client->location)->client_zipcode) }}" placeholder="Zip Code"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
             </div>
           </div>
@@ -164,7 +175,8 @@
         <div class="space-y-4">
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">Internal Notes</label>
-            <textarea name="notes" rows="4" placeholder="Enter any specific requirements or notes about this client..."
+            <textarea name="notes" value="{{ old('notes', optional($client->location)->notes) }}" rows="4"
+              placeholder="Enter any specific requirements or notes about this client..."
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"></textarea>
           </div>
 
@@ -181,14 +193,13 @@
         </div>
       </section>
     </div>
-
     {{-- Footer --}}
     <div class="bg-gray-50 px-8 py-4 flex justify-end gap-3 border-t border-gray-100">
       <a href="{{ route('clients.screen') }}"
         class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
         Cancel
       </a>
-      <button
+      <button form="clientForm"
         class="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 transition">
         Save Client
       </button>

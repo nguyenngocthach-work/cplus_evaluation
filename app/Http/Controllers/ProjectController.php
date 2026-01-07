@@ -200,6 +200,20 @@ class ProjectController extends Controller
         return new StreamedResponse($callback, 200, $headers);
     }
 
+    public function getById(Project $project){
+        try{
+
+        } catch(\Exception $e){
+            Log::error('get project detail failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+            return redirect()
+                ->back()
+                ->with('error', 'get project detail failed.');
+        }
+    }
+
     public function delete($project_id)
     {
         try{

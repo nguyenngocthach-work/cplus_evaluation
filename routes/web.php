@@ -47,7 +47,8 @@ Route::prefix('/clients')->group(function () {
     Route::get('/{client}', [ClientController::class, 'getById'])
         ->name('clients.getId');
         
-    Route::put('/{id}/update', [ClientController::class,]);
+    Route::put('/{id}/update', [ClientController::class,'update'])
+        ->name('clients.update');
     
     Route::put('/{id}/delete', [ClientController::class, 'delete'])
         ->name('clients.delete');
