@@ -14,14 +14,14 @@ class ReportsController extends Controller
 {
     public function index()
     {
-        return view('evaluation_report.evaluation_report');
+        return view('report.evaluation_report');
     } 
     public function create()
     {
-        return view('evaluation_report.evaluation_report');
+        return view('report.evaluation_report');
     }
     public function store()
     {
-        return view('evaluation_report.evaluation_report');
+        return view('report.evaluation_report');
     }  
 }

@@ -32,6 +32,8 @@ class ProjectController extends Controller
                 'industry_id',
                 'start_date',
                 'end_date',
+                'description',
+                'status',
                 'created_at'
             );
 
@@ -202,6 +204,15 @@ class ProjectController extends Controller
 
     public function getById(Project $project){
         try{
+            $project->load([
+                'client',
+                'industry',
+                'criteria' => function ($q) {
+                    $q->withPivot(['weight', 'custom_description']);
+                }
+            ]);
+
+        return view('project.project_update', compact('project'));
 
         } catch(\Exception $e){
             Log::error('get project detail failed', [
@@ -211,6 +222,57 @@ class ProjectController extends Controller
             return redirect()
                 ->back()
                 ->with('error', 'get project detail failed.');
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try{
+            $project = Project::with('criteria')->findOrFail($id);
+            $data = $request->all();
+
+            $validated = $request->validate([
+                'project_name' => 'required|string|max:255',
+                'description'  => 'nullable|string',
+                'start_date'   => 'required|date',
+                'end_date'     => 'required|date|after_or_equal:start_date',
+                'criteria_ids' => 'required|array',
+                'criteria_ids.*' => 'exists:criteria,id',
+            ]);
+            // sau khi xong auth sẽ gởi user id từ view về
+            $userId = 2;
+
+            $project->update([
+                'project_name' => $request->project_name,
+                'description'  => $request->description,
+                'start_date'   => $request->start_date,
+                'end_date'     => $request->end_date,
+                'clientId'     => $request->clients[0] ?? null,
+                'industry_id'  => $request->locations[0] ?? null,
+                'userId'       => $userId,
+            ]);
+
+            $syncData = [];
+            foreach ($request->criteria_ids as $cid) {
+                $syncData[$cid] = [
+                    'weight' => $request->criteria_percent[$cid] ?? 0,
+                    'custom_description' => $request->criteria_description[$cid] ?? '',
+                ];
+            }
+
+        $project->criteria()->sync($syncData);
+
+        return redirect()->route('projects.screen')
+            ->with('success', 'Project updated successfully');
+        } catch(\Exception $e){
+            dd($e);
+            Log::error('update project detail failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+            return redirect()
+                ->back()
+                ->with('error', 'update project detail failed.');
         }
     }
 
@@ -225,7 +287,6 @@ class ProjectController extends Controller
                 ->route('projects.screen')
                 ->with('success', 'Project deleted successfully.');
         } catch(\Exception $e){
-            dd($e);
             Log::error('Delete project failed', [
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
@@ -234,6 +295,29 @@ class ProjectController extends Controller
             return redirect()
                 ->back()
                 ->with('error', 'Delete project failed.');
+        }
+    }
+
+    public function getEvaluationsById (Project $project)
+    {
+        try{
+            $project->load([
+                'client',
+                'industry',
+                'criteria' => function ($q){
+                    $q->withPivot(['weight', 'custom_description']);
+                }
+            ]);
+        return view('evaluations.evaluations', compact('project'));
+        } catch(\Exception $e){
+            Log::error('project redirect failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'project redirect failed.');
         }
     }
 }

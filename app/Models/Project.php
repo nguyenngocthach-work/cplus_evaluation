@@ -28,6 +28,11 @@ class Project extends Model
 
     public $timestamps = true;
 
+    public function getRouteKeyName()
+    {
+        return 'project_id';
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'userId');
@@ -46,5 +51,15 @@ class Project extends Model
     public function projectCriteria()
     {
         return $this->hasMany(ProjectCriteria::class, 'project_id');
+    }
+
+    public function criteria()
+    {
+        return $this->belongsToMany(
+            Criteria::class,
+            'project_criteria',
+            'project_id',
+            'criteria_id'
+        )->withPivot(['weight', 'custom_description']);
     }
 }

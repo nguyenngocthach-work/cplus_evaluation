@@ -23,7 +23,16 @@ Route::prefix('projects')->group(function () {
         
     Route::get('/export', [ProjectController::class, 'exportProjectList'])
         ->name('projects.export');
-    
+
+    Route::get('/{project}', [ProjectController::class, 'getById'])
+        ->name('projects.getId');
+
+    Route::get('/{project}/evaluations', [ProjectController::class, 'getEvaluationsById'])
+        ->name('projects.getEvaluationsId');
+
+    Route::put('/{id}/update', [ProjectController::class,'update'])
+        ->name('projects.update');
+
     Route::put('/{id}/delete', [ProjectController::class, 'delete'])
         ->name('projects.delete');
 });

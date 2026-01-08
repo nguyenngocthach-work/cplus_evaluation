@@ -58,9 +58,9 @@ input[type=range]::-webkit-slider-runnable-track {
         <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">In
           Progress</span>
         <span>•</span>
-        <span>Project ID: #88219</span>
+        <span>Project ID: {{ old('project_id', $project->project_id) }}</span>
         <span>•</span>
-        <span>Created on Oct 12, 2023</span>
+        <span>Created on {{ old('start_date', \Carbon\Carbon::parse($project->start_date)->format('M d, Y')) }}</span>
       </div>
     </div>
     <div class="flex gap-3">
@@ -96,7 +96,7 @@ input[type=range]::-webkit-slider-runnable-track {
                 <div
                   class="size-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
                   A</div>
-                <p class="font-medium">Acme Corp</p>
+                <p class="font-medium">{{ old('company_name', $project->client->company_name) }}</p>
               </div>
             </div>
             <div class="flex flex-col gap-1 pb-4 border-b border-[#f0f2f4] dark:border-[#2d3748]">
@@ -105,40 +105,17 @@ input[type=range]::-webkit-slider-runnable-track {
                 <div class="size-6 bg-cover bg-center rounded-full" data-alt="Small avatar of project manager"
                   style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDWt0coioBlu6d2Q2sLG2XYVzW-r_y2F5YpCFIs9Fj11NB2YHzPJfW3wANnD4o3cEGA3dhFt6Ghgv4jEBS3-tuJNNL_ZvvAlgox2uM5eRFkbOEUMqjaa18R3BnxzVJ6-FFISaV6ZgjZKu70ssXSOXbpyAKj-cRs9J6ZUh8x7bLa9gA1JJE5aXFXMwUscEONU0E7xGIDZFpaOgDKSv_qiCO8RCF8I_Vp3Yqci-RS3K4G9alUkAO1NWLPjLxHRMCjy6zNa6d76cb0jdgu')">
                 </div>
-                <p class="font-medium">Jane Doe</p>
+                <p class="font-medium">{{ old('client_name', $project->client->client_name) }}</p>
               </div>
             </div>
             <div class="flex flex-col gap-1 pb-4 border-b border-[#f0f2f4] dark:border-[#2d3748]">
               <p class="text-[#617589] text-xs uppercase font-semibold tracking-wider">Due Date</p>
-              <p class="font-medium">Nov 30, 2023</p>
+              <p class="font-medium">{{ old('end_date', \Carbon\Carbon::parse($project->end_date)->format('M d, Y')) }}</p>
             </div>
             <div class="flex flex-col gap-1">
               <p class="text-[#617589] text-xs uppercase font-semibold tracking-wider">Description</p>
-              <p class="text-sm text-[#617589] leading-relaxed">Evaluation of potential retail sites for Q3 expansion in
-                the metropolitan area. Focus on high foot traffic and brand visibility.</p>
+              <p class="text-sm text-[#617589] leading-relaxed">{{ old('description', $project->description) }}</p>
             </div>
-          </div>
-        </div>
-      </div>
-      <!-- Map Preview Card -->
-      <div
-        class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2d3748] overflow-hidden flex flex-col">
-        <div
-          class="px-6 py-4 border-b border-[#e5e7eb] dark:border-[#2d3748] flex justify-between items-center bg-gray-50 dark:bg-[#1f2933]">
-          <h3 class="font-bold text-lg">Region Map</h3>
-          <button class="text-primary text-sm font-bold hover:underline">View Full Map</button>
-        </div>
-        <div class="h-64 w-full bg-gray-200 relative group cursor-pointer">
-          <div class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity"
-            data-alt="Map view of New York City showing streets and blocks" data-location="New York City"
-            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB2CiWJk6_r8NqZUNXWZblzpqPEKCFOH7R5D6U49FJruTyejprRa91L6eBtP1KSHod7kQlRZk1cjDHUF8hMT5LzvaFqx-R29ZiM-UyFHWjmRtGR2T0VBVQWZAopdpNAobr4tpvzJWS-w5H9YxWNyD3_OX5Ibgidcc8ySqtzUR-gVoCOTtyqtTVjVMs5RUZzJIODcVJ1FVA9SS3AnSYtHtidQQsO8GtrSyAYRozPCuMimpddr_cQjbE6F1cF4FCeEyJdL5XMdxXPobOi');">
-          </div>
-          <!-- Map Pins -->
-          <div class="absolute top-1/4 left-1/3 transform -translate-x-1/2 -translate-y-1/2">
-            <span class="material-symbols-outlined text-red-600 text-4xl drop-shadow-md">location_on</span>
-          </div>
-          <div class="absolute top-1/2 left-2/3 transform -translate-x-1/2 -translate-y-1/2">
-            <span class="material-symbols-outlined text-primary text-4xl drop-shadow-md">location_on</span>
           </div>
         </div>
       </div>
@@ -152,7 +129,7 @@ input[type=range]::-webkit-slider-runnable-track {
           <span class="material-symbols-outlined text-[20px]">storefront</span>
           <span class="text-sm font-bold tracking-[0.015em]">Downtown Store</span>
         </button>
-        <button
+        <!-- <button
           class="flex items-center gap-2 border-b-[3px] border-b-transparent text-[#617589] hover:text-[#111418] dark:hover:text-white pb-3 px-1 whitespace-nowrap transition-colors outline-none group">
           <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">cottage</span>
           <span class="text-sm font-bold tracking-[0.015em]">Suburb Location</span>
@@ -161,11 +138,7 @@ input[type=range]::-webkit-slider-runnable-track {
           class="flex items-center gap-2 border-b-[3px] border-b-transparent text-[#617589] hover:text-[#111418] dark:hover:text-white pb-3 px-1 whitespace-nowrap transition-colors outline-none group">
           <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">flight</span>
           <span class="text-sm font-bold tracking-[0.015em]">Airport Kiosk</span>
-        </button>
-        <button class="flex items-center gap-1 ml-auto text-primary text-sm font-bold pb-3 hover:underline">
-          <span class="material-symbols-outlined text-[18px]">add_circle</span>
-          Add Location
-        </button>
+        </button> -->
       </div>
       <!-- Evaluation Workspace -->
       <div
@@ -175,7 +148,7 @@ input[type=range]::-webkit-slider-runnable-track {
           class="px-6 py-5 border-b border-[#e5e7eb] dark:border-[#2d3748] flex flex-wrap justify-between items-center gap-4">
           <div>
             <h2 class="text-xl font-bold">Evaluation: Downtown Store</h2>
-            <p class="text-sm text-[#617589]">Last updated just now by You</p>
+            <p class="text-sm text-[#617589]">Last updated just now by You {{ old('userId', $project->userId) }}</p>
           </div>
           <div
             class="flex items-center gap-4 bg-primary/5 dark:bg-primary/10 px-4 py-2 rounded-lg border border-primary/10">
@@ -202,7 +175,7 @@ input[type=range]::-webkit-slider-runnable-track {
               <div class="flex justify-between items-end mb-2">
                 <label class="font-bold text-sm text-[#111418] dark:text-white flex items-center gap-2">
                   <span class="material-symbols-outlined text-[#617589] text-[18px]">directions_walk</span>
-                  Foot Traffic
+                  Foot Traffic {{ old('')}}
                 </label>
                 <span class="font-bold text-primary text-sm bg-primary/10 px-2 py-0.5 rounded">8.0</span>
               </div>
@@ -300,12 +273,6 @@ input[type=range]::-webkit-slider-runnable-track {
                   <line x1="100" x2="47.1" y1="100" y2="172.4"></line>
                   <line x1="100" x2="14.5" y1="100" y2="72.1"></line>
                 </g>
-                <!-- Data Polygon (The values roughly correspond to 8, 9, 8.5, 4, 6.5) -->
-                <!-- Top (Foot Traffic 8/10) -->
-                <!-- Right Top (Rent 6.5/10) -->
-                <!-- Right Bot (Visibility 9/10) -->
-                <!-- Left Bot (Condition 4/10) -->
-                <!-- Left Top (Parking 8.5/10) -->
                 <path class="drop-shadow-sm transition-all duration-500 ease-in-out"
                   d="M100 28 L155 82 L148 165 H65 L25 80 Z" fill="#137fec" fill-opacity="0.2" stroke="#137fec"
                   stroke-width="2.5"></path>
