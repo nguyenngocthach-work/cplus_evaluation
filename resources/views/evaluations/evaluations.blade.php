@@ -64,11 +64,11 @@ input[type=range]::-webkit-slider-runnable-track {
       </div>
     </div>
     <div class="flex gap-3">
-      <button
+      <!-- <button
         class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-white dark:bg-[#2d3748] border border-[#dbe0e6] dark:border-[#4a5568] text-[#111418] dark:text-white text-sm font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-[#374151] transition-colors gap-2">
         <span class="material-symbols-outlined text-[18px]">edit</span>
         <span class="truncate">Edit Project</span>
-      </button>
+      </button> -->
       <button
         class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold shadow-sm hover:bg-primary/90 transition-colors gap-2">
         <span class="material-symbols-outlined text-[18px]">download</span>
@@ -110,7 +110,8 @@ input[type=range]::-webkit-slider-runnable-track {
             </div>
             <div class="flex flex-col gap-1 pb-4 border-b border-[#f0f2f4] dark:border-[#2d3748]">
               <p class="text-[#617589] text-xs uppercase font-semibold tracking-wider">Due Date</p>
-              <p class="font-medium">{{ old('end_date', \Carbon\Carbon::parse($project->end_date)->format('M d, Y')) }}</p>
+              <p class="font-medium">{{ old('end_date', \Carbon\Carbon::parse($project->end_date)->format('M d, Y')) }}
+              </p>
             </div>
             <div class="flex flex-col gap-1">
               <p class="text-[#617589] text-xs uppercase font-semibold tracking-wider">Description</p>
@@ -170,12 +171,13 @@ input[type=range]::-webkit-slider-runnable-track {
           <!-- Left: Scoring Inputs -->
           <div class="p-6 xl:w-1/2 flex flex-col gap-6">
             <h4 class="font-bold text-sm uppercase text-[#617589] tracking-wider mb-2">Scoring Criteria</h4>
+            @foreach($project->criteria as $criterion)
             <!-- Criterion 1 -->
             <div class="group">
               <div class="flex justify-between items-end mb-2">
                 <label class="font-bold text-sm text-[#111418] dark:text-white flex items-center gap-2">
                   <span class="material-symbols-outlined text-[#617589] text-[18px]">directions_walk</span>
-                  Foot Traffic {{ old('')}}
+                  {{ old('criteria_name', $criterion->criteria_name)}}
                 </label>
                 <span class="font-bold text-primary text-sm bg-primary/10 px-2 py-0.5 rounded">8.0</span>
               </div>
@@ -186,54 +188,7 @@ input[type=range]::-webkit-slider-runnable-track {
                 <span>High</span>
               </div>
             </div>
-            <!-- Criterion 2 -->
-            <div class="group">
-              <div class="flex justify-between items-end mb-2">
-                <label class="font-bold text-sm text-[#111418] dark:text-white flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[#617589] text-[18px]">attach_money</span>
-                  Rent Affordability
-                </label>
-                <span class="font-bold text-primary text-sm bg-primary/10 px-2 py-0.5 rounded">6.5</span>
-              </div>
-              <input class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" max="10"
-                min="1" step="0.5" type="range" value="6.5" />
-            </div>
-            <!-- Criterion 3 -->
-            <div class="group">
-              <div class="flex justify-between items-end mb-2">
-                <label class="font-bold text-sm text-[#111418] dark:text-white flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[#617589] text-[18px]">visibility</span>
-                  Visibility
-                </label>
-                <span class="font-bold text-primary text-sm bg-primary/10 px-2 py-0.5 rounded">9.0</span>
-              </div>
-              <input class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" max="10"
-                min="1" step="0.5" type="range" value="9" />
-            </div>
-            <!-- Criterion 4 -->
-            <div class="group">
-              <div class="flex justify-between items-end mb-2">
-                <label class="font-bold text-sm text-[#111418] dark:text-white flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[#617589] text-[18px]">foundation</span>
-                  Site Condition
-                </label>
-                <span class="font-bold text-primary text-sm bg-primary/10 px-2 py-0.5 rounded">4.0</span>
-              </div>
-              <input class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" max="10"
-                min="1" step="0.5" type="range" value="4" />
-            </div>
-            <!-- Criterion 5 -->
-            <div class="group">
-              <div class="flex justify-between items-end mb-2">
-                <label class="font-bold text-sm text-[#111418] dark:text-white flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[#617589] text-[18px]">local_parking</span>
-                  Parking
-                </label>
-                <span class="font-bold text-primary text-sm bg-primary/10 px-2 py-0.5 rounded">8.5</span>
-              </div>
-              <input class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" max="10"
-                min="1" step="0.5" type="range" value="8.5" />
-            </div>
+            @endforeach
           </div>
           <!-- Right: Radar Chart Visualization -->
           <div
@@ -298,30 +253,31 @@ input[type=range]::-webkit-slider-runnable-track {
             </div>
           </div>
         </div>
-        <!-- Footer: Comments & Actions -->
-        <div class="p-6 border-t border-[#e5e7eb] dark:border-[#2d3748] bg-gray-50/50 dark:bg-[#1a242d]/30 mt-auto">
-          <div class="flex flex-col gap-4">
-            <div>
-              <label class="font-bold text-sm text-[#111418] dark:text-white mb-2 block">
-                Evaluator Notes
-              </label>
-              <textarea
-                class="w-full rounded-lg border-none bg-white dark:bg-[#1a242d] p-3 text-sm focus:ring-2 focus:ring-primary/50 outline-none resize-none shadow-sm dark:text-white"
-                placeholder="Enter specific observations about this location, e.g. 'Entrance is obscured by scaffolding...'"
-                rows="3"></textarea>
-            </div>
-            <div class="flex justify-end items-center gap-4 pt-2">
-              <span class="text-xs text-[#617589] italic">Changes saved automatically</span>
-              <button
-                class="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition-all flex items-center gap-2">
-                <span class="material-symbols-outlined text-[20px]">check_circle</span>
-                Complete Evaluation
-              </button>
-            </div>
+      </div>
+      <!-- Footer: Comments & Actions -->
+      <div class="p-6 border-t border-[#e5e7eb] dark:border-[#2d3748] bg-gray-50/50 dark:bg-[#1a242d]/30 mt-auto">
+        <div class="flex flex-col gap-4">
+          <div>
+            <label class="font-bold text-sm text-[#111418] dark:text-white mb-2 block">
+              Evaluator Notes
+            </label>
+            <textarea
+              class="w-full rounded-lg border-none bg-white dark:bg-[#1a242d] p-3 text-sm focus:ring-2 focus:ring-primary/50 outline-none resize-none shadow-sm dark:text-white"
+              placeholder="Enter specific observations about this location, e.g. 'Entrance is obscured by scaffolding...'"
+              rows="3"></textarea>
+          </div>
+          <div class="flex justify-end items-center gap-4 pt-2">
+            <span class="text-xs text-[#617589] italic">Changes saved automatically</span>
+            <button
+              class="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition-all flex items-center gap-2">
+              <span class="material-symbols-outlined text-[20px]">check_circle</span>
+              Complete Evaluation
+            </button>
           </div>
         </div>
       </div>
     </div>
+  </div>
   </div>
 </main>
 @endsection

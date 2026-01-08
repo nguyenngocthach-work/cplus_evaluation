@@ -212,7 +212,9 @@ class ProjectController extends Controller
                 }
             ]);
 
-        return view('project.project_update', compact('project'));
+            $allCriteria = Criteria::all();
+
+        return view('project.project_update', compact('project', 'allCriteria'));
 
         } catch(\Exception $e){
             Log::error('get project detail failed', [
@@ -318,6 +320,21 @@ class ProjectController extends Controller
             return redirect()
                 ->back()
                 ->with('error', 'project redirect failed.');
+        }
+    }
+
+    public function scoreEvaluation(Request $request){
+        try{
+
+        } catch (\Exception $e){
+            Log::error('create score failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'create score failed.');
         }
     }
 }

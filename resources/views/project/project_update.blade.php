@@ -227,7 +227,7 @@ body {
 
       <!-- Body -->
       <div class="p-4 max-h-80 overflow-y-auto">
-        @foreach($project->criteria as $item)
+        @foreach($allCriteria as $item)
         <div onclick="selectCriteria({{ json_encode($item) }})"
           class="flex justify-between items-center px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
           <div>
