@@ -356,8 +356,34 @@ class ProjectController extends Controller
                 ->route('projects.screen')
                 ->with('success', 'Evaluation completed successfully.');
         } catch (\Exception $e){
-            dd($e);
             Log::error('create score failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'create score failed.');
+        }
+    }
+
+    public function getReportProjectById(Project $project){
+        try{
+
+            $project->load([
+                'client',
+                'industry',
+                'judgment',
+                'criteria' => function ($q) {
+                    $q->withPivot(['weight', 'custom_description']);
+                },
+                'judgment.details.criteria',
+            ]);
+            // dd($project);
+            return view("report.evaluation_report", compact('project'));
+        } catch(\Exception $e){
+            dd($e);    
+        Log::error('create score failed', [
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
             ]);

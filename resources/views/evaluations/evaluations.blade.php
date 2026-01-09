@@ -73,11 +73,11 @@ input[type=range]::-webkit-slider-runnable-track {
         <span class="material-symbols-outlined text-[18px]">edit</span>
         <span class="truncate">Edit Project</span>
       </button> -->
-        <button
+        <a href="{{ route('projects.reportById', $project) }}"
           class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold shadow-sm hover:bg-primary/90 transition-colors gap-2">
           <span class="material-symbols-outlined text-[18px]">download</span>
           <span class="truncate">Export Report</span>
-        </button>
+        </a>
       </div>
     </div>
     <!-- Main Content Layout -->
@@ -103,7 +103,7 @@ input[type=range]::-webkit-slider-runnable-track {
                   <p class="font-medium">{{ old('company_name', $project->client->company_name) }}</p>
                 </div>
               </div>
-              <div class="flex flex-col gap-1 pb-4 border-b border-[#f0f2f4] dark:border-[#2d3748]">
+              <div class=" flex flex-col gap-1 pb-4 border-b border-[#f0f2f4] dark:border-[#2d3748]">
                 <p class="text-[#617589] text-xs uppercase font-semibold tracking-wider">Project Manager</p>
                 <div class="flex items-center gap-2">
                   <div class="size-6 bg-cover bg-center rounded-full" data-alt="Small avatar of project manager"

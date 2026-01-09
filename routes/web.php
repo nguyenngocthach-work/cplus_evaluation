@@ -32,7 +32,10 @@ Route::prefix('projects')->group(function () {
 
     Route::post('/evaluations', [ProjectController::class, 'scoreEvaluation'])
         ->name('projects.evaluationsScore');
-        
+
+    Route::get('/{project}/report', [ProjectController::class, 'getReportProjectById'])
+        ->name('projects.reportById');
+
     Route::put('/{id}/update', [ProjectController::class,'update'])
         ->name('projects.update');
 
