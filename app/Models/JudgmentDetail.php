@@ -13,12 +13,27 @@ class JudgmentDetail extends Model
     protected $table = 'judgment_detail';
 
     protected $fillable = [
-        'sessionId',
+        'judgment_id',
         'criteriaId',
-        'projectId',
         'criteria_point',
+        'criteria_percentage',
+        'criteria_parent_id',
+        'criteria_type',
         'criteria_name',
-        'evaluator_notes',
-        'total_score',
+        'count',
     ];
+
+    protected $dates = ['deleted_at'];
+
+    public $timestamps = true;
+
+    public function judgment()
+    {
+        return $this->belongsTo(Judgment::class, 'judgment_id');
+    }
+
+    public function criteria()
+    {
+        return $this->belongsTo(Criteria::class, 'criteriaId');
+    }
 }

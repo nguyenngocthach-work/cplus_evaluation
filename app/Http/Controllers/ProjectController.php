@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Project;
 use App\Models\Criteria;
+use App\Models\Judgment;
+use App\Models\JudgmentDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -118,11 +120,6 @@ class ProjectController extends Controller
             
             return redirect()->route('project.project');
         } catch(\Exception $e){
-            dd([
-                'message'  => $e->getMessage(),
-                'sql'      => $e->getSql(),
-                'bindings' => $e->getBindings(),
-            ]);
             Log::error('Error in: ' . __METHOD__, [
                 'message' => $e->getMessage(),
                 'Line' => $e->getLine(),
@@ -325,8 +322,41 @@ class ProjectController extends Controller
 
     public function scoreEvaluation(Request $request){
         try{
+            $data = $request->all();
+            $validated = $request->validate([
+                'project_id' => 'required|exists:project,project_id',
+                'total_score' => 'required|numeric|min:0|max:10',
+                'criteria' => 'required|array',
+                'criteria.*.score' => 'required|numeric|min:0|max:10',
+                'criteria.*.criteria_percentage' => 'required|numeric|min:0|max:100',
+                'evaluator_notes' => 'nullable|string',
+            ]);
 
+            $userId = 2;
+
+            // 2. Tạo Judgment
+            $judgment = Judgment::create([
+                'project_id' => $request->project_id,
+                'total_score' => $request->total_score,
+                'evaluator_notes' => $request->evaluator_notes,
+                'user_id' => $userId,
+            ]);
+            
+            foreach ($request->criteria as $criteriaId => $item) {
+                JudgmentDetail::create([
+                    'judgment_id' => $judgment->id,
+                    'criteriaId' => $criteriaId,
+                    'criteria_point' => $item['score'],
+                    'criteria_percentage' => $item['criteria_percentage'],
+                    'criteria_name' => $item['criteria_name'],
+                ]);
+            }
+            
+            return redirect()
+                ->route('projects.screen')
+                ->with('success', 'Evaluation completed successfully.');
         } catch (\Exception $e){
+            dd($e);
             Log::error('create score failed', [
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),

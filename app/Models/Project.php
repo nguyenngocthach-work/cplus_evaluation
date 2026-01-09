@@ -62,4 +62,9 @@ class Project extends Model
             'criteria_id'
         )->withPivot(['weight', 'custom_description']);
     }
+
+    public function judgment()
+    {
+        return $this->hasOne(Judgment::class, 'project_id', 'project_id');
+    }
 }
