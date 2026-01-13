@@ -84,6 +84,9 @@ Route::prefix('locations')->group(function () {
         
     Route::get('/search', [LocationController::class, 'search'])
         ->name('location.search');
+        
+    Route::put('/{id}/delete', [LocationController::class, 'delete'])
+        ->name('locations.delete');
 });
     
 Route::prefix('reports')->group(function () {

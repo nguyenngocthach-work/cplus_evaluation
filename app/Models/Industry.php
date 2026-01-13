@@ -29,4 +29,8 @@ class Industry extends Model
     {
         return $this->belongsTo(User::class, 'userId');
     }
+    public function photos()
+    {
+        return $this->hasMany(PhotosLocation::class, 'industry_id')->orderBy('created_at');
+    }
 }

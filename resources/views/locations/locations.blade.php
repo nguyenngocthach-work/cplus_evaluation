@@ -64,9 +64,13 @@
         <!-- Active Item -->
         <div onclick="selectLocation(this)" data-json='@json($location)'
           class="location-item flex items-center gap-3 px-3 py-3 rounded-lg border-primary/20 cursor-pointer transition-all">
+          @php
+          $thumbnail = $location->photos->first()
+          ? asset('storage/' . $location->photos->first()->img_url)
+          : asset('images/no-image.png');
+          @endphp
           <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-12 shrink-0"
-            data-alt="Exterior view of a modern warehouse building"
-            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBenwmakPbPHZDLm6TFY8Fh6l0DieqR-jzUQlnlVKyFKXkURZJp661xc0FgNI1-L2Z8rNXTzD3xjh1Puv2tEr9KrwzlI0OtjeRrdh_6ncu0HaYglxGwpa9K893jg-ROKdvtuw-Ry229P6OBujquqEpI1GjiDknEuYfRGL6DU5z0nv0xu6whiX7PXyP4bOrnTpnsIY6rVQYmE5MUQiXGPb5l15PWTh8dxzutddr0WcfKxZFJ4ETj7zED9n3mdvm0VQySbC5mz3XdbUMT");'>
+            data-alt="Exterior view of a modern warehouse building" style='background-image: url("{{ $thumbnail }}");'>
           </div>
           <div class="flex flex-col justify-center flex-1 min-w-0">
             <p class="text-[#111418] dark:text-white text-sm font-bold leading-normal line-clamp-1">
@@ -127,9 +131,9 @@
                 Save Changes
               </button>
             </div>
+
         </div>
         <!-- Form Content -->
-
         <input type="hidden" name="id" id="field-id">
         <div class="flex flex-col gap-8">
           <!-- Section 1: Basic Information -->
@@ -202,32 +206,22 @@
               <div class="flex flex-col gap-2">
                 <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Pin Location</label>
                 <div
-                  class="relative w-full h-full min-h-[240px] rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 group cursor-crosshair border border-transparent hover:border-primary/50 transition-colors">
-                  <div class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity"
-                    data-alt="Map view of Springfield Illinois centered on industrial park"
-                    data-location="Springfield, Illinois"
-                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBaCu-tp1bfpQNnJ-IXFZTAVYOUJQDaU_tAISVmvT_niwU6TpF8VO_ETONeOU59ybeRvcHBl4OY32ie4cpGnU0rHIFwslazEw65JpCKxxz3NtitZgYrU9TkntmZXr784qh1DW-1rPiaTYfkE9FSyTLv4Us11KCUOSvZmucbHvM7qhKuXLwkoc85geT4MTLlrOLvULfRSo3-nXMsuotJn-3flhhBfo7NmL5vDkEjU9YolbgU8RDfTrHhQ-TKDKkYO2OQAhPlIg_tJjN7");'>
+                  class="relative w-full h-full min-h-[240px] rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 group border border-transparent hover:border-primary/50 transition-colors">
+                  <div id="map-background"
+                    class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity"
+                    style='background-image: url("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop");'>
                   </div>
-                  <!-- Map Pin -->
+
                   <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                     <span class="material-symbols-outlined text-4xl text-red-600 drop-shadow-md">location_on</span>
-                    <div
+                    <div id="map-label"
                       class="bg-white dark:bg-slate-900 text-xs font-bold px-2 py-1 rounded shadow-md mt-1 whitespace-nowrap">
-                      Lat: 39.78, Long: -89.65</div>
-                  </div>
-                  <!-- Map Controls -->
-                  <div class="absolute bottom-3 right-3 flex flex-col gap-2">
-                    <button
-                      class="size-8 bg-white dark:bg-slate-800 rounded shadow-md flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 text-[#111418] dark:text-white">
-                      <span class="material-symbols-outlined text-lg">add</span>
-                    </button>
-                    <button
-                      class="size-8 bg-white dark:bg-slate-800 rounded shadow-md flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 text-[#111418] dark:text-white">
-                      <span class="material-symbols-outlined text-lg">remove</span>
-                    </button>
+                      Loading City...
+                    </div>
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
           <!-- Section 3: Media -->
@@ -238,40 +232,9 @@
               Site Photos
             </h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <!-- Existing Photo 1 -->
-              <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
-                <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-                  data-alt="Interior of warehouse with high shelves"
-                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwS-weNo5EPQoerlmi1KbD3tgSxQagqvvG-qPjtY7jTkAZVvXRu_vErJMPpQy5BGkEi5drFT4iQxrb0k6XmF9GDSBKGxZJRSsA5W-62N79e2I--QHqJkVNjCY2ilrGI9RgHe3f6d_BDdL2tY9DWKIMGZe6wvfMk3peWFhzFlmmZT-0gSFfVn-fc9y0lrYDM6oN1rally4T6f7gAPx4rGMDV0zVTeMY1_9s0fn_KFaT65QjFySd5MbA2L5tzcDezKNxBL9iAn2PNoTn");'>
-                </div>
-                <div
-                  class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
-                  <span class="material-symbols-outlined text-sm block">close</span>
-                </div>
+              <div id="photos-container" class="contents">
+                <!-- Upload New -->
               </div>
-              <!-- Existing Photo 2 -->
-              <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
-                <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-                  data-alt="Loading dock area with trucks"
-                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDrtgpOc_19akL4p_9zguaN6kalQN1CdU9MbluA_tF03dg7dkVe9wQEn_SMGn0VJvMPZ_KrS9mnvR9_2LKHUGqRSBJlw4zbfkcWd07ZY5s7hQuCqFKHRIOCnpGwTL2s1jilPMxHuLqs4YcMpOH0PwpwfJIwkMzhLH2UiHivtQ-AEHOIe4f4k-8FE0JVjCsM_e8fQ6zR9xU3n7cBH_j2OCenypFfbp9fp1XwiXlfuMPPnNLeW8NwmP0ja52-aF9Jkvn4aI_sp83NHT0m");'>
-                </div>
-                <div
-                  class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
-                  <span class="material-symbols-outlined text-sm block">close</span>
-                </div>
-              </div>
-              <!-- Existing Photo 3 -->
-              <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
-                <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-                  data-alt="Office space inside warehouse"
-                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA0WH3kVrmWYxqhDNDkgZR2l9-hVhK7_9bh_085iQofrHTeKHBjJ8RAqAtidf_V0eb3WHpsxJ8SY5Jt4imkO4qAJSy4Z_41TMQJ00UisXMT-OUUKpvwKBFThjA0coBi-JnxU0DHQWlBDBbzxLClqS7KMhqBT3L-I3ad1Mu97ExQsX-6Af-Pf_w5TeiJpf4O0z_0rXZb7QBVxd0NIc8ukZbaiZac5wZ3DfkwX8tQh4n52yzClhA9SLe9EA9CFu5V0vj0l20wqUE16yKn");'>
-                </div>
-                <div
-                  class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
-                  <span class="material-symbols-outlined text-sm block">close</span>
-                </div>
-              </div>
-              <!-- Upload New -->
               <div
                 class="aspect-square rounded-lg border-2 border-dashed border-[#e5e7eb] dark:border-slate-700 bg-[#f9fafb] dark:bg-slate-800/50 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors group text-[#617589] hover:text-primary">
                 <span
@@ -287,15 +250,42 @@
               <span class="text-xs text-[#617589] dark:text-slate-500">Last modified by Admin User</span>
               <span class="text-xs text-[#617589] dark:text-slate-500">Oct 24, 2023 at 4:30 PM</span>
             </div>
-            <button
+            <button type="button" onclick="openDeleteModal()"
               class="text-red-600 hover:text-red-700 text-sm font-bold flex items-center gap-2 px-3 py-2 rounded hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
               <span class="material-symbols-outlined">delete</span>
               Delete Location
             </button>
           </div>
         </div>
+        </form>
       </div>
     </main>
+  </div>
+</div>
+<div id="deleteLocationModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-[#111a22] rounded-xl p-6 w-[420px]">
+    <h3 class="text-lg font-bold text-red-600 mb-3">
+      Confirm Delete
+    </h3>
+
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+      Are you sure you want to delete this location?
+      This action can be undone later.
+    </p>
+
+    <div class="flex justify-end gap-3">
+      <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600">
+        No
+      </button>
+
+      <form id="deleteLocationForm" method="POST">
+        @csrf
+        @method('PUT')
+        <button type="submit" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">
+          Yes, Delete
+        </button>
+      </form>
+    </div>
   </div>
 </div>
 <script>
@@ -322,15 +312,41 @@ function selectLocation(element) {
   document.getElementById('field-state').value = data.state_province;
   document.getElementById('field-zip').value = data.zipcode;
   document.getElementById('field-country').value = data.country;
+  const photosContainer = document.getElementById('photos-container');
+  photosContainer.innerHTML = '';
+  if (data.photos && data.photos.length > 0) {
+    data.photos.forEach(photo => {
+      const imgHtml = `
+                <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
+                    <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
+                        style="background-image: url('/storage/${photo.img_url}')">
+                    </div>
+                </div>`;
+      photosContainer.insertAdjacentHTML('beforeend', imgHtml);
+    });
+  } else {
+    photosContainer.innerHTML = '<p class="col-span-full text-sm text-gray-500">No photos uploaded yet.</p>';
+  }
 
+  const mapBackground = document.getElementById('map-background');
+  const mapLabel = document.getElementById('map-label');
+  if (data.city) {
+    // Cập nhật text hiển thị dưới Pin
+    mapLabel.innerText = data.city;
+
+    // Cập nhật hình nền bản đồ từ Mapbox Static API
+    const cityEncoded = encodeURIComponent(data.city);
+    // Nếu không muốn dùng Token/API, ta dùng ảnh vệ tinh placeholder theo từ khóa:
+    const mapUrl = `https://static-maps.yandex.ru/1.x/?lang=en_US&ll=0,0&text=${cityEncoded}&z=12&l=map&size=450,240`;
+    mapBackground.style.backgroundImage = `url('${mapUrl}')`;
+    mapBackground.style.opacity = "1";
+  }
   // set form action PUT /locations/{id}
   const form = document.getElementById('locationForm');
   form.action = `/locations/${data.id}`;
 
   toggleEdit(false);
 }
-const data = JSON.parse(element.getAttribute('data-json'));
-console.log(data);
 
 function toggleEdit(isEdit) {
   const container = document.getElementById('detailWrapper');
@@ -351,6 +367,23 @@ function toggleEdit(isEdit) {
   document.getElementById('btn-edit').classList.toggle('hidden', isEdit);
   document.getElementById('btn-cancel').classList.toggle('hidden', !isEdit);
   document.getElementById('btn-save').classList.toggle('hidden', !isEdit);
+}
+
+function openDeleteModal() {
+  const id = document.getElementById('field-id').value; // Lấy ID của địa điểm đang hiển thị
+  if (!id) return;
+  const form = document.getElementById('deleteLocationForm');
+  form.action = `/locations/${id}/delete`;
+
+  const modal = document.getElementById('deleteLocationModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closeDeleteModal() {
+  const modal = document.getElementById('deleteLocationModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
 }
 </script>
 @endsection
