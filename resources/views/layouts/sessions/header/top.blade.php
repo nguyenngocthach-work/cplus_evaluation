@@ -16,10 +16,6 @@
             href="{{ route('clients.screen') }}">Clients</a>
           <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
             href="{{ route('projects.screen') }}">Projects</a>
-          <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            href="{{ route('evaluations.screen') }}">Evaluations</a>
-          <a href="{{ route('reports.screen') }}" class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary
-          transition-colors">Reports</a>
         </div>
         <div
           class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#f0f2f4] dark:border-gray-700"

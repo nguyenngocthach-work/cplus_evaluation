@@ -39,18 +39,6 @@
             class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">work</span>
           <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Projects</p>
         </a>
-        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="{{ route('evaluations.screen') }}">
-          <span
-            class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">assignment</span>
-          <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Evaluations</p>
-        </a>
-        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href=" {{ route('reports.screen') }}">
-          <span
-            class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">settings</span>
-          <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Reports</p>
-        </a>
       </div>
     </div>
     <div class="p-4 border-t border-[#e5e7eb] dark:border-[#2a3441]">

@@ -379,7 +379,6 @@ class ProjectController extends Controller
                 },
                 'judgment.details.criteria',
             ]);
-            // dd($project);
             return view("report.evaluation_report", compact('project'));
         } catch(\Exception $e){
             dd($e);    
