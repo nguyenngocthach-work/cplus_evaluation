@@ -36,20 +36,39 @@ class UploadLocationPhotosJob
         try{
             foreach ($this->photoPaths as $tmpPath) {
 
-                $extension = pathinfo($tmpPath, PATHINFO_EXTENSION);
+                if (!Storage::disk('public')->exists($tmpPath)) {
+                    Log::warning('Temp photo not found', [
+                        'path' => $tmpPath,
+                    ]);
+                    continue;
+                }
 
-                $filename = 'industry_' .
-                    $this->industryId . '_' .
-                    Str::uuid() . '.' . $extension;
+                $extension = pathinfo($tmpPath, PATHINFO_EXTENSION) ?: 'jpg';
 
-                $finalPath = 'locations/' . $this->industryId . '/' . $filename;
+                $filename = 'industry_' . $this->industryId . '_' . Str::uuid() . '.' . $extension;
+                $directory = 'locations/' . $this->industryId;
+                $finalPath = $directory . '/' . $filename;
 
-                // Move file
-                Storage::disk('public')->move($tmpPath, $finalPath);
+                if (!Storage::disk('public')->exists($directory)) {
+                    Storage::disk('public')->makeDirectory($directory);
+                }
 
+            
+                $copied = Storage::disk('public')->copy($tmpPath, $finalPath);
+                if (!$copied) {
+                    Log::error('Copy photo failed', [
+                        'from' => $tmpPath,
+                        'to' => $finalPath,
+                    ]);
+                    continue;
+                }
+
+                Storage::disk('public')->delete($tmpPath);
+
+            
                 PhotosLocation::create([
                     'industry_id' => $this->industryId,
-                    'img_url' => $finalPath,
+                    'img_url'     => $finalPath,
                 ]);
             }
         } catch (\Exception $e){

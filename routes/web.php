@@ -27,6 +27,9 @@ Route::prefix('projects')->group(function () {
     Route::get('/{project}', [ProjectController::class, 'getById'])
         ->name('projects.getId');
 
+    Route::get('/{project}/detail', [ProjectController::class, 'detail'])
+        ->name('projects.detail');
+
     Route::get('/{project}/evaluations', [ProjectController::class, 'getEvaluationsById'])
         ->name('projects.getEvaluationsId');
 

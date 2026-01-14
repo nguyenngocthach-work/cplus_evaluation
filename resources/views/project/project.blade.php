@@ -66,6 +66,8 @@
                 Start Date</th>
               <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
                 End Date</th>
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
+                Status</th>
               <th
                 class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
                 Actions</th>
@@ -73,7 +75,50 @@
           </thead>
           <tbody class="divide-y divide-[#dbe0e6] dark:divide-gray-700">
             <!-- Row 1 -->
+            @php
+            $statusMap = [
+            0 => [
+            'label' => 'On Hold',
+            'badge' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+            'progress' => 0,
+            'bar' => 'bg-gray-400'
+            ],
+            1 => [
+            'label' => 'In Progress',
+            'badge' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+            'progress' => 25,
+            'bar' => 'bg-primary'
+            ],
+            2 => [
+            'label' => 'Pending Review',
+            'badge' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
+            'progress' => 50,
+            'bar' => 'bg-yellow-500'
+            ],
+            3 => [
+            'label' => 'Progressing',
+            'badge' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+            'progress' => 75,
+            'bar' => 'bg-primary'
+            ],
+            4 => [
+            'label' => 'Success',
+            'badge' => 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
+            'progress' => 100,
+            'bar' => 'bg-green-500'
+            ],
+            5 => [
+            'label' => 'Reject',
+            'badge' => 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
+            'progress' => 100,
+            'bar' => 'bg-red-500'
+            ],
+            ];
+            @endphp
             @forelse($projects as $project)
+            @php
+            $status = $statusMap[$project->status] ?? $statusMap[0];
+            @endphp
             <tr class="group hover:bg-gray-50 dark:hover:bg-[#1f2b37] transition-colors">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-3">
@@ -105,23 +150,37 @@
                   {{ \Carbon\Carbon::parse($project->end_date)->format('d/m/Y') }}
                 </div>
               </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-[#111418] dark:text-white">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 {{ $status['badge'] }}">
+                    {{ $status['label']}}
+                  </span>
+                </div>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <a href="{{ route('projects.getId', $project) }}"
+                  @if ($project->status < 3) <a href="{{ route('projects.getId', $project) }}"
                     class="p-2 text-[#617589] hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
                     title="Edit">
                     <span class="material-symbols-outlined !text-lg">edit</span>
-                  </a>
-                  <button type="button" onclick="openDeleteModal({{ $project->project_id }})"
-                    class="p-2 text-[#617589] hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
-                    title="Delete">
-                    <span class="material-symbols-outlined !text-lg">delete</span>
-                  </button>
-                  <a href="{{ route('projects.getEvaluationsId', $project) }}"
-                    class="p-2 text-[#617589] hover:text-[#111418] dark:text-gray-400 dark:hover:text-white transition-colors"
-                    title="View Details">
-                    <span class="material-symbols-outlined !text-lg">chevron_right</span>
-                  </a>
+                    </a>
+                    @endif
+                    <a href="{{ route('projects.detail', $project) }}"
+                      class="p-2 text-[#617589] hover:text-[#111418] dark:text-gray-400 dark:hover:text-white transition-colors"
+                      title="View Details">
+                      <span class="material-symbols-outlined !text-lg">visibility</span>
+                    </a>
+                    <button type="button" onclick="openDeleteModal({{ $project->project_id }})"
+                      class="p-2 text-[#617589] hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                      title="Delete">
+                      <span class="material-symbols-outlined !text-lg">delete</span>
+                    </button>
+                    <a href="{{ route('projects.getEvaluationsId', $project) }}"
+                      class="p-2 text-[#617589] hover:text-[#111418] dark:text-gray-400 dark:hover:text-white transition-colors"
+                      title="View Evaluations">
+                      <span class="material-symbols-outlined !text-lg">chevron_right</span>
+                    </a>
                 </div>
               </td>
             </tr>

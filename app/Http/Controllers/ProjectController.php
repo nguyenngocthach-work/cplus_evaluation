@@ -201,6 +201,13 @@ class ProjectController extends Controller
 
     public function getById(Project $project){
         try{
+
+            if ($project->status > 3) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Dự án này đã được khóa, không thể cập nhật.');
+            }
+            
             $project->load([
                 'client',
                 'industry',
@@ -209,10 +216,33 @@ class ProjectController extends Controller
                 }
             ]);
 
-            $allCriteria = Criteria::all();
+            $allCriteria = Criteria::latest()->get();
 
         return view('project.project_update', compact('project', 'allCriteria'));
 
+        } catch(\Exception $e){
+            Log::error('get project detail failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+            return redirect()
+                ->back()
+                ->with('error', 'get project detail failed.');
+        }
+    }
+
+    public function detail(Project $project)
+    {
+        try{
+            $project->load([
+                'client',
+                'industry',
+                'criteria' => function ($q) {
+                    $q->withPivot(['weight', 'custom_description']);
+                }
+            ]);
+
+            return view('project.project_detail', compact('project'));
         } catch(\Exception $e){
             Log::error('get project detail failed', [
                 'message' => $e->getMessage(),
