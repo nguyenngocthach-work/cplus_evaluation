@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 @section('title', 'Admin Login')
 @section('content')
 <div class="min-h-screen flex bg-[#f8fafc] dark:bg-[#111827]">
