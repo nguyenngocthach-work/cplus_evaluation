@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Industry;
+use App\Models\PhotosLocation;
 use App\Jobs\UploadLocationPhotosJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -121,7 +122,7 @@ class LocationController extends Controller
     public function update(Request $request){
         try{
             $data = $request->all();
-
+            
             $validator = Validator::make($data,[
                 'id' => 'required|numeric',
                 'industry_name'   => 'required|string|max:255',
@@ -131,12 +132,12 @@ class LocationController extends Controller
                 'state_province'  => 'nullable|string',
                 'zipcode'         => 'nullable|string',
                 'country'         => 'required|string',
+                'new_photos.*'   => 'image|mimes:jpg,jpeg,png|max:5120',
             ]);
 
             if ($validator->fails()) {
                 return back()->withErrors($validator)->withInput();
             }
-
             $industry = Industry::findOrFail($request->input('id'));
             $industry->update([
                 'industry_name'  => $request->industry_name,
@@ -148,11 +149,35 @@ class LocationController extends Controller
                 'country'        => $request->country,
             ]);
 
+            if ($request->filled('delete_photos')) {
+                $photos = PhotosLocation::whereIn('id', $request->delete_photos)->get();
+
+                foreach ($photos as $photo) {
+                    Storage::disk('public')->delete($photo->img_url);
+                    $photo->delete();
+                }
+            }
+
+            if ($request->hasFile('new_photos')) {
+                foreach ($request->file('new_photos') as $file) {
+
+                $directory = 'locations/' . $industry->id;
+
+                $path = $file->store($directory, 'public');
+
+                PhotosLocation::create([
+                    'industry_id' => $industry->id,
+                    'img_url'     => $path,
+                ]);
+            }
+            }
+            
             return redirect()
                 ->route('locations.screen')
                 ->with('success', 'Location updated successfully');
 
         } catch(\Exception $e){
+            dd($e);
             Log::error('Error in: ' . __METHOD__, [
                 'message' => $e->getMessage(),
                 'Line' => $e->getLine(),

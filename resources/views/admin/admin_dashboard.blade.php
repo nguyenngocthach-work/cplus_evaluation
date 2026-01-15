@@ -42,15 +42,35 @@
       </div>
     </div>
     <div class="p-4 border-t border-[#e5e7eb] dark:border-[#2a3441]">
-      <div class="flex items-center gap-3">
-        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-          data-alt="Profile picture of administrator"
-          style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwRgvBtatfWXV_TgbykqA_J4k0uBXcI4o008UlYdazs4bOEfH1wg14pMcoCpjrEMCp08FF7dglAS8V9EMDV-sDx7an0CsRmBwJS47ZotsufskCJtncTyGPTOP_ScL3W_BkpUHBQJOlm8tTWkis1NdEf6ECwi0YgfaVUXCFHnx6nfZUByI8N4kFt0I8RSKo00yWTxAkkUKmiDpX8Y2NzqRAE5viPJZAisiCT_FfFr097EDmivn8QneYX-p-tL4dkNuPLqgT6rlgop1b");'>
+      <div class="flex items-center justify-between">
+        <!-- Profile info -->
+        <div class="flex items-center gap-3">
+          <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
+            data-alt="Profile picture of administrator"
+            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwRgvBtatfWXV_TgbykqA_J4k0uBXcI4k0uBXcI4o008UlYdazs4bOEfH1wg14pMcoCpjrEMCp08FF7dglAS8V9EMDV-sDx7an0CsRmBwJS47ZotsufskCJtncTyGPTOP_ScL3W_BkpUHBQJOlm8tTWkis1NdEf6ECwi0YgfaVUXCFHnx6nfZUByI8N4kFt0I8RSKo00yWTxAkkUKmiDpX8Y2NzqRAE5viPJZAisiCT_FfFr097EDmivn8QneYX-p-tL4dkNuPLqgT6rlgop1b");'>
+          </div>
+
+          <div>
+            <p class="text-sm font-bold text-[#111418] dark:text-white">
+              {{ Auth::user()->username ?? 'Admin' }}
+            </p>
+            <p class="text-xs text-[#617589] dark:text-[#9ca3af]">
+              {{ Auth::user()->role ?? 'Admin' }}
+            </p>
+          </div>
         </div>
-        <div>
-          <p class="text-sm font-bold text-[#111418] dark:text-white">Jane Doe</p>
-          <p class="text-xs text-[#617589] dark:text-[#9ca3af]">Super Admin</p>
-        </div>
+
+        <!-- Logout button -->
+        <form method="POST" action="{{ route('admin.logout') }}">
+          @csrf
+          <button type="submit" title="Logout" class="p-2 rounded-lg text-[#617589] hover:text-red-600 hover:bg-red-50
+             dark:text-gray-400 dark:hover:text-red-400 dark:hover:bg-[#2a3441]
+              transition-all">
+            <span class="material-symbols-outlined !text-lg">
+              logout
+            </span>
+          </button>
+        </form>
       </div>
     </div>
   </aside>

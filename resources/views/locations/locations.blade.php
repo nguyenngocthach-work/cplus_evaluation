@@ -113,7 +113,7 @@
             <p class="text-[#617589] dark:text-slate-400 text-base font-normal mt-1">Manage details, geographic data,
               and media for this site.</p>
           </div>
-          <form id="locationForm" action="" method="POST" class="hidden">
+          <form id="locationForm" action="" method="POST" class="hidden" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <div class="flex gap-3">
@@ -231,11 +231,14 @@
               <span class="material-symbols-outlined text-primary">perm_media</span>
               Site Photos
             </h3>
+            <input type="file" name="new_photos[]" multiple accept="image/*" class="hidden" id="photoInput">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div id="photos-container" class="contents">
-                <!-- Upload New -->
-              </div>
-              <div
+              <!-- Existing photos -->
+              <div id="photos-container" class="contents"></div>
+
+              <div id="photoPreview" class="contents"></div>
+              <!-- Upload New -->
+              <div onclick="document.getElementById('photoInput').click()"
                 class="aspect-square rounded-lg border-2 border-dashed border-[#e5e7eb] dark:border-slate-700 bg-[#f9fafb] dark:bg-slate-800/50 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors group text-[#617589] hover:text-primary">
                 <span
                   class="material-symbols-outlined text-3xl mb-2 group-hover:scale-110 transition-transform">cloud_upload</span>
@@ -289,6 +292,13 @@
   </div>
 </div>
 <script>
+let isEditing = false;
+const input = document.getElementById('photoInput');
+const preview = document.getElementById('photoPreview');
+let selectedFiles = [];
+const MAX_FILES = 7;
+const MAX_SIZE_MB = 5;
+
 function selectLocation(element) {
   // active item
   document.querySelectorAll('.location-item')
@@ -317,11 +327,19 @@ function selectLocation(element) {
   if (data.photos && data.photos.length > 0) {
     data.photos.forEach(photo => {
       const imgHtml = `
-                <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
-                    <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-                        style="background-image: url('/storage/${photo.img_url}')">
-                    </div>
-                </div>`;
+        <div class="relative aspect-square group rounded-lg overflow-hidden">
+          <input type="hidden" name="keep_photos[]" value="${photo.id}">
+          
+          <div class="absolute inset-0 bg-cover bg-center"
+            style="background-image:url('/storage/${photo.img_url}')">
+          </div>
+
+          <button type="button"
+            onclick="removePhoto(this, ${photo.id})"
+            class="photo-delete-btn hidden absolute top-1 right-1 bg-red-600 text-white rounded-full p-1">
+            ✕
+          </button>
+        </div>`;
       photosContainer.insertAdjacentHTML('beforeend', imgHtml);
     });
   } else {
@@ -349,24 +367,27 @@ function selectLocation(element) {
 }
 
 function toggleEdit(isEdit) {
+  isEditing = isEdit;
   const container = document.getElementById('detailWrapper');
   const inputs = container.querySelectorAll('input, textarea');
 
   inputs.forEach(el => {
     if (el.id !== 'field-id') {
-      el.readOnly = !isEdit;
-
-      if (isEdit) {
-        el.classList.add('ring-2', 'ring-primary/50');
-      } else {
-        el.classList.remove('ring-2', 'ring-primary/50');
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.readOnly = !isEdit;
       }
+
+      el.classList.toggle('ring-2', isEdit);
+      el.classList.toggle('ring-primary/50', isEdit);
+      el.classList.toggle('cursor-not-allowed', !isEdit);
     }
   });
 
   document.getElementById('btn-edit').classList.toggle('hidden', isEdit);
   document.getElementById('btn-cancel').classList.toggle('hidden', !isEdit);
   document.getElementById('btn-save').classList.toggle('hidden', !isEdit);
+  document.querySelectorAll('.photo-delete-btn')
+    .forEach(btn => btn.classList.toggle('hidden', !isEdit));
 }
 
 function openDeleteModal() {
@@ -385,5 +406,84 @@ function closeDeleteModal() {
   modal.classList.add('hidden');
   modal.classList.remove('flex');
 }
+
+function removePhoto(btn, photoId) {
+  if (!isEditing) return;
+  const wrapper = btn.closest('.relative');
+
+  const keepInput = wrapper.querySelector('input[name="keep_photos[]"]');
+  if (keepInput) keepInput.remove();
+
+  wrapper.insertAdjacentHTML(
+    'beforeend',
+    `<input type="hidden" name="delete_photos[]" value="${photoId}">`
+  );
+
+  wrapper.style.display = 'none';
+}
+
+input.addEventListener('change', () => {
+  if (!isEditing) {
+    input.value = '';
+    return;
+  }
+
+  const newFiles = Array.from(input.files);
+
+  newFiles.forEach(file => {
+    if (selectedFiles.length >= MAX_FILES) return;
+
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      alert(`File ${file.name} quá lớn!`);
+      return;
+    }
+
+    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+      alert(`File ${file.name} không đúng định dạng!`);
+      return;
+    }
+
+    selectedFiles.push(file);
+  });
+
+  syncAndRender();
+});
+
+function syncAndRender() {
+  const dt = new DataTransfer();
+  selectedFiles.forEach(file => dt.items.add(file));
+  input.files = dt.files;
+
+  preview.innerHTML = '';
+
+  selectedFiles.forEach((file, index) => {
+    const url = URL.createObjectURL(file);
+
+    const item = document.createElement('div');
+    item.className = 'relative aspect-square group rounded-lg overflow-hidden';
+
+    item.innerHTML = `
+      <div class="absolute inset-0 bg-cover bg-center"
+        style="background-image:url('${url}')"></div>
+      <div onclick="event.stopPropagation(); removeImage(${index})"
+        class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white
+              opacity-0 group-hover:opacity-100 hover:bg-red-500">
+        <span class="material-symbols-outlined text-sm">close</span>
+      </div>
+    `;
+
+    preview.appendChild(item);
+  });
+}
+
+function removeImage(index) {
+  selectedFiles.splice(index, 1);
+  syncAndRender();
+}
+
+// reset upload preview
+selectedFiles = [];
+input.value = '';
+document.getElementById('photoPreview').innerHTML = '';
 </script>
 @endsection
