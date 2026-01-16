@@ -21,7 +21,7 @@
     </div>
 
     <p class="text-[#617589] dark:text-[#9ca3af] max-w-md leading-relaxed">
-      Secure administration panel to manage clients, locations, projects and evaluations efficiently.
+      Secure administration panel to manage efficiently.
     </p>
   </div>
 

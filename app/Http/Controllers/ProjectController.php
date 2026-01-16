@@ -218,8 +218,7 @@ class ProjectController extends Controller
 
             $allCriteria = Criteria::latest()->get();
 
-        return view('project.project_update', compact('project', 'allCriteria'));
-
+            return view('project.project_update', compact('project', 'allCriteria'));
         } catch(\Exception $e){
             Log::error('get project detail failed', [
                 'message' => $e->getMessage(),
@@ -258,13 +257,14 @@ class ProjectController extends Controller
     {
         try{
             $project = Project::with('criteria')->findOrFail($id);
-            $data = $request->all();
-
+            $data = $request->all();    
+            // dd($data);
             $validated = $request->validate([
                 'project_name' => 'required|string|max:255',
                 'description'  => 'nullable|string',
                 'start_date'   => 'required|date',
                 'end_date'     => 'required|date|after_or_equal:start_date',
+                'status' => 'required|integer|between:0,4',
                 'criteria_ids' => 'required|array',
                 'criteria_ids.*' => 'exists:criteria,id',
             ]);
@@ -279,6 +279,7 @@ class ProjectController extends Controller
                 'clientId'     => $request->clients[0] ?? null,
                 'industry_id'  => $request->locations[0] ?? null,
                 'userId'       => $userId,
+                'status'       => $request->status,
             ]);
 
             $syncData = [];

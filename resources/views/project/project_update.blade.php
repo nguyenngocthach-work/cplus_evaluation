@@ -204,6 +204,86 @@ body {
           </div>
         </div>
       </div>
+
+      <div
+        class="bg-white dark:bg-[#1a2632] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-gray-700 overflow-hidden mt-8">
+
+        {{-- Header --}}
+        <div class="flex items-center justify-between px-6 py-5 border-b border-[#f0f2f4] dark:border-gray-700">
+          <div class="flex flex-col">
+            <h2 class="text-[#111418] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
+              Project Status & Progress
+            </h2>
+            <p class="text-sm text-[#617589] dark:text-gray-400 mt-1">
+              Track the current status and completion progress of this project.
+            </p>
+          </div>
+        </div>
+
+        {{-- Body --}}
+        <div class="p-6">
+          @php
+            $statusMap = [
+              0 => ['label' => 'On Hold', 'progress' => 0, 'bar' => 'bg-gray-400'],
+              1 => ['label' => 'In Progress', 'progress' => 25, 'bar' => 'bg-blue-500'],
+              2 => ['label' => 'Pending Review', 'progress' => 50, 'bar' => 'bg-yellow-500'],
+              3 => ['label' => 'Progressing', 'progress' => 75, 'bar' => 'bg-blue-600'],
+              4 => ['label' => 'Success', 'progress' => 100, 'bar' => 'bg-green-500'],
+            ];
+            $currentStatus = old('status', $project->status ?? 0);
+          @endphp
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+              <div class="md:col-span-4">
+          <label
+            class="block text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400 mb-2">
+            Project Status
+          </label>
+
+          <select name="status"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                  focus:ring-2 focus:ring-blue-500">
+            @foreach($statusMap as $key => $st)
+              <option value="{{ $key }}" {{ $currentStatus == $key ? 'selected' : '' }}>
+                {{ $st['label'] }}
+              </option>
+            @endforeach
+          </select>
+        </div>
+
+        <div class="md:col-span-8">
+          <label
+            class="block text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400 mb-2">
+            Progress
+          </label>
+
+          <div class="flex items-center gap-4">
+            <div class="flex-1 bg-[#e5e7eb] dark:bg-[#4a5568] rounded-full h-2">
+              <div
+                class="{{ $statusMap[$currentStatus]['bar'] }} h-2 rounded-full transition-all duration-300"
+                style="width: {{ $statusMap[$currentStatus]['progress'] }}%">
+              </div>
+            </div>
+
+            <span class="text-sm font-bold text-[#111418] dark:text-white">
+              {{ $statusMap[$currentStatus]['progress'] }}%
+            </span>
+          </div>
+
+          <p class="mt-2 text-sm text-[#617589] dark:text-gray-400">
+            {{ $statusMap[$currentStatus]['label'] }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+      {{-- Footer --}}
+      <div class="px-6 py-4 border-t border-[#f0f2f4] dark:border-gray-700 bg-[#f8fafc] dark:bg-[#111827]">
+        <p class="text-sm text-[#617589] dark:text-gray-400">
+          Status changes affect how this project appears in dashboards and reports.
+        </p>
+      </div>
+      </div>
       <!-- Footer Actions (Mobile Sticky) -->
       <div
         class="fixed bottom-0 left-0 w-full bg-white dark:bg-[#1a2632] border-t border-[#f0f2f4] dark:border-gray-700 p-4 md:hidden z-40 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
