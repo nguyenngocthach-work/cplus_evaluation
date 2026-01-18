@@ -48,19 +48,32 @@ input[type=range]::-webkit-slider-runnable-track {
   <main class="flex-1 w-full max-w-[1440px] mx-auto p-4 md:p-8 lg:p-10 gap-6 flex flex-col">
     <!-- Breadcrumbs -->
     <div class="flex flex-wrap gap-2 items-center text-sm">
-      <a class="text-[#617589] hover:text-primary transition-colors font-medium" href="#">Home</a>
+      <a class="text-[#617589] hover:text-primary transition-colors font-medium" href="{{ route('admin.screen') }}">Home</a>
       <span class="material-symbols-outlined text-[#617589] text-[16px]">chevron_right</span>
-      <a class="text-[#617589] hover:text-primary transition-colors font-medium" href="#">Projects</a>
+      <a class="text-[#617589] hover:text-primary transition-colors font-medium" href="{{ route('projects.screen') }}">Projects</a>
       <span class="material-symbols-outlined text-[#617589] text-[16px]">chevron_right</span>
-      <span class="text-[#111418] dark:text-white font-semibold">Q3 Retail Expansion</span>
+      <span class="text-[#111418] dark:text-white font-semibold">{{ $project->project_name }}</span>
     </div>
+    @php
+    $statusMap = [
+    0 => ['label' => 'On Hold', 'color' => 'bg-yellow-100 text-gray-800'],
+    1 => ['label' => 'In Progress', 'color' => 'bg-blue-100 text-blue-800'],
+    2 => ['label' => 'Pending Review', 'color' => 'bg-yellow-100 text-yellow-800'],
+    3 => ['label' => 'Progressing', 'color' => 'bg-purple-100 text-blue-800'],
+    4 => ['label' => 'Success', 'color' => 'bg-green-100 text-green-800'],
+    5 => ['label' => 'Rejected', 'color' => 'bg-red-100 text-red-800'],
+    ];
+    @endphp
     <!-- Page Header -->
     <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
       <div class="flex flex-col gap-2">
-        <h1 class="text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Q3 Retail Expansion</h1>
+        <h1 class="text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">{{ $project->project_name }}</h1>
         <div class="flex flex-wrap items-center gap-3 text-[#617589] text-sm">
-          <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">In
-            Progress</span>
+          <span
+            class="px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider
+                  {{ $statusMap[$project->status]['color'] }}">
+            {{ $statusMap[$project->status]['label'] }}
+          </span>
           <span>•</span>
           <span>Project ID: {{ old('project_id', $project->project_id) }}</span>
           <span>•</span>
@@ -69,10 +82,10 @@ input[type=range]::-webkit-slider-runnable-track {
       </div>
       <div class="flex gap-3">
         <!-- <button
-        class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-white dark:bg-[#2d3748] border border-[#dbe0e6] dark:border-[#4a5568] text-[#111418] dark:text-white text-sm font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-[#374151] transition-colors gap-2">
-        <span class="material-symbols-outlined text-[18px]">edit</span>
-        <span class="truncate">Edit Project</span>
-      </button> -->
+          class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-white dark:bg-[#2d3748] border border-[#dbe0e6] dark:border-[#4a5568] text-[#111418] dark:text-white text-sm font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-[#374151] transition-colors gap-2">
+          <span class="material-symbols-outlined text-[18px]">edit</span>
+          <span class="truncate">Edit Project</span>
+        </button> -->
         <a href="{{ route('projects.reportById', $project) }}"
           class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold shadow-sm hover:bg-primary/90 transition-colors gap-2">
           <span class="material-symbols-outlined text-[18px]">download</span>
@@ -80,6 +93,11 @@ input[type=range]::-webkit-slider-runnable-track {
         </a>
       </div>
     </div>
+    @if ($errors->any())
+      <div class="mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 text-sm">
+        {{ $errors->first() }}
+      </div>
+      @endif
     <!-- Main Content Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       <!-- LEFT COLUMN: Context & Info (Span 4) -->
@@ -90,7 +108,9 @@ input[type=range]::-webkit-slider-runnable-track {
           <div
             class="px-6 py-4 border-b border-[#e5e7eb] dark:border-[#2d3748] flex justify-between items-center bg-gray-50 dark:bg-[#1f2933]">
             <h3 class="font-bold text-lg">Project Details</h3>
-            <span class="material-symbols-outlined text-[#617589]">info</span>
+            <a href="{{ route('projects.detail', $project) }}">
+              <span class="material-symbols-outlined text-[#617589]">info</span>
+            </a>
           </div>
           <div class="p-6">
             <div class="grid grid-cols-1 gap-y-4">

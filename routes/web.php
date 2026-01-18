@@ -61,6 +61,9 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{id}/update', [ProjectController::class,'update'])
             ->name('projects.update');
 
+        Route::get('/{project}/export-csv', [ProjectController::class, 'exportProjectCsv'])
+            ->name('projects.exportCsv');
+
         Route::put('/{id}/delete', [ProjectController::class, 'delete'])
             ->name('projects.delete');
     });

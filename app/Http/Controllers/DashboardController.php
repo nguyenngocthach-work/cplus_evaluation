@@ -78,7 +78,6 @@ class DashboardController extends Controller
             'username' => 'The provided credentials do not match our records.',
         ])->onlyInput('username');
         } catch (\Exception $e) {
-            dd($e);
             Log::error('login failed', [
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),

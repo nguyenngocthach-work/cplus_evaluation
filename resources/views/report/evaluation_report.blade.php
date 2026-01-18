@@ -5,10 +5,10 @@
 <div class="flex-1 flex flex-col w-full max-w-[1440px] mx-auto px-4 md:px-10 py-6 pb-24">
   <!-- Breadcrumbs -->
   <div class="flex flex-wrap gap-2 py-2 mb-4">
-    <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary" href="#">Home</a>
+    <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary" href="{{ route('admin.screen') }}">Home</a>
     <span class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal">/</span>
     <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary"
-      href="#">Projects</a>
+      href="{{ route('projects.screen') }}">Projects</a>
     <span class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal">/</span>
     <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary"
       href="{{ route('projects.getEvaluationsId', $project) }}">Project
@@ -32,7 +32,7 @@
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-green-500">check_circle</span>
           <p class="text-[#111418] dark:text-white text-2xl font-bold leading-tight">
-            {{ old('total_score', $project->judgment->total_score)}} 0%</p>
+            {{ number_format(old('total_score', $project->judgment->total_score), 1)}}%</p>
         </div>
       </div>
     </div>
@@ -101,7 +101,7 @@
         <h3 class="text-[#111418] dark:text-white text-lg font-bold leading-tight mb-4">Export Format</h3>
         <div class="flex gap-4">
           <label class="flex-1 cursor-pointer">
-            <input checked="" class="peer sr-only" name="format" type="radio" />
+            <input checked class="peer sr-only" name="format" type="radio" value="pdf" />
             <div
               class="flex flex-col items-center justify-center p-4 rounded-lg border border-[#dbe0e6] dark:border-[#2a3441] bg-[#f6f7f8] dark:bg-[#101922] peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
               <span class="material-symbols-outlined text-3xl mb-2 text-primary">picture_as_pdf</span>
@@ -109,7 +109,7 @@
             </div>
           </label>
           <label class="flex-1 cursor-pointer">
-            <input class="peer sr-only" name="format" type="radio" />
+            <input class="peer sr-only" name="format" type="radio" value="csv" />
             <div
               class="flex flex-col items-center justify-center p-4 rounded-lg border border-[#dbe0e6] dark:border-[#2a3441] bg-[#f6f7f8] dark:bg-[#101922] peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
               <span class="material-symbols-outlined text-3xl mb-2 text-[#617589]">csv</span>
@@ -231,21 +231,48 @@
         <span class="material-symbols-outlined text-[18px]">mail</span>
         Email
       </button>
-      <button onclick="exportPDF()"
+      <button id="export-btn" onclick="handleExport()"
         class="flex-[2] md:flex-none px-8 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined text-[18px]">download</span>
-        Download PDF
+        <span id="export-icon" class="material-symbols-outlined text-[18px]">download</span>
+        <span id="export-text">Download PDF</span>
       </button>
     </div>
   </div>
 </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <script>
+const formatRadios = document.querySelectorAll('input[name="format"]');
+const exportText = document.getElementById('export-text');
+const exportIcon = document.getElementById('export-icon');
+
+formatRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    if (radio.value === 'csv') {
+      exportText.innerText = 'Export CSV';
+      exportIcon.innerText = 'table_view';
+    } else {
+      exportText.innerText = 'Download PDF';
+      exportIcon.innerText = 'download';
+    }
+  });
+});
 document.getElementById('report-title').addEventListener('input', function() {
   const value = this.value.trim();
   document.getElementById('preview-title').innerText =
     value !== '' ? value : @json($defaultTitle);
 });
+
+function handleExport() {
+  const selected = document.querySelector('input[name="format"]:checked').value;
+
+  if (selected === 'csv') {
+    window.location.href = "{{ route('projects.exportCsv', $project) }}";
+  } else {
+    exportPDF();
+  }
+}
 
 function exportPDF() {
   const element = document.getElementById('pdf-preview');

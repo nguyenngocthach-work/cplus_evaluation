@@ -382,6 +382,9 @@ class ProjectController extends Controller
                     'criteria_name' => $item['criteria_name'],
                 ]);
             }
+
+            Project::where('project_id', $request->project_id)
+                ->update(['status' => 4]);
             
             return redirect()
                 ->route('projects.screen')
@@ -400,7 +403,11 @@ class ProjectController extends Controller
 
     public function getReportProjectById(Project $project){
         try{
-
+            if (!$project->judgment) {
+                return back()->withErrors(
+                    'This project has not been evaluated yet, cannot generate report.'
+                );
+            }
             $project->load([
                 'client',
                 'industry',
@@ -421,6 +428,65 @@ class ProjectController extends Controller
             return redirect()
                 ->back()
                 ->with('error', 'create score failed.');
+        }
+    }
+
+    public function exportProjectCsv(Project $project)
+    {
+        try {
+            $project->load(['client', 'judgment.details']);
+            $fileName = 'project_report_' . $project->project_id . '_' . now()->format('Ymd_His') . '.csv';
+
+            $headers = [
+                "Content-Type" => "text/csv; charset=UTF-8",
+                "Content-Disposition" => "attachment; filename=\"$fileName\"",
+            ];
+
+            $callback = function () use ($project) {
+                $handle = fopen('php://output', 'w');
+                
+                fwrite($handle, "\xEF\xBB\xBF");
+
+                fputcsv($handle, [
+                    'Project ID',
+                    'Project Name',
+                    'Client',
+                    'Criteria ID',
+                    'Criteria Name',
+                    'Score',
+                    'Percentage',
+                    'Status',
+                ]);
+
+                foreach ($project->judgment->details as $detail) {
+                    $score = $detail->criteria_point;
+                    $status = $score > 5 ? 'PASS' : ($score == 5 ? 'WARN' : 'FAIL');
+
+                    fputcsv($handle, [
+                        $project->project_id,
+                        $project->project_name,
+                        $project->client->client_name ?? '',
+                        $detail->criteriaId,
+                        $detail->criteria_name,
+                        $score,
+                        $detail->criteria_percentage,
+                        $status,
+                    ]);
+                }
+
+                fclose($handle);
+            };
+            
+            return new StreamedResponse($callback, 200, $headers);
+        } catch (\Exception $e) {
+            Log::error('Export project CSV failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Export project CSV failed.');
         }
     }
 }
