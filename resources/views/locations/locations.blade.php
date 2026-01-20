@@ -95,173 +95,173 @@
       </div>
     </aside>
     <!-- Right Content Area (Detail View) -->
+    
     <main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-6 lg:p-10">
-      <div id="emptyState" class="h-full flex flex-col items-center justify-center text-[#617589]">
-        <span class="material-symbols-outlined text-6xl mb-4">map</span>
-        <p>Chọn một địa điểm từ danh sách để xem chi tiết</p>
-      </div>
-      <div id="detailWrapper" class="hidden max-w-[960px] mx-auto flex flex-col gap-6">
-        <!-- Page Header for specific item -->
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-3">
-              <h1 class="text-[#111418] dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">Central
-                Warehouse</h1>
-              <span
-                class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide">Active</span>
-            </div>
-            <p class="text-[#617589] dark:text-slate-400 text-base font-normal mt-1">Manage details, geographic data,
-              and media for this site.</p>
-          </div>
-          <form id="locationForm" action="" method="POST" class="hidden" enctype="multipart/form-data">
+        <form id="locationForm" action="" method="POST" class="hidden" enctype="multipart/form-data">
             @csrf
             @method('PUT')
-            <div class="flex gap-3">
-              <button type="button" id="btn-edit" onclick="toggleEdit(true)" class=" flex h-10 items-center justify-center rounded-lg border border-[#e5e7eb] dark:border-slate-700
-              bg-white dark:bg-slate-800 px-4 text-sm font-bold text-[#111418] dark:text-white hover:bg-slate-50
-              dark:hover:bg-slate-700 transition-colors">
-                Edit
-              </button>
-              <button type="button" id="btn-cancel" onclick="toggleEdit(false)"
-                class="hidden flex h-10 items-center justify-center rounded-lg border border-[#e5e7eb] dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-sm font-bold text-[#111418] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                Cancel
-              </button>
-              <button type="submit" id="btn-save"
-                class="hidden flex h-10 items-center justify-center rounded-lg bg-primary px-6 text-sm font-bold text-white hover:bg-blue-600 shadow-sm transition-colors">
-                Save Changes
-              </button>
+            <div id="emptyState" class="h-full flex flex-col items-center justify-center text-[#617589]">
+                <span class="material-symbols-outlined text-6xl mb-4">map</span>
+                <p>Chọn một địa điểm từ danh sách để xem chi tiết</p>
             </div>
 
-        </div>
-        <!-- Form Content -->
-        <input type="hidden" name="id" id="field-id">
-        <div class="flex flex-col gap-8">
-          <!-- Section 1: Basic Information -->
-          <div
-            class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-            <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary">info</span>
-              Basic Information
-            </h3>
-            <div class="grid grid-cols-1 gap-6">
-              <div class="flex flex-col gap-2">
-                <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Location Name</label>
-                <input id="field-name" name="industry_name" readonly
-                  class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50 placeholder:text-[#617589]"
-                  type="text" value=" " />
-              </div>
-              <div class="flex flex-col gap-2">
-                <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Description</label>
-                <textarea id="field-description" name="description" readonly
-                  class="w-full resize-none rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50 placeholder:text-[#617589]"
-                  rows="3" type="text"></textarea>
-              </div>
-            </div>
-          </div>
-          <!-- Section 2: Geography & Map -->
-          <div
-            class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-            <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary">location_on</span>
-              Location &amp; Geography
-            </h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div class="flex flex-col gap-5">
-                <div class="flex flex-col gap-2">
-                  <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Street Address</label>
-                  <input id="field-street" name="street" readonly
-                    class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
-                    type="text" value="" />
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                  <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-[#111418] dark:text-slate-200">City</label>
-                    <input id="field-city" name="city" readonly
-                      class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
-                      type="text" value="" />
-                  </div>
-                  <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-[#111418] dark:text-slate-200">State / Province</label>
-                    <input id="field-state" name="state_province" readonly
-                      class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
-                      type="text" value="" />
-                  </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                  <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Zip Code</label>
-                    <input id="field-zip" name="zipcode" readonly
-                      class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
-                      type="text" value="" />
-                  </div>
-                  <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Country</label>
-                    <input id="field-country" name="country" readonly
-                      class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50">
-                    </input>
-                  </div>
-                </div>
-              </div>
-              <!-- Map Widget Placeholder -->
-              <div class="flex flex-col gap-2">
-                <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Pin Location</label>
-                <div
-                  class="relative w-full h-full min-h-[240px] rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 group border border-transparent hover:border-primary/50 transition-colors">
-                  <div id="map-background"
-                    class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity"
-                    style='background-image: url("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop");'>
-                  </div>
-
-                  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <span class="material-symbols-outlined text-4xl text-red-600 drop-shadow-md">location_on</span>
-                    <div id="map-label"
-                      class="bg-white dark:bg-slate-900 text-xs font-bold px-2 py-1 rounded shadow-md mt-1 whitespace-nowrap">
-                      Loading City...
+            <div id="detailWrapper" class="hidden max-w-[960px] mx-auto flex flex-col gap-6">
+                <!-- Page Header for specific item -->
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h1 class="text-[#111418] dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">Central
+                                Warehouse</h1>
+                            <span
+                                class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide">Active</span>
+                        </div>
+                        <p class="text-[#617589] dark:text-slate-400 text-base font-normal mt-1">Manage details, geographic data,
+                        and media for this site.</p>
                     </div>
-                  </div>
+                    <div class="flex gap-3">
+                        <button type="button" id="btn-edit" onclick="toggleEdit(true)" class=" flex h-10 items-center justify-center rounded-lg border border-[#e5e7eb] dark:border-slate-700
+                        bg-white dark:bg-slate-800 px-4 text-sm font-bold text-[#111418] dark:text-white hover:bg-slate-50
+                        dark:hover:bg-slate-700 transition-colors">
+                            Edit
+                        </button>
+                        <button type="button" id="btn-cancel" onclick="toggleEdit(false)"
+                            class="hidden flex h-10 items-center justify-center rounded-lg border border-[#e5e7eb] dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-sm font-bold text-[#111418] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" id="btn-save"
+                            class="hidden flex h-10 items-center justify-center rounded-lg bg-primary px-6 text-sm font-bold text-white hover:bg-blue-600 shadow-sm transition-colors">
+                            Save Changes
+                        </button>
+                    </div>
                 </div>
-              </div>
+                <!-- Form Content -->
+                <input type="hidden" name="id" id="field-id">
+                <div class="flex flex-col gap-8">
+                <!-- Section 1: Basic Information -->
+                <div
+                    class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">info</span>
+                    Basic Information
+                    </h3>
+                    <div class="grid grid-cols-1 gap-6">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Location Name</label>
+                        <input id="field-name" name="industry_name" readonly
+                        class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50 placeholder:text-[#617589]"
+                        type="text" value=" " />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Description</label>
+                        <textarea id="field-description" name="description" readonly
+                        class="w-full resize-none rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50 placeholder:text-[#617589]"
+                        rows="3" type="text"></textarea>
+                    </div>
+                    </div>
+                </div>
+                <!-- Section 2: Geography & Map -->
+                <div
+                    class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">location_on</span>
+                    Location &amp; Geography
+                    </h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="flex flex-col gap-5">
+                        <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Street Address</label>
+                        <input id="field-street" name="street" readonly
+                            class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
+                            type="text" value="" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-[#111418] dark:text-slate-200">City</label>
+                            <input id="field-city" name="city" readonly
+                            class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
+                            type="text" value="" />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-[#111418] dark:text-slate-200">State / Province</label>
+                            <input id="field-state" name="state_province" readonly
+                            class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
+                            type="text" value="" />
+                        </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Zip Code</label>
+                            <input id="field-zip" name="zipcode" readonly
+                            class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50"
+                            type="text" value="" />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Country</label>
+                            <input id="field-country" name="country" readonly
+                            class="w-full rounded-lg border-none bg-[#f0f2f4] dark:bg-slate-800 px-4 py-3 text-[#111418] dark:text-white focus:ring-2 focus:ring-primary/50">
+                            </input>
+                        </div>
+                        </div>
+                    </div>
+                    <!-- Map Widget Placeholder -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-[#111418] dark:text-slate-200">Pin Location</label>
+                        <div
+                        class="relative w-full h-full min-h-[240px] rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 group border border-transparent hover:border-primary/50 transition-colors">
+                        <div id="map-background"
+                            class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity"
+                            style='background-image: url("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop");'>
+                        </div>
 
-            </div>
-          </div>
-          <!-- Section 3: Media -->
-          <div
-            class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-            <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary">perm_media</span>
-              Site Photos
-            </h3>
-            <input type="file" name="new_photos[]" multiple accept="image/*" class="hidden" id="photoInput">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <!-- Existing photos -->
-              <div id="photos-container" class="contents"></div>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                            <span class="material-symbols-outlined text-4xl text-red-600 drop-shadow-md">location_on</span>
+                            <div id="map-label"
+                            class="bg-white dark:bg-slate-900 text-xs font-bold px-2 py-1 rounded shadow-md mt-1 whitespace-nowrap">
+                            Loading City...
+                            </div>
+                        </div>
+                        </div>
+                    </div>
 
-              <div id="photoPreview" class="contents"></div>
-              <!-- Upload New -->
-              <div onclick="document.getElementById('photoInput').click()"
-                class="aspect-square rounded-lg border-2 border-dashed border-[#e5e7eb] dark:border-slate-700 bg-[#f9fafb] dark:bg-slate-800/50 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors group text-[#617589] hover:text-primary">
-                <span
-                  class="material-symbols-outlined text-3xl mb-2 group-hover:scale-110 transition-transform">cloud_upload</span>
-                <span class="text-xs font-bold">Upload Photo</span>
-              </div>
+                    </div>
+                </div>
+                <!-- Section 3: Media -->
+                <div
+                    class="rounded-xl border border-[#e5e7eb] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-[#111418] dark:text-white mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">perm_media</span>
+                    Site Photos
+                    </h3>
+                    <input type="file" name="new_photos[]" multiple accept="image/*" class="hidden" id="photoInput">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <!-- Existing photos -->
+                    <div id="photos-container" class="contents"></div>
+
+                    <div id="photoPreview" class="contents"></div>
+                    <!-- Upload New -->
+                    <div onclick="document.getElementById('photoInput').click()"
+                        class="aspect-square rounded-lg border-2 border-dashed border-[#e5e7eb] dark:border-slate-700 bg-[#f9fafb] dark:bg-slate-800/50 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors group text-[#617589] hover:text-primary">
+                        <span
+                        class="material-symbols-outlined text-3xl mb-2 group-hover:scale-110 transition-transform">cloud_upload</span>
+                        <span class="text-xs font-bold">Upload Photo</span>
+                    </div>
+                    </div>
+                    <p class="text-xs text-[#617589] dark:text-slate-500">Supported formats: JPG, PNG. Max size: 5MB.</p>
+                </div>
+                <!-- Footer Actions -->
+                <div class="flex items-center justify-between pt-4 border-t border-[#e5e7eb] dark:border-slate-800">
+                    <div class="flex flex-col">
+                    <span class="text-xs text-[#617589] dark:text-slate-500">Last modified by Admin User</span>
+                    <span class="text-xs text-[#617589] dark:text-slate-500">Oct 24, 2023 at 4:30 PM</span>
+                    </div>
+                    <button type="button" onclick="openDeleteModal()"
+                    class="text-red-600 hover:text-red-700 text-sm font-bold flex items-center gap-2 px-3 py-2 rounded hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
+                    <span class="material-symbols-outlined">delete</span>
+                    Delete Location
+                    </button>
+                </div>
             </div>
-            <p class="text-xs text-[#617589] dark:text-slate-500">Supported formats: JPG, PNG. Max size: 5MB.</p>
-          </div>
-          <!-- Footer Actions -->
-          <div class="flex items-center justify-between pt-4 border-t border-[#e5e7eb] dark:border-slate-800">
-            <div class="flex flex-col">
-              <span class="text-xs text-[#617589] dark:text-slate-500">Last modified by Admin User</span>
-              <span class="text-xs text-[#617589] dark:text-slate-500">Oct 24, 2023 at 4:30 PM</span>
-            </div>
-            <button type="button" onclick="openDeleteModal()"
-              class="text-red-600 hover:text-red-700 text-sm font-bold flex items-center gap-2 px-3 py-2 rounded hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
-              <span class="material-symbols-outlined">delete</span>
-              Delete Location
-            </button>
-          </div>
-        </div>
         </form>
-      </div>
     </main>
   </div>
 </div>
@@ -328,14 +328,14 @@ function selectLocation(element) {
     data.photos.forEach(photo => {
       const imgHtml = `
         <div class="relative aspect-square group rounded-lg overflow-hidden">
-          <input type="hidden" name="keep_photos[]" value="${photo.id}">
+          <input type="hidden" name="keep_photos[]" value="${photo.img_id}">
           
           <div class="absolute inset-0 bg-cover bg-center"
             style="background-image:url('/storage/${photo.img_url}')">
           </div>
 
           <button type="button"
-            onclick="removePhoto(this, ${photo.id})"
+            onclick="removePhoto(this, ${photo.img_id})"
             class="photo-delete-btn hidden absolute top-1 right-1 bg-red-600 text-white rounded-full p-1">
             ✕
           </button>

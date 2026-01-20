@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Industry;
 use App\Models\PhotosLocation;
-use App\Jobs\UploadLocationPhotosJob;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
+use App\Jobs\UploadLocationPhotosJob;
+
+use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
 
 class LocationController extends Controller
 {
@@ -132,12 +136,15 @@ class LocationController extends Controller
                 'state_province'  => 'nullable|string',
                 'zipcode'         => 'nullable|string',
                 'country'         => 'required|string',
+                'delete_photos'   => 'array',
+                'delete_photos.*' => 'numeric|exists:photos_location,img_id',
                 'new_photos.*'   => 'image|mimes:jpg,jpeg,png|max:5120',
             ]);
 
             if ($validator->fails()) {
                 return back()->withErrors($validator)->withInput();
             }
+            
             $industry = Industry::findOrFail($request->input('id'));
             $industry->update([
                 'industry_name'  => $request->industry_name,
@@ -149,13 +156,13 @@ class LocationController extends Controller
                 'country'        => $request->country,
             ]);
 
-            if ($request->filled('delete_photos')) {
-                $photos = PhotosLocation::whereIn('id', $request->delete_photos)->get();
+            if (!empty($request->delete_photos)) {
+                $photos = PhotosLocation::whereIn('img_id', $request->delete_photos)->get();
 
                 foreach ($photos as $photo) {
                     Storage::disk('public')->delete($photo->img_url);
-                    $photo->delete();
-                }
+                    $photo->forceDelete();
+                } 
             }
 
             if ($request->hasFile('new_photos')) {

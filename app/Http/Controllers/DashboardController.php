@@ -65,7 +65,6 @@ class DashboardController extends Controller
             'username' => $request->username,
             'password' => $request->password
         ];
-        // dd(User::where('username', $request->username)->first());
             
         $remember = $request->boolean('remember');
 
