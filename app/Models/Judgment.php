@@ -9,16 +9,17 @@ class Judgment extends Model
     protected $table = 'judgment';
 
     protected $fillable = [
+        'project_industry_id',
         'project_id',
         'total_score',
         'evaluator_notes',
     ];
 
-    public $timestamps = false;
+    public $timestamps = true;
 
-    public function project()
+    public function projectIndustry()
     {
-        return $this->belongsTo(Project::class, 'project_id', 'project_id');
+        return $this->belongsTo(ProjectIndustry::class, 'project_industry_id', 'id');
     }
 
     public function details()

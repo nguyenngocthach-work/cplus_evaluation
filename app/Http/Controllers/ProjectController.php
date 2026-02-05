@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Criteria;
 use App\Models\Judgment;
 use App\Models\JudgmentDetail;
+use App\Models\ProjectIndustry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -24,14 +25,13 @@ class ProjectController extends Controller
 
             $query = Project::with([
                 'client:id,client_name',
-                'industry:id,industry_name',
+                'industries:id,industry_name',
                 'projectCriteria.criteria:id,criteria_name'
             ])
             ->select(
                 'project_id',
                 'project_name',
                 'clientId',
-                'industry_id',
                 'start_date',
                 'end_date',
                 'description',
@@ -84,6 +84,8 @@ class ProjectController extends Controller
                 'description'  => 'nullable|string',
                 'start_date'   => 'required|date',
                 'end_date'     => 'required|date|after_or_equal:start_date',
+                'locations'    => 'nullable|array',
+                'locations.*'  => 'exists:industry,id',
                 'criteria_ids' => 'required|array',
                 'criteria_ids.*' => 'exists:criteria,id',
             ]);
@@ -96,9 +98,18 @@ class ProjectController extends Controller
                 'start_date'    => $request->start_date,
                 'end_date'      => $request->end_date,
                 'userId'       => $userId,
-                'clientId'     => $request->clients[0] ?? null,
-                'industry_id'  => $request->locations[0] ?? null,
+                'clientId'     => $request->client_id,
+                'status'       => 0,
             ]);
+
+            if ($request->filled('locations')) {
+                foreach ($request->locations as $industryId) {
+                    ProjectIndustry::create([
+                        'project_id'  => $project->project_id,
+                        'industry_id' => $industryId,
+                    ]);
+                }
+            }
 
             $criteriaData = [];
             if ($request->has('criteria_ids')) {
@@ -114,12 +125,11 @@ class ProjectController extends Controller
 
             $project->criteria()->sync($criteriaData);
 
-            $project->clientId = $request->clients[0] ?? null;
-            $project->industry_id = $request->locations[0] ?? null;
             $project->save();
             
-            return redirect()->route('project.project');
-        } catch(\Exception $e){
+            return redirect()->route('projects.screen')
+                ->with('success', 'Project created successfully');
+        } catch(\Exception $e){ 
             Log::error('Error in: ' . __METHOD__, [
                 'message' => $e->getMessage(),
                 'Line' => $e->getLine(),
@@ -138,15 +148,15 @@ class ProjectController extends Controller
         
         $list = Project::with([
             'client:id,client_name',
-            'industry:id,industry_name',
+            'industries:id,industry_name',
         ])
         ->select(
             'project_id',
             'project_name',
             'clientId',
-            'industry_id',
             'start_date',
             'end_date',
+            'status',
             'created_at'
         );
         if (!empty($data['keyword'])) {
@@ -170,20 +180,31 @@ class ProjectController extends Controller
             fwrite($handle, "\xEF\xBB\xBF");
 
             fputcsv($handle, [
-                'Project Name',
                 'Project ID',
+                'Project Name',
                 'Client Name',
-                'Industry',
+                'Locations',
+                'Status',
                 'Start Date',
                 'End Date',
             ]);
 
+            $statusMap = [
+                0 => 'On Hold',
+                1 => 'In Progress',
+                2 => 'Pending Review',
+                3 => 'Progressing',
+                4 => 'Success',
+                5 => 'Reject',
+            ];
+
             foreach ($projects as $project) {
                 fputcsv($handle, [
                     $project->project_name,
-                    $project->id,
+                    $project->project_id,
                     $project->client->client_name ?? '-',
-                    $project->industry->industry_name ?? '-',
+                    $project->industries->pluck('industry_name')->implode(', '),
+                    $statusMap[$project->status] ?? 'Unknown',
                     optional($project->start_date)
                         ? \Carbon\Carbon::parse($project->start_date)->format('d/m/Y')
                         : '',
@@ -201,18 +222,47 @@ class ProjectController extends Controller
 
     public function getById(Project $project){
         try{
+
+            if ($project->status > 3) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Dự án này đã được khóa, không thể cập nhật.');
+            }
+            
             $project->load([
                 'client',
-                'industry',
+                'industries:id,industry_name',
                 'criteria' => function ($q) {
                     $q->withPivot(['weight', 'custom_description']);
                 }
             ]);
 
-            $allCriteria = Criteria::all();
+            $allCriteria = Criteria::latest()->get();
 
-        return view('project.project_update', compact('project', 'allCriteria'));
+            return view('project.project_update', compact('project', 'allCriteria'));
+        } catch(\Exception $e){
+            Log::error('get project detail failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+            return redirect()
+                ->back()
+                ->with('error', 'get project detail failed.');
+        }
+    }
 
+    public function detail(Project $project)
+    {
+        try{
+            $project->load([
+                'client',
+                'industries:id,industry_name',
+                'criteria' => function ($q) {
+                    $q->withPivot(['weight', 'custom_description']);
+                }
+            ]);
+
+            return view('project.project_detail', compact('project'));
         } catch(\Exception $e){
             Log::error('get project detail failed', [
                 'message' => $e->getMessage(),
@@ -228,13 +278,13 @@ class ProjectController extends Controller
     {
         try{
             $project = Project::with('criteria')->findOrFail($id);
-            $data = $request->all();
-
+            $data = $request->all();    
             $validated = $request->validate([
                 'project_name' => 'required|string|max:255',
                 'description'  => 'nullable|string',
                 'start_date'   => 'required|date',
-                'end_date'     => 'required|date|after_or_equal:start_date',
+                'end_date'     => 'required|date|after:start_date',
+                'status' => 'required|integer|between:0,4',
                 'criteria_ids' => 'required|array',
                 'criteria_ids.*' => 'exists:criteria,id',
             ]);
@@ -246,10 +296,16 @@ class ProjectController extends Controller
                 'description'  => $request->description,
                 'start_date'   => $request->start_date,
                 'end_date'     => $request->end_date,
-                'clientId'     => $request->clients[0] ?? null,
-                'industry_id'  => $request->locations[0] ?? null,
+                'clientId'     => $request->client_id,
                 'userId'       => $userId,
+                'status'       => $request->status,
             ]);
+
+            if ($request->filled('locations')) {
+                $project->industries()->sync($request->locations);
+            } else {
+                $project->industries()->detach();
+            }
 
             $syncData = [];
             foreach ($request->criteria_ids as $cid) {
@@ -302,10 +358,12 @@ class ProjectController extends Controller
         try{
             $project->load([
                 'client',
-                'industry',
+                'industries:id,industry_name',
+                'projectIndustries',
                 'criteria' => function ($q){
                     $q->withPivot(['weight', 'custom_description']);
-                }
+                    'weight';
+                },
             ]);
         return view('evaluations.evaluations', compact('project'));
         } catch(\Exception $e){
@@ -325,32 +383,40 @@ class ProjectController extends Controller
             $data = $request->all();
             $validated = $request->validate([
                 'project_id' => 'required|exists:project,project_id',
-                'total_score' => 'required|numeric|min:0|max:10',
-                'criteria' => 'required|array',
-                'criteria.*.score' => 'required|numeric|min:0|max:10',
-                'criteria.*.criteria_percentage' => 'required|numeric|min:0|max:100',
+                'evaluations' => 'required|array',
+                'evaluations.*.total_score' => 'required|numeric|min:0',
+                'evaluations.*.criteria' => 'required|array',
+                'evaluations.*.criteria.*.score' => 'required|numeric|min:0',
+                'evaluations.*.criteria.*.criteria_percentage' => 'required|numeric|min:0',
                 'evaluator_notes' => 'nullable|string',
             ]);
 
             $userId = 2;
 
-            // 2. Tạo Judgment
-            $judgment = Judgment::create([
-                'project_id' => $request->project_id,
-                'total_score' => $request->total_score,
-                'evaluator_notes' => $request->evaluator_notes,
-                'user_id' => $userId,
-            ]);
-            
-            foreach ($request->criteria as $criteriaId => $item) {
-                JudgmentDetail::create([
-                    'judgment_id' => $judgment->id,
-                    'criteriaId' => $criteriaId,
-                    'criteria_point' => $item['score'],
-                    'criteria_percentage' => $item['criteria_percentage'],
-                    'criteria_name' => $item['criteria_name'],
+            foreach ($request->evaluations as $projectIndustryId => $evaluation) {
+
+                // 1. Create judgment per industry
+                $judgment = Judgment::create([
+                    'project_industry_id' => $projectIndustryId,
+                    'total_score' => $evaluation['total_score'],
+                    'evaluator_notes' => $request->evaluator_notes,
+                    'user_id' => $userId,
                 ]);
+
+                // 2. Create judgment details
+                foreach ($evaluation['criteria'] as $criteriaId => $item) {
+                    JudgmentDetail::create([
+                        'judgment_id' => $judgment->id,
+                        'criteriaId' => $criteriaId,
+                        'criteria_point' => $item['score'],
+                        'criteria_percentage' => $item['criteria_percentage'],
+                        'criteria_name' => $item['criteria_name'],
+                    ]);
+                }
             }
+
+            Project::where('project_id', $request->project_id)
+                ->update(['status' => 4]);
             
             return redirect()
                 ->route('projects.screen')
@@ -369,21 +435,23 @@ class ProjectController extends Controller
 
     public function getReportProjectById(Project $project){
         try{
-
+            if (!$project->projectIndustries()->exists()) {
+                return back()->withErrors(
+                    'This project has no evaluation data.'
+                );
+            }
             $project->load([
                 'client',
-                'industry',
-                'judgment',
+                'projectIndustries.industry',
                 'criteria' => function ($q) {
-                    $q->withPivot(['weight', 'custom_description']);
+                    $q->withPivot(['weight', 'custom_description'])
+                    ->orderBy('id');
                 },
-                'judgment.details.criteria',
+                'projectIndustries.judgment.details.criteria',
             ]);
-            // dd($project);
             return view("report.evaluation_report", compact('project'));
-        } catch(\Exception $e){
-            dd($e);    
-        Log::error('create score failed', [
+        } catch(\Exception $e){   
+            Log::error('get report failed', [
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
             ]);
@@ -393,4 +461,88 @@ class ProjectController extends Controller
                 ->with('error', 'create score failed.');
         }
     }
+
+    public function exportProjectCsv(Project $project)
+    {
+        try {
+            $project->load([
+                'client',
+                'projectIndustries.industry',
+                'projectIndustries.judgment.details'
+            ]);
+
+            $fileName = 'evaluation_report_' . $project->project_id . '_' . now()->format('Ymd_His') . '.csv';
+
+            $headers = [
+                "Content-Type" => "text/csv; charset=UTF-8",
+                "Content-Disposition" => "attachment; filename=\"$fileName\"",
+            ];
+
+            $callback = function () use ($project) {
+                $handle = fopen('php://output', 'w');
+
+                fwrite($handle, "\xEF\xBB\xBF");
+
+                $criteriaMap = [];
+                foreach ($project->projectIndustries as $pi) {
+                    foreach (optional($pi->judgment)->details ?? [] as $detail) {
+                        $criteriaMap[$detail->criteria_name] = $detail->criteria_percentage;
+                    }
+                }
+
+                $totalColumns = count($criteriaMap) + 2; // Location + Criteria + Total
+                $projectTitleRow = array_fill(0, $totalColumns, '');
+                $projectTitleRow[floor($totalColumns/2)] = $project->project_name . " :";
+                fputcsv($handle, $projectTitleRow);
+
+                $labelRow = array_fill(0, $totalColumns, '');
+                $labelRow[2] = 'Tiêu chí';
+                fputcsv($handle, $labelRow);
+
+                $header = ['Location'];
+                foreach ($criteriaMap as $name => $weight) {
+                    $header[] = "{$name} ({$weight})";
+                }
+                $header[] = 'Total Score';
+                fputcsv($handle, $header);
+
+
+                foreach ($project->projectIndustries as $pi) {
+                    $row = [
+                        $pi->industry->industry_name ?? 'Unknown', // Cột Location
+                    ];
+
+                    $details = collect(optional($pi->judgment)->details ?? [])->keyBy('criteria_name');
+
+                    foreach ($criteriaMap as $name => $weight) {
+                        if ($details->has($name)) {
+                            $d = $details[$name];
+                            // Export dạng "19/20" như trong hình
+                            $row[] = '="' . $d->criteria_point . '/' . $weight . '"';
+                        } else {
+                            $row[] = '0/' . $weight;
+                        }
+                    }
+
+                    // Điểm tổng kết thúc dòng
+                    $row[] = number_format(optional($pi->judgment)->total_score ?? 0, 2);
+
+                    fputcsv($handle, $row);
+                }
+
+                fclose($handle);
+            };
+
+            return new \Symfony\Component\HttpFoundation\StreamedResponse($callback, 200, $headers);
+
+        } catch (\Exception $e) {
+            \Log::error('Export project CSV failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+
+            return back()->with('error', 'Export project CSV failed.');
+        }
+    }
+
 }

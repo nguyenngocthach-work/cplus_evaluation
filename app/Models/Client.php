@@ -22,6 +22,7 @@ class Client extends Model
         'client_active',
         'userId',
         'project_id',
+        'logo_img',
     ];
 
     protected $dates = ['deleted_at'];

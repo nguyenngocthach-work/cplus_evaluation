@@ -87,12 +87,39 @@
           </thead>
           <tbody class="divide-y divide-[#dbe0e6] dark:divide-gray-700">
             @forelse($clients as $client)
+            @php
+            $name = $client->client_name ?? 'A';
+            $initial = strtoupper(substr($name, 0, 1));
+
+            $colors = [
+                'bg-red-100 text-red-700',
+                'bg-blue-100 text-blue-700',
+                'bg-green-100 text-green-700',
+                'bg-purple-100 text-purple-700',
+                'bg-pink-100 text-pink-700',
+                'bg-yellow-100 text-yellow-700',
+                'bg-indigo-100 text-indigo-700',
+                'bg-teal-100 text-teal-700',
+            ];
+
+            $colorClass = $colors[crc32($name) % count($colors)];
+            @endphp
             <tr class="group hover:bg-gray-50 dark:hover:bg-[#1f2b37] transition-colors">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-3">
                   <div
-                    class="h-10 w-10 flex-shrink-0 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary font-bold text-lg">
-                    A
+                    class="h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center {{ $client->logo_img ? '' : $colorClass }}">
+                    @if(!empty($client->logo_img))
+                        <img 
+                        src="{{ Storage::url($client->logo_img) }}"
+                        alt="{{ $client->client_name }}"
+                        class="h-full w-full object-cover rounded-full"
+                        >
+                    @else
+                        <span class="font-bold text-lg">
+                        {{ $initial }}
+                        </span>
+                    @endif
                   </div>
                   <div>
                     <div class="text-sm font-bold text-[#111418] dark:text-white">{{ $client->client_name }}</div>
@@ -136,11 +163,11 @@
                     title="Delete">
                     <span class="material-symbols-outlined !text-lg">delete</span>
                   </button>
-                  <button
+                  <a href=" {{ route('clients.detail', $client) }} "
                     class="p-2 text-[#617589] hover:text-[#111418] dark:text-gray-400 dark:hover:text-white transition-colors"
                     title="View Details">
                     <span class="material-symbols-outlined !text-lg">chevron_right</span>
-                  </button>
+                  </a>
                 </div>
               </td>
             </tr>

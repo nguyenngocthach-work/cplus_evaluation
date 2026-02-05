@@ -8,9 +8,9 @@ class ClientLocation extends Model
 {
     //
     protected $table = 'client_locations';
+    protected $primaryKey = 'client_location_id';
 
     protected $fillable = [
-        'client_location_id',
         'client_HQ',
         'client_billing',
         'client_country',

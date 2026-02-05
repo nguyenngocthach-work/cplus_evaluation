@@ -38,7 +38,7 @@
   </div>
 
   {{-- Main Form Card --}}
-  <form id="clientForm" method="POST" action="{{ route('locations.store') }}"
+  <form id="clientForm" method="POST" action="{{ route('locations.store') }}" enctype="multipart/form-data"
     class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
     @csrf
 
@@ -117,42 +117,19 @@
           <span class="material-symbols-outlined text-primary">perm_media</span>
           Site Photos
         </h3>
+        @if ($errors->has('photos.*') || $errors->has('photos'))
+        <div class="text-red-500 text-xs mb-4">
+          @foreach ($errors->all() as $error)
+          <div>{{ $error }}</div>
+          @endforeach
+        </div>
+        @endif
+        <input type="file" name="photos[]" id="photoInput" multiple accept="image/png,image/jpeg" class="hidden" />
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          <!-- Existing Photo 1 -->
-          <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
-            <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-              data-alt="Interior of warehouse with high shelves"
-              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwS-weNo5EPQoerlmi1KbD3tgSxQagqvvG-qPjtY7jTkAZVvXRu_vErJMPpQy5BGkEi5drFT4iQxrb0k6XmF9GDSBKGxZJRSsA5W-62N79e2I--QHqJkVNjCY2ilrGI9RgHe3f6d_BDdL2tY9DWKIMGZe6wvfMk3peWFhzFlmmZT-0gSFfVn-fc9y0lrYDM6oN1rally4T6f7gAPx4rGMDV0zVTeMY1_9s0fn_KFaT65QjFySd5MbA2L5tzcDezKNxBL9iAn2PNoTn");'>
-            </div>
-            <div
-              class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
-              <span class="material-symbols-outlined text-sm block">close</span>
-            </div>
-          </div>
-          <!-- Existing Photo 2 -->
-          <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
-            <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-              data-alt="Loading dock area with trucks"
-              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDrtgpOc_19akL4p_9zguaN6kalQN1CdU9MbluA_tF03dg7dkVe9wQEn_SMGn0VJvMPZ_KrS9mnvR9_2LKHUGqRSBJlw4zbfkcWd07ZY5s7hQuCqFKHRIOCnpGwTL2s1jilPMxHuLqs4YcMpOH0PwpwfJIwkMzhLH2UiHivtQ-AEHOIe4f4k-8FE0JVjCsM_e8fQ6zR9xU3n7cBH_j2OCenypFfbp9fp1XwiXlfuMPPnNLeW8NwmP0ja52-aF9Jkvn4aI_sp83NHT0m");'>
-            </div>
-            <div
-              class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
-              <span class="material-symbols-outlined text-sm block">close</span>
-            </div>
-          </div>
-          <!-- Existing Photo 3 -->
-          <div class="relative aspect-square group rounded-lg overflow-hidden cursor-pointer">
-            <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
-              data-alt="Office space inside warehouse"
-              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA0WH3kVrmWYxqhDNDkgZR2l9-hVhK7_9bh_085iQofrHTeKHBjJ8RAqAtidf_V0eb3WHpsxJ8SY5Jt4imkO4qAJSy4Z_41TMQJ00UisXMT-OUUKpvwKBFThjA0coBi-JnxU0DHQWlBDBbzxLClqS7KMhqBT3L-I3ad1Mu97ExQsX-6Af-Pf_w5TeiJpf4O0z_0rXZb7QBVxd0NIc8ukZbaiZac5wZ3DfkwX8tQh4n52yzClhA9SLe9EA9CFu5V0vj0l20wqUE16yKn");'>
-            </div>
-            <div
-              class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
-              <span class="material-symbols-outlined text-sm block">close</span>
-            </div>
-          </div>
+          <!-- Existing Photo -->
+          <div id="photoPreview" class="contents"></div>
           <!-- Upload New -->
-          <div
+          <div onclick="document.getElementById('photoInput').click()"
             class="aspect-square rounded-lg border-2 border-dashed border-[#e5e7eb] dark:border-slate-700 bg-[#f9fafb] dark:bg-slate-800/50 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors group text-[#617589] hover:text-primary">
             <span
               class="material-symbols-outlined text-3xl mb-2 group-hover:scale-110 transition-transform">cloud_upload</span>
@@ -177,4 +154,68 @@
     </div>
   </form>
 </div>
+<script>
+const input = document.getElementById('photoInput');
+const preview = document.getElementById('photoPreview');
+let selectedFiles = [];
+const MAX_FILES = 7;
+const MAX_SIZE_MB = 5;
+
+input.addEventListener('change', (e) => {
+  // Lấy các file mới chọn
+  const newFiles = Array.from(input.files);
+
+  newFiles.forEach(file => {
+    // Kiểm tra giới hạn 7 ảnh
+    if (selectedFiles.length >= MAX_FILES) return;
+
+    // Kiểm tra dung lượng 5MB
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      alert(`File ${file.name} quá lớn!`);
+      return;
+    }
+
+    // Kiểm tra định dạng (Double check ở Client)
+    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+      alert(`File ${file.name} không đúng định dạng!`);
+      return;
+    }
+
+    selectedFiles.push(file);
+  });
+
+  syncAndRender();
+});
+
+function syncAndRender() {
+  // Cập nhật lại thuộc tính files của input để gửi lên server
+  const dt = new DataTransfer();
+  selectedFiles.forEach(file => dt.items.add(file));
+  input.files = dt.files;
+
+  // Vẽ lại giao diện
+  preview.innerHTML = '';
+  selectedFiles.forEach((file, index) => {
+    const url = URL.createObjectURL(file);
+    const item = document.createElement('div');
+    item.className = 'relative aspect-square group rounded-lg overflow-hidden cursor-pointer';
+    item.innerHTML = `
+            <div class="absolute inset-0 bg-cover bg-center transition-transform group-hover:scale-105"
+                style="background-image:url('${url}')"></div>
+            <div onclick="event.stopPropagation(); removeImage(${index})"
+                class="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white
+                        opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 z-10">
+                <span class="material-symbols-outlined text-sm block">close</span>
+            </div>
+        `;
+    preview.appendChild(item);
+  });
+}
+
+function removeImage(index) {
+  selectedFiles.splice(index, 1);
+  syncAndRender();
+}
+</script>
+
 @endsection

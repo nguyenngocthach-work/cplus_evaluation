@@ -36,7 +36,7 @@ body {
         href="{{ route('admin.screen') }}">Dashboard</a>
       <span class="text-[#617589] dark:text-gray-400 text-base font-medium leading-normal">/</span>
       <a class="text-[#617589] dark:text-gray-400 text-base font-medium leading-normal hover:text-primary transition-colors"
-        href="#">Projects</a>
+        href="{{ route('projects.screen') }}">Projects</a>
       <span class="text-[#617589] dark:text-gray-400 text-base font-medium leading-normal">/</span>
       <span class="text-[#111418] dark:text-white text-base font-medium leading-normal">Update Project</span>
     </div>
@@ -49,10 +49,10 @@ body {
           assign stakeholders, and set evaluation metrics.</p>
       </div>
       <div class="flex gap-3">
-        <button
+        <a href="{{ route('projects.screen') }}"
           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-transparent text-[#111418] dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 transition-all">
           <span class="truncate">Cancel</span>
-        </button>
+        </a>
         <button type="button" onclick="document.getElementById('project-form').submit()"
           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 shadow-md transition-all">
           <span class="truncate">Save Project</span>
@@ -204,6 +204,86 @@ body {
           </div>
         </div>
       </div>
+
+      <div
+        class="bg-white dark:bg-[#1a2632] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-gray-700 overflow-hidden mt-8">
+
+        {{-- Header --}}
+        <div class="flex items-center justify-between px-6 py-5 border-b border-[#f0f2f4] dark:border-gray-700">
+          <div class="flex flex-col">
+            <h2 class="text-[#111418] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
+              Project Status & Progress
+            </h2>
+            <p class="text-sm text-[#617589] dark:text-gray-400 mt-1">
+              Track the current status and completion progress of this project.
+            </p>
+          </div>
+        </div>
+
+        {{-- Body --}}
+        <div class="p-6">
+          @php
+            $statusMap = [
+              0 => ['label' => 'On Hold', 'progress' => 0, 'bar' => 'bg-gray-400'],
+              1 => ['label' => 'In Progress', 'progress' => 25, 'bar' => 'bg-blue-500'],
+              2 => ['label' => 'Pending Review', 'progress' => 50, 'bar' => 'bg-yellow-500'],
+              3 => ['label' => 'Progressing', 'progress' => 75, 'bar' => 'bg-blue-600'],
+              4 => ['label' => 'Success', 'progress' => 100, 'bar' => 'bg-green-500'],
+            ];
+            $currentStatus = old('status', $project->status ?? 0);
+          @endphp
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+              <div class="md:col-span-4">
+          <label
+            class="block text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400 mb-2">
+            Project Status
+          </label>
+
+          <select name="status"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                  focus:ring-2 focus:ring-blue-500">
+            @foreach($statusMap as $key => $st)
+              <option value="{{ $key }}" {{ $currentStatus == $key ? 'selected' : '' }}>
+                {{ $st['label'] }}
+              </option>
+            @endforeach
+          </select>
+        </div>
+
+        <div class="md:col-span-8">
+          <label
+            class="block text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400 mb-2">
+            Progress
+          </label>
+
+          <div class="flex items-center gap-4">
+            <div class="flex-1 bg-[#e5e7eb] dark:bg-[#4a5568] rounded-full h-2">
+              <div
+                class="{{ $statusMap[$currentStatus]['bar'] }} h-2 rounded-full transition-all duration-300"
+                style="width: {{ $statusMap[$currentStatus]['progress'] }}%">
+              </div>
+            </div>
+
+            <span class="text-sm font-bold text-[#111418] dark:text-white">
+              {{ $statusMap[$currentStatus]['progress'] }}%
+            </span>
+          </div>
+
+          <p class="mt-2 text-sm text-[#617589] dark:text-gray-400">
+            {{ $statusMap[$currentStatus]['label'] }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+      {{-- Footer --}}
+      <div class="px-6 py-4 border-t border-[#f0f2f4] dark:border-gray-700 bg-[#f8fafc] dark:bg-[#111827]">
+        <p class="text-sm text-[#617589] dark:text-gray-400">
+          Status changes affect how this project appears in dashboards and reports.
+        </p>
+      </div>
+      </div>
       <!-- Footer Actions (Mobile Sticky) -->
       <div
         class="fixed bottom-0 left-0 w-full bg-white dark:bg-[#1a2632] border-t border-[#f0f2f4] dark:border-gray-700 p-4 md:hidden z-40 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
@@ -295,7 +375,7 @@ body {
     tag.innerHTML = `
     ${client.client_name}
     <button type="button" class="ml-1">✕</button>
-    <input type="hidden" name="clients[]" value="${client.id}">
+    <input type="hidden" name="client_id" value="${client.id}">
   `;
 
     tag.querySelector('button').onclick = () => {
@@ -456,11 +536,6 @@ body {
 
   const startDateInput = document.getElementById('start-date');
   const endDateInput = document.getElementById('end-date');
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const todayStr = today.toISOString().split('T')[0];
-  startDateInput.min = todayStr;
 
   startDateInput.addEventListener('change', validateDates);
   endDateInput.addEventListener('change', validateDates);
@@ -488,12 +563,12 @@ body {
         ]));
     @endif
 
-    @if($project->industry)
+    @foreach($project->industries as $industry)
       addLocation(@json([
-          'id' => $project->industry->id,
-          'industry_name' => $project->industry->industry_name
+        'id' => $industry->id,
+        'industry_name' => $industry->industry_name
       ]));
-    @endif
+    @endforeach
   });
 
   document.addEventListener('DOMContentLoaded', () => {

@@ -15,4 +15,19 @@ class Criteria extends Model
 
     public $timestamps = true;
 
+    public function type()
+    {
+        return $this->belongsTo(CriteriaType::class, 'criteriaTypeId');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Criteria::class, 'parentId');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Criteria::class, 'parentId');
+    }
+
 }

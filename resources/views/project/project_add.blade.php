@@ -33,10 +33,10 @@ body {
     <!-- Breadcrumbs -->
     <div class="flex flex-wrap gap-2 px-4">
       <a class="text-[#617589] dark:text-gray-400 text-base font-medium leading-normal hover:text-primary transition-colors"
-        href="#">Dashboard</a>
+        href="{{route('admin.screen')}}">Dashboard</a>
       <span class="text-[#617589] dark:text-gray-400 text-base font-medium leading-normal">/</span>
       <a class="text-[#617589] dark:text-gray-400 text-base font-medium leading-normal hover:text-primary transition-colors"
-        href="#">Projects</a>
+        href="{{route('projects.screen')}}">Projects</a>
       <span class="text-[#617589] dark:text-gray-400 text-base font-medium leading-normal">/</span>
       <span class="text-[#111418] dark:text-white text-base font-medium leading-normal">Create New Project</span>
     </div>
@@ -49,10 +49,10 @@ body {
           assign stakeholders, and set evaluation metrics.</p>
       </div>
       <div class="flex gap-3">
-        <button
+        <a href="{{route('projects.screen')}}"
           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-transparent text-[#111418] dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 transition-all">
           <span class="truncate">Cancel</span>
-        </button>
+        </a>
         <button type="button" onclick="document.getElementById('project-form').submit()"
           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 shadow-md transition-all">
           <span class="truncate">Save Project</span>
@@ -287,18 +287,20 @@ body {
 
     const container = clientInput.parentElement;
 
+    container.querySelectorAll('.client-tag').forEach(e => e.remove());
+
     const tag = document.createElement('div');
     tag.className =
-      'flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium';
+      'flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium client-tag';
 
     tag.innerHTML = `
     ${client.client_name}
     <button type="button" class="ml-1">✕</button>
-    <input type="hidden" name="clients[]" value="${client.id}">
+    <input type="hidden" name="client_id" value="${client.id}">
   `;
 
     tag.querySelector('button').onclick = () => {
-      clientSelected = clientSelected.filter(c => c.id !== client.id);
+      selectedClient = null;
       tag.remove();
     };
 
@@ -397,7 +399,7 @@ body {
         <div class="col-span-1 md:col-span-2">
             <label class="md:hidden text-xs font-bold text-[#617589] mb-1 block">Weight (%)</label>
             <div class="relative">
-                <input readonly class="criteria-weight-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary pr-8"
+                <input class="criteria-weight-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-10 px-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary pr-8"
                       name="criteria_percent[${criteria.id}]" type="number" 
                       oninput="calculateTotalWeight()" value="${criteria.criteriaPercent}">
                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">%</span>
@@ -455,38 +457,23 @@ body {
 
   const startDateInput = document.getElementById('start-date');
   const endDateInput = document.getElementById('end-date');
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const todayStr = today.toISOString().split('T')[0];
-  startDateInput.min = todayStr;
 
   startDateInput.addEventListener('change', validateDates);
   endDateInput.addEventListener('change', validateDates);
 
   function validateDates() {
-    const startDateValue = startDateInput.value;
-    const endDateValue = endDateInput.value;
+    const start = startDateInput.value;
+    const end = endDateInput.value;
 
-    if (!startDateValue || !endDateValue) return;
+    if (!start || !end) return;
 
-    const startDate = new Date(startDateValue);
-    const endDate = new Date(endDateValue);
+    const startDate = new Date(start);
+    const endDate = new Date(end);
 
 
-    const minEndDate = new Date(startDate);
-    minEndDate.setDate(minEndDate.getDate() + 3);
-
-    if (startDate < today) {
-      alert('Start Date must be today or later');
-      startDateInput.value = '';
-      return;
-    }
-
-    if (endDate < minEndDate) {
-      alert('End Date must be at least 3 days after Start Date');
+    if (endDate <= startDate) {
+      alert('End Date must be later than Start Date');
       endDateInput.value = '';
-      return;
     }
   }
   </script>

@@ -2,70 +2,6 @@
 @section('title','Admin Dashboard')
 @section('content')
 <div class="flex h-screen w-full flex-row overflow-hidden">
-  <!-- Sidebar Navigation -->
-  <aside
-    class="flex h-full w-72 flex-col justify-between border-r border-[#e5e7eb] dark:border-[#2a3441] bg-white dark:bg-[#1a202c] overflow-y-auto shrink-0 transition-all duration-300">
-    <div class="flex flex-col gap-4 p-4">
-      <div class="flex gap-3 items-center mb-6">
-        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-          data-alt="Abstract blue geometric logo"
-          style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCRGjEbh3nPkDmPIsyOagergOq0nbi9OTWc8tSsj-qFYiQtpbqnauk0HvRhP9020CD1Nfm_FUqdBdVWX9ScmLEZoyV6HMAvuZnBarUwkhOKj53u3kf8m1YlGaz3utmS3VWLJbvzhBS74Y5jH9DUO49VoDwWYaySlkqyYLRgodSozdJXPpTw6zhPDxTlPRGOyNxjvmG_wKQf4XUaKUzfm3t2BL7jlHr5IoM0unMHM9VKyIKmNIYq2GVQW7J5BQRsYysdWzBur16VjPm5");'>
-        </div>
-        <div class="flex flex-col">
-          <h1 class="text-[#111418] dark:text-white text-base font-bold leading-normal">Admin Console</h1>
-          <p class="text-[#617589] dark:text-[#9ca3af] text-sm font-normal leading-normal">Management System</p>
-        </div>
-      </div>
-      <div class="flex flex-col gap-2">
-        <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary" href="#">
-          <span class="material-symbols-outlined text-primary">dashboard</span>
-          <p class="text-primary text-sm font-bold leading-normal">Dashboard</p>
-        </a>
-        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="{{ route('clients.screen') }}">
-          <span
-            class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">groups</span>
-          <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Clients</p>
-        </a>
-        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="{{ route('locations.screen') }}">
-          <span
-            class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">location_on</span>
-          <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Locations</p>
-        </a>
-        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="{{ route('projects.screen') }}">
-          <span
-            class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">work</span>
-          <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Projects</p>
-        </a>
-        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href="{{ route('evaluations.screen') }}">
-          <span
-            class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">assignment</span>
-          <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Evaluations</p>
-        </a>
-        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#f3f4f6] dark:hover:bg-[#2d3748] transition-colors group"
-          href=" {{ route('reports.screen') }}">
-          <span
-            class="material-symbols-outlined text-[#617589] group-hover:text-[#111418] dark:text-[#9ca3af] dark:group-hover:text-white">settings</span>
-          <p class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Reports</p>
-        </a>
-      </div>
-    </div>
-    <div class="p-4 border-t border-[#e5e7eb] dark:border-[#2a3441]">
-      <div class="flex items-center gap-3">
-        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-          data-alt="Profile picture of administrator"
-          style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwRgvBtatfWXV_TgbykqA_J4k0uBXcI4o008UlYdazs4bOEfH1wg14pMcoCpjrEMCp08FF7dglAS8V9EMDV-sDx7an0CsRmBwJS47ZotsufskCJtncTyGPTOP_ScL3W_BkpUHBQJOlm8tTWkis1NdEf6ECwi0YgfaVUXCFHnx6nfZUByI8N4kFt0I8RSKo00yWTxAkkUKmiDpX8Y2NzqRAE5viPJZAisiCT_FfFr097EDmivn8QneYX-p-tL4dkNuPLqgT6rlgop1b");'>
-        </div>
-        <div>
-          <p class="text-sm font-bold text-[#111418] dark:text-white">Jane Doe</p>
-          <p class="text-xs text-[#617589] dark:text-[#9ca3af]">Super Admin</p>
-        </div>
-      </div>
-    </div>
-  </aside>
   <!-- Main Content Area -->
   <main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
     <!-- Top Header -->
@@ -195,7 +131,7 @@
               <p class="text-xs text-[#617589] dark:text-[#9ca3af]">Create new site entry</p>
             </div>
           </a>
-          <a href="{{ route('evaluations.create.screen') }}"
+          <button type="button" onclick="openEvaluationModal()"
             class="flex items-center gap-4 p-4 bg-white dark:bg-[#1a202c] border border-[#e5e7eb] dark:border-[#2a3441] rounded-xl hover:border-primary/50 hover:shadow-md transition-all group text-left">
             <div
               class="size-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors text-primary">
@@ -205,7 +141,7 @@
               <h3 class="font-bold text-[#111418] dark:text-white">Start Evaluation</h3>
               <p class="text-xs text-[#617589] dark:text-[#9ca3af]">Begin new assessment</p>
             </div>
-          </a>
+          </button>
         </div>
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -279,7 +215,7 @@
                   <tr class="hover:bg-[#f9fafb] dark:hover:bg-[#2d3748]/50 transition-colors">
                     <td class="p-4">
                       <div class="font-bold text-[#111418] dark:text-white">
-                        {{ $projectList->industry->industry_name ?? '-' }}
+                        {{ $projectList->project_name ?? '-' }}
                       </div>
                       <div class="text-xs text-[#617589] dark:text-[#9ca3af]">Due:
                         {{ \Carbon\Carbon::parse($projectList->end_date)->format('M d, Y') }}</div>
@@ -383,5 +319,68 @@
       </footer>
     </div>
   </main>
+  <!-- Start Evaluation Modal -->
+  <div id="evaluationModal"
+    class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-[#1a202c] w-full max-w-lg rounded-xl shadow-lg p-6">
+      <h3 class="text-lg font-bold mb-4 text-[#111418] dark:text-white">
+        Start Evaluation
+      </h3>
+      <form method="GET" action="{{ route('evaluations.create.screen') }}">
+        <label class="block text-sm font-medium mb-2 text-[#617589]">
+          Select Project
+        </label>
+
+        <select id="projectSelect"
+                required
+                class="w-full border rounded-lg px-3 py-2 text-sm">
+          <option value="">-- Choose project --</option>
+
+          @foreach($activeProjectList as $project)
+            <option value="{{ $project->project_id }}">
+              {{ $project->project_name }}
+            </option>
+          @endforeach
+        </select>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button type="button"
+                  onclick="closeEvaluationModal()"
+                  class="px-4 py-2 text-sm rounded-lg border">
+            Cancel
+          </button>
+
+          <button type="button" onclick="startEvaluation()"
+                  class="px-4 py-2 text-sm rounded-lg bg-primary text-white">
+            Start
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </div>
+<script>
+  function openEvaluationModal() {
+    document.getElementById('evaluationModal').classList.remove('hidden')
+    document.getElementById('evaluationModal').classList.add('flex')
+  }
+
+  function closeEvaluationModal() {
+    document.getElementById('evaluationModal').classList.add('hidden')
+    document.getElementById('evaluationModal').classList.remove('flex')
+  }
+
+  function startEvaluation() {
+    const projectId = document.getElementById('projectSelect').value;
+
+    if (!projectId) {
+      alert('Please select a project');
+      return;
+    }
+
+    window.location.href = `/projects/${projectId}/evaluations`;
+  }
+</script>
+
 @endsection

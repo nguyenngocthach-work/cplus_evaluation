@@ -5,10 +5,18 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+
 use App\Models\Client;
 use App\Models\ClientLocation;
+
+
+use App\Jobs\UploadClientLogoJob;
+
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ClientController extends Controller
@@ -33,6 +41,7 @@ class ClientController extends Controller
                 'client_contact_name',
                 'client_active',
                 'notes',
+                'logo_img',
             );
             
             if(!empty($data['keyword'])) {
@@ -70,7 +79,6 @@ class ClientController extends Controller
         try{
             DB::beginTransaction();
             $data=$request->all();
-
             $validator = Validator::make($data, [
                 'client_name' => 'required|string|max:255',
                 'contact_number' => 'required|string|max:255|regex:/^\+?[0-9\s\-\(\)]+$/',
@@ -85,6 +93,7 @@ class ClientController extends Controller
                 'client_city' => 'required|string|max:100',
                 'client_state_province' => 'required|string|max:255',
                 'client_zipcode' => 'required|string|max:20',
+                'client_logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
                 // 'userId' => 'required',
             ]);
 
@@ -95,9 +104,7 @@ class ClientController extends Controller
                 return redirect()->back()->withErrors($validator)->withInput();
             }
     
-
             $data['client_active'] = ($request->client_active == 'on') ? 1 : 0;
-
             
             $client = new Client();
             $client->client_name = $data['client_name'];
@@ -110,7 +117,6 @@ class ClientController extends Controller
             $client->userId = $data['userId'];
             $client->project_id = $data['project_id'] ?? null; 
             $client->save();
-            DB::commit();
             
             $clientId = $client->id;
             if(!$clientId){
@@ -128,6 +134,33 @@ class ClientController extends Controller
             $clientLocation->client_zipcode = $data['client_zipcode'];
             $clientLocation->client_id = $data['client_id'];
             $clientLocation->save();
+
+            if ($request->hasFile('client_logo')) {
+                //clear file
+                if ($client->logo_img && Storage::disk('public')->exists($client->logo_img)) {
+                    Storage::disk('public')->delete($client->logo_img);
+                }
+
+                // Null logo_img 
+                $client->update([
+                    'logo_img' => null
+                ]);
+
+                // Lưu file tạm
+                $file = $request->file('client_logo');
+                $ext  = $file->getClientOriginalExtension();
+
+                $tmpPath = $file->storeAs(
+                    'tmp/client-logos',
+                    'tmp_' . Str::uuid() . '.' . $ext,
+                    'public'
+                );
+
+                UploadClientLogoJob::dispatch(
+                    $client->id,
+                    $tmpPath
+                );
+            }
             DB::commit();
             return redirect()->route('clients.screen')->with('success', 'Client created successfully.');
         } catch (\Exception $e) {
@@ -235,9 +268,23 @@ class ClientController extends Controller
     public function getById(Client $client){
         try{
             // sua dung Route Model Binding thi khoi find or fail
-            // $client = Client::with('location')->findOrFail($id);
             $client->load('location');
             return view('clients.client_update', compact('client'));
+        } catch(\Exception $e){
+            Log::error('get client detail failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+            return redirect()
+                ->back()
+                ->with('error', 'get client detail failed.');
+        }
+    }
+
+    public function detail(Client $client){
+        try{
+            $client->load('location');
+            return view('clients.client_detail', compact('client'));
         } catch(\Exception $e){
             Log::error('get client detail failed', [
                 'message' => $e->getMessage(),
@@ -263,19 +310,19 @@ class ClientController extends Controller
                 'email' => 'required|email|max:255|regex:/^[\w\.-]+@[\w\.-]+\.\w{2,4}$/',
                 'company_name' => 'required|string|max:255|',
                 'client_contact_name' => 'required|string|max:255',
-                'client_active' => 'required|string|max:20',
+                'client_active' => 'nullable',
                 'client_HQ' => 'required|string|max:255',
                 'client_billing' => 'required|string|max:255',
                 'client_country' => 'required|string|max:255',
                 'client_city' => 'required|string|max:100',
                 'client_state_province' => 'required|string|max:255',
                 'client_zipcode' => 'required|string|max:20',
+                'client_logo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
                 // 'userId' => 'required',
             ]);
 
             $userId = 2;
             $data['userId'] = $userId;
-            
             if($validator->fails()){
                 return redirect()->back()->withErrors($validator)->withInput();
             }
@@ -303,6 +350,19 @@ class ClientController extends Controller
                 ]
             );
 
+            if ($request->hasFile('client_logo')) {
+
+                // xoá logo cũ ở controller
+                if ($client->logo_img && Storage::disk('public')->exists($client->logo_img)) {
+                    Storage::disk('public')->delete($client->logo_img);
+                }
+
+                $file = $request->file('client_logo');
+                $tmpPath = $file->store('tmp/client-logos', 'public');
+
+                UploadClientLogoJob::dispatch($client->id, $tmpPath);
+            }
+
             DB::commit();
 
             return redirect()
@@ -310,7 +370,6 @@ class ClientController extends Controller
                 ->with('success', 'Client updated successfully');
                 
         } catch(\Exception $e){
-            dd($e);
             DB::rollBack();
             Log::error('Update client failed', [
                 'message' => $e->getMessage(),

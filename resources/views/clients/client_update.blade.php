@@ -36,10 +36,15 @@
       </button>
     </div>
   </div>
+    @if ($errors->any())
+      <div class="mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 text-sm">
+        {{ $errors->first() }}
+      </div>
+      @endif
 
   {{-- Main Form Card --}}
   <form id="clientForm" method="POST" action="{{ route('clients.update', $client->id) }}"
-    class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     <div class="p-8 space-y-8">
@@ -162,6 +167,62 @@
           </div>
         </div>
       </section>
+      <hr class="border-gray-100">
+
+      {{-- Section: Client Logo --}}
+      <section>
+        <h5 class="flex items-center gap-2 text-blue-600 font-semibold mb-6">
+          <span class="material-symbols-outlined !text-[20px]">image</span>
+          Client Logo
+        </h5>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+
+          {{-- Upload --}}
+          <label for="client_logo"
+            class="relative flex flex-col items-center justify-center w-full h-48
+                  border-2 border-dashed rounded-xl cursor-pointer
+                  border-gray-300 bg-gray-50 hover:bg-gray-100 transition group">
+
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+              <span class="material-symbols-outlined text-4xl text-gray-400 group-hover:text-blue-500">
+                cloud_upload
+              </span>
+              <p class="mb-2 text-sm text-gray-500">
+                <span class="font-semibold">Click to upload</span> or replace logo
+              </p>
+              <p class="text-xs text-gray-400">PNG, JPG (Max 2MB)</p>
+            </div>
+
+            <input
+              id="client_logo"
+              name="client_logo"
+              type="file"
+              accept="image/png,image/jpeg"
+              class="hidden"
+              onchange="previewClientLogo(event)"
+            />
+          </label>
+
+          {{-- Preview --}}
+          <div class="flex items-center justify-center">
+            <div class="w-40 h-40 rounded-lg border border-gray-200 bg-white flex items-center justify-center">
+              @if($client->logo_img)
+                <img
+                  id="logoPreview"
+                  src="{{ asset('storage/' . $client->logo_img) }}"
+                  alt="Client Logo"
+                  class="w-full h-full object-contain p-2"
+                />
+              @else
+                <img id="logoPreview" class="hidden w-full h-full object-contain p-2"/>
+                <span id="logoPlaceholder" class="text-sm text-gray-400">Logo Preview</span>
+              @endif
+            </div>
+          </div>
+
+        </div>
+      </section>
 
       <hr class="border-gray-100">
 
@@ -175,9 +236,9 @@
         <div class="space-y-4">
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">Internal Notes</label>
-            <textarea name="notes" value="{{ old('notes', optional($client->location)->notes) }}" rows="4"
+            <textarea name="notes" rows="4"
               placeholder="Enter any specific requirements or notes about this client..."
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"></textarea>
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">{{ old('notes', $client->notes) }}</textarea>
           </div>
 
           {{-- Toggle Switch --}}
@@ -206,4 +267,18 @@
     </div>
   </form>
 </div>
+<script>
+function previewClientLogo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const preview = document.getElementById('logoPreview');
+  const placeholder = document.getElementById('logoPlaceholder');
+
+  preview.src = URL.createObjectURL(file);
+  preview.classList.remove('hidden');
+  if (placeholder) placeholder.classList.add('hidden');
+}
+</script>
+
 @endsection

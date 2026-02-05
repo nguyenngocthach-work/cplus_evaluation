@@ -38,29 +38,46 @@ input[type=range]::-webkit-slider-runnable-track {
   background-color: #cbd5e1;
   border-radius: 20px;
 }
+
+.location-tab.active {
+  border-bottom: 3px solid #137fec;
+  color: #137fec;
+}
 </style>
 @endpush
 @section('content')
 <form action="{{ route('projects.evaluationsScore') }}" method="POST" id="evaluation-form">
   @csrf
   <input type="hidden" name="project_id" value="{{ old('project_id', $project->project_id) }}">
-  <input type="hidden" name="total_score" id="total-score-input">
   <main class="flex-1 w-full max-w-[1440px] mx-auto p-4 md:p-8 lg:p-10 gap-6 flex flex-col">
     <!-- Breadcrumbs -->
     <div class="flex flex-wrap gap-2 items-center text-sm">
-      <a class="text-[#617589] hover:text-primary transition-colors font-medium" href="#">Home</a>
+      <a class="text-[#617589] hover:text-primary transition-colors font-medium" href="{{ route('admin.screen') }}">Home</a>
       <span class="material-symbols-outlined text-[#617589] text-[16px]">chevron_right</span>
-      <a class="text-[#617589] hover:text-primary transition-colors font-medium" href="#">Projects</a>
+      <a class="text-[#617589] hover:text-primary transition-colors font-medium" href="{{ route('projects.screen') }}">Projects</a>
       <span class="material-symbols-outlined text-[#617589] text-[16px]">chevron_right</span>
-      <span class="text-[#111418] dark:text-white font-semibold">Q3 Retail Expansion</span>
+      <span class="text-[#111418] dark:text-white font-semibold">{{ $project->project_name }}</span>
     </div>
+    @php
+    $statusMap = [
+    0 => ['label' => 'On Hold', 'color' => 'bg-yellow-100 text-gray-800'],
+    1 => ['label' => 'In Progress', 'color' => 'bg-blue-100 text-blue-800'],
+    2 => ['label' => 'Pending Review', 'color' => 'bg-yellow-100 text-yellow-800'],
+    3 => ['label' => 'Progressing', 'color' => 'bg-purple-100 text-blue-800'],
+    4 => ['label' => 'Success', 'color' => 'bg-green-100 text-green-800'],
+    5 => ['label' => 'Rejected', 'color' => 'bg-red-100 text-red-800'],
+    ];
+    @endphp
     <!-- Page Header -->
     <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
       <div class="flex flex-col gap-2">
-        <h1 class="text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Q3 Retail Expansion</h1>
+        <h1 class="text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">{{ $project->project_name }}</h1>
         <div class="flex flex-wrap items-center gap-3 text-[#617589] text-sm">
-          <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">In
-            Progress</span>
+          <span
+            class="px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider
+                  {{ $statusMap[$project->status]['color'] }}">
+            {{ $statusMap[$project->status]['label'] }}
+          </span>
           <span>•</span>
           <span>Project ID: {{ old('project_id', $project->project_id) }}</span>
           <span>•</span>
@@ -69,10 +86,10 @@ input[type=range]::-webkit-slider-runnable-track {
       </div>
       <div class="flex gap-3">
         <!-- <button
-        class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-white dark:bg-[#2d3748] border border-[#dbe0e6] dark:border-[#4a5568] text-[#111418] dark:text-white text-sm font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-[#374151] transition-colors gap-2">
-        <span class="material-symbols-outlined text-[18px]">edit</span>
-        <span class="truncate">Edit Project</span>
-      </button> -->
+          class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-white dark:bg-[#2d3748] border border-[#dbe0e6] dark:border-[#4a5568] text-[#111418] dark:text-white text-sm font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-[#374151] transition-colors gap-2">
+          <span class="material-symbols-outlined text-[18px]">edit</span>
+          <span class="truncate">Edit Project</span>
+        </button> -->
         <a href="{{ route('projects.reportById', $project) }}"
           class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold shadow-sm hover:bg-primary/90 transition-colors gap-2">
           <span class="material-symbols-outlined text-[18px]">download</span>
@@ -80,6 +97,11 @@ input[type=range]::-webkit-slider-runnable-track {
         </a>
       </div>
     </div>
+    @if ($errors->any())
+      <div class="mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 text-sm">
+        {{ $errors->first() }}
+      </div>
+      @endif
     <!-- Main Content Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       <!-- LEFT COLUMN: Context & Info (Span 4) -->
@@ -90,7 +112,9 @@ input[type=range]::-webkit-slider-runnable-track {
           <div
             class="px-6 py-4 border-b border-[#e5e7eb] dark:border-[#2d3748] flex justify-between items-center bg-gray-50 dark:bg-[#1f2933]">
             <h3 class="font-bold text-lg">Project Details</h3>
-            <span class="material-symbols-outlined text-[#617589]">info</span>
+            <a href="{{ route('projects.detail', $project) }}">
+              <span class="material-symbols-outlined text-[#617589]">info</span>
+            </a>
           </div>
           <div class="p-6">
             <div class="grid grid-cols-1 gap-y-4">
@@ -130,21 +154,15 @@ input[type=range]::-webkit-slider-runnable-track {
       <div class="lg:col-span-8 flex flex-col h-full">
         <!-- Location Tabs -->
         <div class="flex border-b border-[#dbe0e6] dark:border-[#4a5568] gap-8 mb-6 overflow-x-auto hide-scrollbar">
-          <button
-            class="flex items-center gap-2 border-b-[3px] border-b-primary text-primary pb-3 px-1 whitespace-nowrap outline-none group">
+          @foreach($project->projectIndustries as $pi)
+          <button type="button"
+            class="location-tab {{ $pi === 0 ? 'active' : '' }} flex items-center gap-2 border-b-[3px] border-b-primary text-primary pb-3 px-1 whitespace-nowrap outline-none group"
+            data-project-industry-id="{{ $pi->id }}"
+            data-industry-id="{{ $pi->industry->id }}">
             <span class="material-symbols-outlined text-[20px]">storefront</span>
-            <span class="text-sm font-bold tracking-[0.015em]">Downtown Store</span>
+            <span class="text-sm font-bold tracking-[0.015em]">{{ $pi->industry->industry_name }}</span>
           </button>
-          <!-- <button
-          class="flex items-center gap-2 border-b-[3px] border-b-transparent text-[#617589] hover:text-[#111418] dark:hover:text-white pb-3 px-1 whitespace-nowrap transition-colors outline-none group">
-          <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">cottage</span>
-          <span class="text-sm font-bold tracking-[0.015em]">Suburb Location</span>
-        </button>
-        <button
-          class="flex items-center gap-2 border-b-[3px] border-b-transparent text-[#617589] hover:text-[#111418] dark:hover:text-white pb-3 px-1 whitespace-nowrap transition-colors outline-none group">
-          <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">flight</span>
-          <span class="text-sm font-bold tracking-[0.015em]">Airport Kiosk</span>
-        </button> -->
+          @endforeach
         </div>
         <!-- Evaluation Workspace -->
         <div
@@ -160,8 +178,8 @@ input[type=range]::-webkit-slider-runnable-track {
               class="flex items-center gap-4 bg-primary/5 dark:bg-primary/10 px-4 py-2 rounded-lg border border-primary/10">
               <div class="text-right">
                 <p class="text-xs font-bold text-[#617589] uppercase tracking-wider">Total Score</p>
-                <p class="text-2xl font-black text-primary leading-none"><span id="total-score-display">0.0</span> <span
-                    class="text-sm text-[#617589] font-medium">/ 10</span></p>
+                <p class="text-2xl font-black text-primary leading-none"><span id="total-score-display">0.0</span> 
+                <span class="text-sm text-[#617589] font-medium" id="total-score-max">/ 0.0</span></p>
               </div>
               <div class="h-10 w-px bg-[#dbe0e6] dark:bg-[#4a5568]"></div>
               <div
@@ -184,19 +202,16 @@ input[type=range]::-webkit-slider-runnable-track {
                     <span class="material-symbols-outlined text-[#617589] text-[18px]">directions_walk</span>
                     {{ old('criteria_name', $criterion->criteria_name)}}
                   </label>
-                  <span class="score-value font-bold text-primary text-sm bg-primary/10 px-2 py-0.5 rounded">8.0</span>
+                  <span class="score-value font-bold text-primary text-sm bg-primary/10 px-2 py-0.5 rounded">{{ $criterion->pivot->weight }}</span>
                 </div>
                 <!-- <input class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                   max="10" min="1" step="0.5" type="range" value="8" /> -->
                 <input
                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 criterion-slider"
-                  max="10" min="0" step="0.5" type="range" name="criteria[{{ $criterion->id }}][score]" value="5.0"
+                  max="{{ $criterion->pivot->weight }}" min="0" step="0.5" type="range" value="5.0"
                   data-name="{{ $criterion->criteria_name }}"
-                  data-weight="{{ $criterion->pivot->weight ?? (100 / count($project->criteria)) }}" />
-                <input type="hidden" name="criteria[{{ $criterion->id }}][criteria_name]"
-                  value="{{ $criterion->criteria_name }}">
-                <input type="hidden" name="criteria[{{ $criterion->id }}][criteria_percentage]"
-                  value="{{ $criterion->pivot->weight ?? 0 }}">
+                  data-criteria-id="{{ $criterion->id }}"
+                  data-weight="{{ $criterion->pivot->weight }}" />
                 <div class="flex justify-between text-xs text-[#617589] mt-1">
                   <span>Low</span>
                   <span>High</span>
@@ -231,8 +246,8 @@ input[type=range]::-webkit-slider-runnable-track {
                     stroke-width="1"></g>
 
                   <!-- Data polygon -->
-                  <path id="radar-polygon" fill="#137fec" fill-opacity="0.25" stroke="#137fec" stroke-width="2.5">
-                  </path>
+                  <g id="radar-polygons" fill="#137fec" fill-opacity="0.25" stroke="#137fec" stroke-width="2.5">
+                  </g>
 
                   <!-- Data points -->
                   <g id="radar-dots"></g>
@@ -272,118 +287,272 @@ input[type=range]::-webkit-slider-runnable-track {
   </main>
 </form>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const sliders = document.querySelectorAll('.criterion-slider');
-  const polygon = document.getElementById('radar-polygon');
-  const dotsContainer = document.getElementById('radar-dots');
-  const gridContainer = document.getElementById('radar-grid');
-  const axesContainer = document.getElementById('radar-axes');
-  const labelsContainer = document.getElementById('radar-labels');
+window.projectIndustryMap = @json(
+  $project->projectIndustries->pluck('id', 'industry_id')
+);
+let evaluationState = {};
 
-  const centerX = 100;
-  const centerY = 100;
-  const radius = 80; // Bán kính tối đa của Radar (điểm 10)
-  const numCriteria = sliders.length;
+document.querySelectorAll('.location-tab').forEach((btn, index) => {
+    btn.classList.remove('active', 'border-b-primary', 'text-primary');
+    btn.classList.add('text-[#617589]', 'border-transparent');
 
-  // Khởi tạo Radar Grid & Labels
-  function initChart() {
-    gridContainer.innerHTML = '';
-    axesContainer.innerHTML = '';
-    labelsContainer.innerHTML = '';
-
-    // Vẽ 4 vòng lưới (25%, 50%, 75%, 100%)
-    [0.25, 0.5, 0.75, 1].forEach(level => {
-      let points = [];
-      for (let i = 0; i < numCriteria; i++) {
-        const angle = (Math.PI * 2 * i / numCriteria) - (Math.PI / 2);
-        const x = centerX + radius * level * Math.cos(angle);
-        const y = centerY + radius * level * Math.sin(angle);
-        points.push(`${x},${y}`);
-      }
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", `M ${points.join(' L ')} Z`);
-      gridContainer.appendChild(path);
-    });
-
-    // Vẽ Trục và Labels
-    sliders.forEach((slider, i) => {
-      const angle = (Math.PI * 2 * i / numCriteria) - (Math.PI / 2);
-
-      // Trục
-      const x2 = centerX + radius * Math.cos(angle);
-      const y2 = centerY + radius * Math.sin(angle);
-      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      line.setAttribute("x1", centerX);
-      line.setAttribute("y1", centerY);
-      line.setAttribute("x2", x2);
-      line.setAttribute("y2", y2);
-      axesContainer.appendChild(line);
-
-      // Label (HTML absolute)
-      const label = document.createElement('span');
-      label.className =
-        "absolute text-[9px] font-bold text-[#617589] uppercase tracking-wider text-center w-20 whitespace-normal leading-tight";
-      label.innerText = slider.dataset.name;
-      // Tính vị trí label bên ngoài radar
-      const labelRadius = radius + 14; // khoảng cách label với radar
-      const x = centerX + labelRadius * Math.cos(angle);
-      const y = centerY + labelRadius * Math.sin(angle);
-
-      // convert SVG coord → %
-      const labelX = (x / 200) * 100;
-      const labelY = (y / 200) * 100;
-
-      label.style.left = `${labelX}%`;
-      label.style.top = `${labelY}%`;
-      label.style.transform = 'translate(-50%, -50%)';
-      labelsContainer.appendChild(label);
-    });
-  }
-
-  function updateChart() {
-    let points = [];
-    let totalWeightedScore = 0;
-    dotsContainer.innerHTML = '';
-
-    sliders.forEach((slider, i) => {
-      const score = parseFloat(slider.value);
-      const weight = parseFloat(slider.dataset.weight) / 100;
-      totalWeightedScore += score * weight;
-
-      // Cập nhật text hiển thị số bên cạnh slider
-      slider.closest('.group').querySelector('.score-value').innerText = score.toFixed(1);
-
-      // Tính tọa độ điểm trên Radar
-      const angle = (Math.PI * 2 * i / numCriteria) - (Math.PI / 2);
-      const valRadius = (score / 10) * radius;
-      const x = centerX + valRadius * Math.cos(angle);
-      const y = centerY + valRadius * Math.sin(angle);
-      points.push(`${x},${y}`);
-
-      // Vẽ chấm tròn
-      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      circle.setAttribute("cx", x);
-      circle.setAttribute("cy", y);
-      circle.setAttribute("r", "3");
-      circle.setAttribute("fill", "#137fec");
-      dotsContainer.appendChild(circle);
-    });
-
-    // Cập nhật Polygon
-    polygon.setAttribute("d", `M ${points.join(' L ')} Z`);
-
-    // Cập nhật Total Score
-    document.getElementById('total-score-display').innerText = totalWeightedScore.toFixed(1);
-    document.getElementById('total-score-input').value = totalWeightedScore.toFixed(1);
-  }
-
-  // Gán sự kiện
-  sliders.forEach(slider => {
-    slider.addEventListener('change', updateChart);
-  });
-
-  initChart();
-  updateChart();
+    if (index === 0) {
+        btn.classList.add('active', 'border-b-primary', 'text-primary');
+        btn.classList.remove('text-[#617589]', 'border-transparent');
+    }
 });
+
+const radarColors = ['#137fec', '#f97316', '#22c55e', '#a855f7'];
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Lấy danh sách Industry IDs từ Tabs
+    const tabs = document.querySelectorAll('.location-tab');
+    const projectIndustryIds = [...tabs].map(btn => String(btn.dataset.projectIndustryId));
+    const sliders = document.querySelectorAll('.criterion-slider');
+    const numCriteria = sliders.length;
+
+    let activeProjectIndustryId = projectIndustryIds[0];
+
+    function getIndustryColor(id) {
+        const index = projectIndustryIds.indexOf(id);
+        return radarColors[index % radarColors.length];
+    }
+
+
+    projectIndustryIds.forEach(pid => {
+        evaluationState[pid] = { 
+            criteria: {}, 
+            totalScore: 0 
+        };
+        // Khởi tạo điểm mặc định (ví dụ 5.0) cho từng tiêu chí của mỗi location
+        sliders.forEach(slider => {
+            const critId = slider.dataset.criteriaId;
+            evaluationState[pid].criteria[critId] = parseFloat(slider.value);
+        });
+    });
+
+    const centerX = 100, centerY = 100, radius = 80;
+
+    // 3. Hàm tính tọa độ điểm (Build Points)
+    function getPointCoordinates(criteriaData) {
+        let points = [];
+        sliders.forEach((slider, i) => {
+            const critId = slider.dataset.criteriaId;
+            const score = criteriaData[critId] || 0;
+            const max = parseFloat(slider.max) || 10;
+            
+            const angle = (Math.PI * 2 * i / numCriteria) - (Math.PI / 2);
+            const valRadius = (score / max) * radius;
+            const x = centerX + valRadius * Math.cos(angle);
+            const y = centerY + valRadius * Math.sin(angle);
+            points.push(`${x},${y}`);
+        });
+        return points.length > 0 ? `M ${points.join(' L ')} Z` : '';
+    }
+
+    // 4. Hàm Render Radar (Vẽ nhiều lớp)
+    function renderRadar() {
+      const polygonContainer = document.getElementById('radar-polygons');
+      const dotsContainer = document.getElementById('radar-dots');
+
+      polygonContainer.innerHTML = '';
+      dotsContainer.innerHTML = '';
+
+      projectIndustryIds.forEach(pid => {
+          const criteriaData = evaluationState[pid].criteria;
+          const points = getPointCoordinates(criteriaData);
+          if (!points) return;
+
+          const color = getIndustryColor(pid);
+          const isActive = pid === activeProjectIndustryId;
+
+          // ===== Polygon =====
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", points);
+          path.setAttribute("fill", color);
+          path.setAttribute("fill-opacity", isActive ? "0.35" : "0.18");
+          path.setAttribute("stroke", color);
+          path.setAttribute("stroke-width", isActive ? "2.5" : "1.2");
+          path.style.transition = "all 0.3s ease";
+
+          polygonContainer.appendChild(path);
+
+          // ===== Dots (chỉ active) =====
+          if (isActive) {
+            sliders.forEach((slider, i) => {
+                const score = criteriaData[slider.dataset.criteriaId];
+                const max = parseFloat(slider.max) || 10;
+                const angle = (Math.PI * 2 * i / numCriteria) - (Math.PI / 2);
+                const valRadius = (score / max) * radius;
+
+                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    circle.setAttribute("cx", centerX + valRadius * Math.cos(angle));
+                    circle.setAttribute("cy", centerY + valRadius * Math.sin(angle));
+                    circle.setAttribute("r", "3");
+                    circle.setAttribute("fill", color);
+                    circle.setAttribute("stroke", "#fff");
+                    circle.setAttribute("stroke-width", "1");
+                    dotsContainer.appendChild(circle);
+                });
+            }
+        });
+    }
+
+
+    // 5. Hàm cập nhật điểm tổng (Total Score)
+    function updateHeaderScore() {
+        let totalWeightedScore = 0;
+        let maxTotalScore = 0;
+
+        sliders.forEach(slider => {
+            const score = evaluationState[activeProjectIndustryId].criteria[slider.dataset.criteriaId];
+            const weight = (parseFloat(slider.dataset.weight) || 0) / 100;
+            const max = parseFloat(slider.max) || 10;
+
+            totalWeightedScore += score * weight;
+            maxTotalScore += max * weight;
+        });
+        
+        evaluationState[activeProjectIndustryId].totalScore = parseFloat(totalWeightedScore.toFixed(2));
+        document.getElementById('total-score-display').innerText = totalWeightedScore.toFixed(1);
+        document.getElementById('total-score-max').innerText = maxTotalScore.toFixed(1);
+        const totalScoreInput = document.getElementById('total-score-input');
+        if (totalScoreInput) {
+            totalScoreInput.value = totalWeightedScore.toFixed(2);
+        }
+    }
+
+    // 6. Xử lý chuyển đổi Tab
+    document.querySelectorAll('.location-tab').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Cập nhật UI Tab
+            document.querySelectorAll('.location-tab').forEach(b => {
+                b.classList.remove('active', 'border-b-primary', 'text-primary');
+                b.classList.add('text-[#617589]', 'border-transparent');
+            });
+            this.classList.add('active', 'border-b-primary', 'text-primary');
+            this.classList.remove('text-[#617589]', 'border-transparent');
+
+            activeProjectIndustryId = this.dataset.projectIndustryId;
+            
+            // Cập nhật tên Header
+            const locationName = this.querySelector('span:last-child').innerText;
+            document.querySelector('h2.text-xl').innerText = `Evaluation: ${locationName}`;
+
+            // Đồng bộ Sliders với dữ liệu của Industry này
+            sliders.forEach(slider => {
+                const critId = slider.dataset.criteriaId;
+                if (evaluationState[activeProjectIndustryId].criteria[critId] === undefined) {
+                    evaluationState[activeProjectIndustryId].criteria[critId] = 0;
+                }
+                const val = evaluationState[activeProjectIndustryId].criteria[critId];
+                slider.value = val;
+                slider.closest('.group').querySelector('.score-value').innerText = val.toFixed(1);
+                // Đổi màu số hiển thị cho khớp với màu radar của industry đó
+                slider.closest('.group').querySelector('.score-value').style.color = getIndustryColor(activeProjectIndustryId);
+            });
+
+            updateHeaderScore();
+            renderRadar();
+        });
+    });
+
+    // 7. Xử lý khi kéo Sliders
+    sliders.forEach(slider => {
+        slider.addEventListener('input', function() {
+            const score = parseFloat(this.value);
+            evaluationState[activeProjectIndustryId].criteria[this.dataset.criteriaId] = score;
+            this.closest('.group').querySelector('.score-value').innerText = score.toFixed(1);
+            
+            updateHeaderScore();
+            renderRadar();
+        });
+    });
+
+    // 8. Khởi tạo Grid & Trục (Chỉ chạy 1 lần)
+    function initChartLayout() {
+        const gridContainer = document.getElementById('radar-grid');
+        const axesContainer = document.getElementById('radar-axes');
+        const labelsContainer = document.getElementById('radar-labels');
+
+        gridContainer.innerHTML = ''; axesContainer.innerHTML = ''; labelsContainer.innerHTML = '';
+
+        [0.25, 0.5, 0.75, 1].forEach(level => {
+            let pts = [];
+            for (let i = 0; i < numCriteria; i++) {
+                const angle = (Math.PI * 2 * i / numCriteria) - (Math.PI / 2);
+                pts.push(`${centerX + radius * level * Math.cos(angle)},${centerY + radius * level * Math.sin(angle)}`);
+            }
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", `M ${pts.join(' L ')} Z`);
+            gridContainer.appendChild(path);
+        });
+
+        sliders.forEach((slider, i) => {
+            const angle = (Math.PI * 2 * i / numCriteria) - (Math.PI / 2);
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", centerX); line.setAttribute("y1", centerY);
+            line.setAttribute("x2", centerX + radius * Math.cos(angle));
+            line.setAttribute("y2", centerY + radius * Math.sin(angle));
+            axesContainer.appendChild(line);
+
+            const label = document.createElement('span');
+            label.className = "absolute text-[9px] font-bold text-[#617589] uppercase tracking-wider text-center w-20 leading-tight";
+            label.innerText = slider.dataset.name;
+            const lx = centerX + (radius + 15) * Math.cos(angle);
+            const ly = centerY + (radius + 15) * Math.sin(angle);
+            label.style.left = `${(lx / 200) * 100}%`;
+            label.style.top = `${(ly / 200) * 100}%`;
+            label.style.transform = 'translate(-50%, -50%)';
+            labelsContainer.appendChild(label);
+        });
+    }
+
+    initChartLayout();
+    updateHeaderScore();
+    renderRadar();
+});
+
+document.getElementById('evaluation-form').addEventListener('submit', function (e) {
+    document.querySelectorAll('.dynamic-input').forEach(el => el.remove());
+
+    const form = this;
+
+    Object.keys(evaluationState).forEach(projectIndustryId => {
+        const state = evaluationState[projectIndustryId];
+
+        // total score
+        appendHidden(form, `evaluations[${projectIndustryId}][total_score]`, state.totalScore);
+
+        // criteria
+        Object.keys(state.criteria).forEach(criteriaId => {
+            const slider = document.querySelector(`[data-criteria-id="${criteriaId}"]`);
+            appendHidden(form,
+                `evaluations[${projectIndustryId}][criteria][${criteriaId}][score]`,
+                state.criteria[criteriaId]
+            );
+
+            appendHidden(form,
+                `evaluations[${projectIndustryId}][criteria][${criteriaId}][criteria_percentage]`,
+                slider.dataset.weight
+            );
+
+            appendHidden(form,
+                `evaluations[${projectIndustryId}][criteria][${criteriaId}][criteria_name]`,
+                slider.dataset.name
+            );
+        });
+    });
+});
+
+function appendHidden(form, name, value) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    input.classList.add('dynamic-input');
+    form.appendChild(input);
+}
+
 </script>
 @endsection

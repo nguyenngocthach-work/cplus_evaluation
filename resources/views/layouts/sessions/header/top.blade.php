@@ -8,18 +8,45 @@
       </div>
       <div class="flex flex-1 justify-end gap-8">
         <div class="hidden md:flex items-center gap-9">
-          <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            href="{{ route('admin.screen') }}">Dashboard</a>
-          <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            href="{{ route('locations.screen') }}">Locations</a>
-          <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            href="{{ route('clients.screen') }}">Clients</a>
-          <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            href="{{ route('projects.screen') }}">Projects</a>
-          <a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            href="{{ route('evaluations.screen') }}">Evaluations</a>
-          <a href="{{ route('reports.screen') }}" class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary
-          transition-colors">Reports</a>
+          <a
+            href="{{ route('admin.screen') }}"
+            class="text-sm leading-normal transition-colors 
+              {{ request()->routeIs('admin.screen') ? 'text-primary border-b-2 border-primary'
+              : 'text-[#617589] dark:text-gray-400 hover:text-primary'}}">
+            Dashboard
+          </a>
+
+          <a
+            href="{{ route('locations.screen') }}"
+            class="text-sm leading-normal transition-colors 
+            {{ request()->routeIs('locations.*') ? 'text-primary border-b-2 border-primary'
+              : 'text-[#617589] dark:text-gray-400 hover:text-primary'}}">
+            Locations
+          </a>
+
+          <a
+            href="{{ route('clients.screen') }}"
+            class="text-sm leading-normal transition-colors 
+              {{ request()->routeIs('clients.*') ? 'text-primary border-b-2 border-primary'
+              : 'text-[#617589] dark:text-gray-400 hover:text-primary'}}">
+            Clients
+          </a>
+
+            <a
+            href="{{ route('criteria.screen') }}"
+            class="text-sm leading-normal transition-colors 
+              {{ request()->routeIs('criteria.*') ? 'text-primary border-b-2 border-primary'
+              : 'text-[#617589] dark:text-gray-400 hover:text-primary'}}">
+            Criteria
+          </a>
+
+          <a
+            href="{{ route('projects.screen') }}"
+            class="text-sm leading-normal transition-colors
+              {{ request()->routeIs('projects.*') ? 'text-primary border-b-2 border-primary'
+              : 'text-[#617589] dark:text-gray-400 hover:text-primary'}}">
+            Projects
+          </a>
         </div>
         <div
           class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#f0f2f4] dark:border-gray-700"

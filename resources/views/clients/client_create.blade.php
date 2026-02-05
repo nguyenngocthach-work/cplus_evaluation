@@ -37,9 +37,14 @@
     </div>
   </div>
 
+    @if ($errors->any())
+      <div class="mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 text-sm">
+        {{ $errors->first() }}
+      </div>
+      @endif
   {{-- Main Form Card --}}
   <form id="clientForm" method="POST" action="{{ route('clients.store') }}"
-    class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" enctype="multipart/form-data">
     @csrf
 
     <div class="p-8 space-y-8">
@@ -154,8 +159,62 @@
 
       <hr class="border-gray-100">
 
+    {{-- Section: Client Logo --}}
+    <section>
+    <h5 class="flex items-center gap-2 text-blue-600 font-semibold mb-6">
+        <span class="material-symbols-outlined !text-[20px]">image</span>
+        Client Logo
+    </h5>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+
+        {{-- Upload Box --}}
+        <label
+        for="client_logo"
+        class="relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-xl cursor-pointer
+                border-gray-300 bg-gray-50 hover:bg-gray-100 transition group">
+
+        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+            <span class="material-symbols-outlined text-4xl text-gray-400 group-hover:text-blue-500">
+            cloud_upload
+            </span>
+            <p class="mb-2 text-sm text-gray-500">
+            <span class="font-semibold">Click to upload</span> or drag and drop
+            </p>
+            <p class="text-xs text-gray-400">PNG, JPG (Max 2MB)</p>
+        </div>
+
+        <input
+            id="client_logo"
+            name="client_logo"
+            type="file"
+            accept="image/png,image/jpeg"
+            class="hidden"
+            onchange="previewClientLogo(event)"
+        />
+        </label>
+
+        {{-- Preview --}}
+        <div class="flex items-center justify-center">
+        <div class="w-40 h-40 rounded-lg border border-gray-200 flex items-center justify-center bg-white">
+            <img
+            id="logoPreview"
+            src=""
+            alt="Client Logo Preview"
+            class="hidden w-full h-full object-contain p-2"
+            />
+            <span id="logoPlaceholder" class="text-sm text-gray-400">
+            Logo Preview
+            </span>
+        </div>
+        </div>
+
+    </div>
+    </section>
+
+        <hr class="border-gray-100">
       {{-- Section 4: Additional Notes --}}
-      <section>
+    <section>
         <h5 class="flex items-center gap-2 text-blue-600 font-semibold mb-6">
           <span class="material-symbols-outlined !text-[20px]">description</span>
           <i class="bi bi-journal-text"></i>
@@ -195,4 +254,18 @@
     </div>
   </form>
 </div>
+<script>
+function previewClientLogo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const preview = document.getElementById('logoPreview');
+  const placeholder = document.getElementById('logoPlaceholder');
+
+  preview.src = URL.createObjectURL(file);
+  preview.classList.remove('hidden');
+  placeholder.classList.add('hidden');
+}
+</script>
+
 @endsection

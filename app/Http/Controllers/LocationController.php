@@ -4,11 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Industry;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Models\PhotosLocation;
 
+use App\Jobs\UploadLocationPhotosJob;
+
+use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
 
 class LocationController extends Controller
 {
@@ -21,16 +27,18 @@ class LocationController extends Controller
                 'keyword' => 'nullable|string|max:255'
             ]);
 
-            $list = Industry::select(
-                'id',
-                'industry_name',
-                'description',
-                'street',
-                'city',
-                'state_province',
-                'zipcode',
-                'country'
-            );
+            $list = Industry::with('photos')
+                ->select(
+                    'id',
+                    'industry_name',
+                    'description',
+                    'street',
+                    'city',
+                    'state_province',
+                    'zipcode',
+                    'country',
+                    'created_at',
+                );
 
             if (!empty($data['keyword'])) {
                 $keyword = $data['keyword'];
@@ -65,9 +73,10 @@ class LocationController extends Controller
                 'state_province' => 'required|string|max:100',
                 'zipcode' => 'required|string|max:20',
                 'country' => 'required|string|max:100',
+                'photos' => 'nullable|array|max:7', // Giới hạn mảng tối đa 7 hình
+                'photos.*' => 'image|mimes:jpg,jpeg,png|max:5120', // Từng file phải là ảnh
                 // sau khi develop xong phan user va photos thi mo lai
                 // 'user_id' => 'required|numeric',
-                // 'photos_link' => 'required|string',
             ]);
 
             $user_id = 2; // to be removed later
@@ -86,8 +95,23 @@ class LocationController extends Controller
             $location->zipcode = $data['zipcode'];
             $location->country = $data['country'];
             $location->user_id = $data['user_id'];
-
             $location->save();
+
+            $photoPaths = [];
+
+            if ($request->hasFile('photos')) {
+                foreach ($request->file('photos') as $photo) {
+                    $photoPaths[] = $photo->store(
+                        'tmp/locations',
+                        'public'
+                    );
+                }
+            }
+
+            if (!empty($photoPaths)) {
+                UploadLocationPhotosJob::dispatch($location->id, $photoPaths);
+            }
+
             return redirect()->route('locations.screen')->with('success', 'Location created successfully.');   
         } catch (\Exception $e) {
             Log::error('Error in: ' . __METHOD__, [
@@ -102,7 +126,7 @@ class LocationController extends Controller
     public function update(Request $request){
         try{
             $data = $request->all();
-
+            
             $validator = Validator::make($data,[
                 'id' => 'required|numeric',
                 'industry_name'   => 'required|string|max:255',
@@ -112,12 +136,15 @@ class LocationController extends Controller
                 'state_province'  => 'nullable|string',
                 'zipcode'         => 'nullable|string',
                 'country'         => 'required|string',
+                'delete_photos'   => 'array',
+                'delete_photos.*' => 'numeric|exists:photos_location,img_id',
+                'new_photos.*'   => 'image|mimes:jpg,jpeg,png|max:5120',
             ]);
 
             if ($validator->fails()) {
                 return back()->withErrors($validator)->withInput();
             }
-
+            
             $industry = Industry::findOrFail($request->input('id'));
             $industry->update([
                 'industry_name'  => $request->industry_name,
@@ -129,11 +156,35 @@ class LocationController extends Controller
                 'country'        => $request->country,
             ]);
 
+            if (!empty($request->delete_photos)) {
+                $photos = PhotosLocation::whereIn('img_id', $request->delete_photos)->get();
+
+                foreach ($photos as $photo) {
+                    Storage::disk('public')->delete($photo->img_url);
+                    $photo->forceDelete();
+                } 
+            }
+
+            if ($request->hasFile('new_photos')) {
+                foreach ($request->file('new_photos') as $file) {
+
+                $directory = 'locations/' . $industry->id;
+
+                $path = $file->store($directory, 'public');
+
+                PhotosLocation::create([
+                    'industry_id' => $industry->id,
+                    'img_url'     => $path,
+                ]);
+            }
+            }
+            
             return redirect()
                 ->route('locations.screen')
                 ->with('success', 'Location updated successfully');
 
         } catch(\Exception $e){
+            dd($e);
             Log::error('Error in: ' . __METHOD__, [
                 'message' => $e->getMessage(),
                 'Line' => $e->getLine(),
@@ -163,4 +214,30 @@ class LocationController extends Controller
         }
     }
 
+    public function delete($id){
+        try{
+            $industry = Industry::with('photos')->findOrFail($id);
+            $industry->delete();
+
+            if($industry->photos){
+                foreach($industry->photos as $photo){
+                    // Delete photo file from storage
+                    if (\Storage::disk('public')->exists($photo->img_url)) {
+                        \Storage::disk('public')->delete($photo->img_url);
+                    }
+                }
+            }
+            return redirect()
+                ->route('locations.screen')
+                ->with('success', 'Location deleted successfully');
+        } catch(\Exception $e){
+            dd($e);
+            Log::error('Error in: ' . __METHOD__, [
+                'message' => $e->getMessage(),
+                'Line' => $e->getLine(),
+                'File' => $e->getFile()
+            ]);
+            return response()->json(['error' => 'Failed to delete location'], 400);
+        }
+    }
 }

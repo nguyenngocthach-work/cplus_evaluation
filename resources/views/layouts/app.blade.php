@@ -15,13 +15,19 @@
   @stack('styles')
 </head>
 
-<body class="bg-background-light dark:bg-background-dark font-display text-[#111418] dark:text-white overflow-x-hidden">
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111418] dark:text-white">
 
   {{-- Header --}}
   @include('layouts.sessions.header.top')
+  <div class="flex h-[calc(100vh-4rem)] overflow-hidden">
 
-  @yield('content')
-
+  {{-- Sidebar --}}
+    @include('layouts.sessions.sidebar.sidebar')
+    <main class="flex-1 overflow-y-auto">
+      @yield('content')
+    </main>
+  </div>
+  
   {{-- Global scripts --}}
   @include('layouts.sessions.scripts')
 

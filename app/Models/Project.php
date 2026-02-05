@@ -18,7 +18,6 @@ class Project extends Model
         'description',
         'userId',
         'clientId',
-        'industry_id',
         'start_date',
         'end_date',
         'status'
@@ -38,9 +37,14 @@ class Project extends Model
         return $this->belongsTo(User::class, 'userId');
     }
 
-    public function industry()
+    public function industries()
     {
-        return $this->belongsTo(Industry::class, 'industry_id');
+        return $this->belongsToMany(
+            Industry::class,
+            'project_industry',
+            'project_id',
+            'industry_id'
+        )->whereNull('project_industry.deleted_at');
     }
 
     public function client()
@@ -63,8 +67,8 @@ class Project extends Model
         )->withPivot(['weight', 'custom_description']);
     }
 
-    public function judgment()
+    public function projectIndustries()
     {
-        return $this->hasOne(Judgment::class, 'project_id', 'project_id');
+        return $this->hasMany(ProjectIndustry::class, 'project_id', 'project_id');
     }
 }
