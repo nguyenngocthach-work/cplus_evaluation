@@ -143,9 +143,15 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('criteria')->group(function (){
         Route::get('/', [CriteriaController::class, 'index'])
             ->name('criteria.screen');
-        Route::post('/', [CriteriaController::class, 'store'])
-            ->name('criteria.store');
-        Route::put('/{id}/update', [CriteriaController::class, 'update'])
-            ->name('criteria.update');
+        Route::get('/{criteria}', [CriteriaController::class, 'show'])
+            ->name('criteria.detail');
+        Route::post('/group', [CriteriaController::class, 'storeGroup'])
+            ->name('criteria.group.store');
+        Route::put('/group/{id}', [CriteriaController::class, 'updateGroup'])
+            ->name('criteria.group.update');
+        Route::post('/{groupId}/child', [CriteriaController::class, 'storeChild'])
+            ->name('criteria.child.store');
+        Route::put('/child/{id}', [CriteriaController::class, 'updateChild'])
+            ->name('criteria.child.update');
     });
 });

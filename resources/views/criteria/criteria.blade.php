@@ -18,17 +18,17 @@
         <div class="flex flex-col md:flex-row justify-between gap-6 p-4 items-start md:items-center">
           <div class="flex min-w-72 flex-col gap-2">
             <h1 class="text-[#111418] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
-              Manage Criteria
+              Manage Criteria Group
             </h1>
             <p class="text-[#617589] dark:text-gray-400 text-base font-normal leading-normal">
-              View and manage evaluation criteria, weights, and descriptions.
+              View and manage evaluation criteria group, weights, and descriptions.
             </p>
           </div>
 
           <button onclick="openAddModal()" 
             class="flex items-center h-10 px-4 bg-primary text-white rounded-lg shadow-sm hover:bg-blue-600 transition font-bold text-sm">
             <span class="material-symbols-outlined mr-2 !text-lg">add</span>
-            Add Criteria
+            Add Criteria Group
           </button>
         </div>
 
@@ -85,7 +85,6 @@
                   <td class="px-6 py-4 text-sm text-[#617589] dark:text-gray-400">
                     {{ $item->description ?? '-' }}
                   </td>
-
                   <td class="px-6 py-4 text-right text-sm">
                     <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onclick="openUpdateModal({{ $item->id }})" class="p-2 text-[#617589] hover:text-primary transition-colors">
@@ -94,6 +93,11 @@
                       <button onclick="openUpdateModal({{ $item->id }}, 'view')" class="p-2 text-[#617589] hover:text-[#111418] dark:hover:text-white transition-colors">
                         <span class="material-symbols-outlined !text-lg">visibility</span>
                       </button>
+                      <a href=" {{ route('criteria.detail', $item->id) }} "
+                        class="p-2 text-[#617589] hover:text-[#111418] dark:text-gray-400 dark:hover:text-white transition-colors"
+                        title="View Details">
+                        <span class="material-symbols-outlined !text-lg">chevron_right</span>
+                      </a>
                     </div>
                   </td>
                 </tr>
@@ -124,7 +128,7 @@
   <div class="bg-white dark:bg-[#111a22] rounded-xl p-6 w-[420px]">
     <h3 class="text-lg font-bold mb-4">Add Criteria</h3>
 
-    <form method="POST" action="{{ route('criteria.store') }}">
+    <form method="POST" action="{{ route('criteria.group.store') }}">
       @csrf
 
       <label class="block mb-3">
@@ -134,9 +138,13 @@
       </label>
 
       <label class="block mb-3">
-        <span class="text-sm font-medium">Weight (%)</span>
-        <input name="criteriaPercent" type="number" min="0" max="100" required
-          class="mt-1 w-full h-11 rounded-lg border px-4 text-sm">
+        <span class="text-sm font-medium">Type</span>
+        <select name="criteriaTypeId" required class="mt-1 w-full h-11 rounded-lg border px-4 text-sm">
+          <option value="">-- Select Type --</option>
+          @foreach($types as $t)
+            <option value="{{ $t->id }}">{{ $t->name }}</option>
+          @endforeach
+        </select>
       </label>
 
       <label class="block mb-5">
@@ -171,12 +179,6 @@
           class="mt-1 w-full h-11 rounded-lg border px-4 text-sm">
       </label>
 
-      <label class="block mb-3">
-        <span class="text-sm font-medium">Weight (%)</span>
-        <input id="u_percent" name="criteriaPercent" type="number" min="0" max="100" required
-          class="mt-1 w-full h-11 rounded-lg border px-4 text-sm">
-      </label>
-
       <label class="block mb-5">
         <span class="text-sm font-medium">Description</span>
         <textarea id="u_description" name="description"
@@ -193,6 +195,13 @@
     </form>
   </div>
 </div>
+@if ($errors->any() || session('error'))
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    openAddModal();
+  });
+</script>
+@endif
 
 
 <script>
@@ -216,10 +225,9 @@ function openUpdateModal(id, mode = 'edit') {
   const form  = document.getElementById('updateCriteriaForm');
   const btn   = form.querySelector('button[type="submit"]');
 
-  form.action = `/criteria/${id}/update`;
+  form.action = `/criteria/group/${id}`;
 
   document.getElementById('u_name').value = data.criteria_name;
-  document.getElementById('u_percent').value = data.criteriaPercent;
   document.getElementById('u_description').value = data.description ?? '';
 
   form.querySelectorAll('input, textarea').forEach(i => i.disabled = false);

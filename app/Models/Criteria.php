@@ -10,7 +10,11 @@ class Criteria extends Model
     protected $table = 'criteria';
 
     protected $fillable = [
+        'criteria_name',
+        'criteriaTypeId',
+        'parentId',
         'criteriaPercent',
+        'description',        
     ];
 
     public $timestamps = true;
