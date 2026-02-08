@@ -58,18 +58,29 @@ class CriteriaController extends Controller
     }
   }
 
-  public function show($groupId)
+  public function show($groupId, Request $request)
   {
     try {
-      $group = Criteria::whereNull('parentId')->findOrFail($groupId);
+      $data = $request->all();
 
+      $validator = Validator::make($data, [
+        'page' => 'nullable|numeric|min:1',
+        'keyword' => 'nullable|string|max:255',
+      ]);
+
+      $group = Criteria::whereNull('parentId')->findOrFail($groupId);
+      
       $children = Criteria::query()
         ->where('parentId', $groupId)
         ->with('type:id,name') // lấy criteria_type.name
         ->select('id', 'criteria_name', 'criteriaTypeId', 'parentId', 'criteriaPercent', 'description', 'created_at')
-        ->orderBy('created_at', 'desc')
-        ->paginate(5);
+        ->orderBy('created_at', 'desc');
 
+      if (!empty($data['keyword'])) {
+        $children->where('criteria_name', 'like', '%' . $data['keyword'] . '%');
+      }
+
+      $children = $children->paginate(5)->withQueryString();
       $types = CriteriaType::select('id', 'name')->orderBy('name')->get();
 
       return view('criteria.criteria_group', compact('group', 'children', 'types'));

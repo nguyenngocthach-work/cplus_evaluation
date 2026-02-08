@@ -42,7 +42,7 @@
         <div
           class="flex flex-col md:flex-row justify-between gap-4 px-4 py-4 bg-white dark:bg-[#111a22] rounded-t-xl border-x border-t border-[#dbe0e6] dark:border-gray-700 mt-4">
           <div class="flex flex-1 gap-4 flex-col md:flex-row">
-            <form method="GET" action="{{ route('criteria.screen') }}" class="flex flex-1 gap-4">
+            <form method="GET" action="{{ route('criteria.detail', $group->id) }}" class="flex flex-1 gap-4">
               <label class="flex flex-col min-w-40 flex-1 max-w-md relative group">
                 <span class="material-symbols-outlined absolute left-4 top-3.5 text-[#617589]">search</span>
                 <input name="keyword" value="{{ request('keyword') }}"
