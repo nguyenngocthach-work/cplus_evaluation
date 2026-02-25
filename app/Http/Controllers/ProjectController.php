@@ -7,6 +7,10 @@ use App\Models\Criteria;
 use App\Models\Judgment;
 use App\Models\JudgmentDetail;
 use App\Models\ProjectIndustry;
+use App\Models\Industry;
+use App\Models\Client;
+use App\Models\ProjectCriteria;
+use App\Models\ProjectCriteriaTarget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -64,76 +68,101 @@ class ProjectController extends Controller
     }
     public function create()
     {
-        $criteria = Criteria::select(
-            'id',
-            'criteria_name',
-            'criteriaPercent',
-            'description'
-        )
+        $criteria = Criteria::with([
+            'children', 
+            'children.type:id,name'
+        ])
         ->orderBy('created_at', 'desc')
+        ->whereNull('parentId')
         ->get();
 
-        return view('project.project_add', compact('criteria'));
+        $locations = Industry::all();
+        $client = Client::all();
+
+        return view('project.project_add', compact('criteria', 'locations', 'client'));
     }
     
     public function store(Request $request)
     {
-        try{
-            $validated = $request->validate([
-                'project_name' => 'required|string|max:255',
-                'description'  => 'nullable|string',
-                'start_date'   => 'required|date',
-                'end_date'     => 'required|date|after_or_equal:start_date',
-                'locations'    => 'nullable|array',
-                'locations.*'  => 'exists:industry,id',
-                'criteria_ids' => 'required|array',
-                'criteria_ids.*' => 'exists:criteria,id',
+        try {
+            $request->validate([
+                'project_name'    => 'required|string|max:255',
+                'description'     => 'nullable|string',
+                'start_date'      => 'required|date',
+                'end_date'        => 'required|date|after_or_equal:start_date',
+                'locations'       => 'nullable|array',
+                'locations.*'     => 'exists:industry,id',
+                'clients'         => 'nullable|array',
+                'evaluation_data' => 'nullable|string',
             ]);
-            // sau khi xong auth sẽ gởi user id từ view về
-            $userId = 2;
 
+            $userId = auth()->user()->id;
+
+            // 1. Tạo project
             $project = Project::create([
                 'project_name' => $request->project_name,
                 'description'  => $request->description,
-                'start_date'    => $request->start_date,
-                'end_date'      => $request->end_date,
+                'start_date'   => $request->start_date,
+                'end_date'     => $request->end_date,
                 'userId'       => $userId,
-                'clientId'     => $request->client_id,
+                'clientId'     => $request->clients[0] ?? null, // client đầu tiên
                 'status'       => 0,
             ]);
 
-            if ($request->filled('locations')) {
-                foreach ($request->locations as $industryId) {
-                    ProjectIndustry::create([
-                        'project_id'  => $project->project_id,
-                        'industry_id' => $industryId,
+            // 2. Lưu locations → project_industry
+            $locations = $request->locations ?? [];
+            foreach ($locations as $industryId) {
+                ProjectIndustry::create([
+                    'project_id'  => $project->project_id,
+                    'industry_id' => $industryId,
+                ]);
+            }
+
+            // 3. Parse evaluation_data JSON
+            $evaluationData = [];
+            if ($request->filled('evaluation_data')) {
+                $evaluationData = json_decode($request->evaluation_data, true) ?? [];
+            }
+
+            foreach ($evaluationData as $industryId => $locationData) {
+                $parents = $locationData['parents'] ?? [];
+
+                foreach ($parents as $parentId => $parentData) {
+                    $parentWeight = (int) ($parentData['criteriaPercent'] ?? 0);
+
+                    // 4. Lưu parent → lấy id vừa insert
+                    $projectCriteria = ProjectCriteria::create([
+                        'project_id'         => $project->project_id,
+                        'industry_id'        => (int) $industryId,
+                        'criteria_id'        => (int) $parentId,
+                        'weight'             => $parentWeight,
+                        'custom_description' => null,
                     ]);
+
+                    // 5. Lưu children với project_criteria_id trỏ về parent vừa tạo
+                    $children = $parentData['children'] ?? [];
+                    foreach ($children as $childId => $childData) {
+                        ProjectCriteriaTarget::create([
+                            'project_id'          => $project->project_id,
+                            'project_criteria_id' => $projectCriteria->id, // ← FK
+                            'industry_id'         => (int) $industryId,
+                            'criteria_id'         => (int) $childData['id'],
+                            'parent_criteria_id'  => (int) $parentId,
+                            'criteria_type_id'    => $childData['criteriaTypeId'] ?? null,
+                            'target_value'        => $childData['value'] ?? null,
+                            'weight'              => (int) ($childData['criteriaPercent'] ?? 0),
+                        ]);
+                    }
                 }
             }
-
-            $criteriaData = [];
-            if ($request->has('criteria_ids')) {
-                foreach ($request->criteria_ids as $id) {
-                    $criteriaData[$id] = [
-                        'weight' => $request->criteria_percent[$id] ?? 0,
-                        'custom_description' => $request->criteria_description[$id] ?? '',
-                    ];
-                }
-                
-                $project->criteria()->sync($criteriaData);
-            }
-
-            $project->criteria()->sync($criteriaData);
-
-            $project->save();
-            
             return redirect()->route('projects.screen')
                 ->with('success', 'Project created successfully');
-        } catch(\Exception $e){ 
-            Log::error('Error in: ' . __METHOD__, [
+
+        } catch (\Exception $e) {
+            \Log::error('Error in: ' . __METHOD__, [
                 'message' => $e->getMessage(),
-                'Line' => $e->getLine(),
-                'File' => $e->getFile()
+                'line'    => $e->getLine(),
+                'file'    => $e->getFile(),
             ]);
             return back()->withInput()->with('error', 'Error: ' . $e->getMessage());
         }

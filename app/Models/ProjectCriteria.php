@@ -11,6 +11,7 @@ class ProjectCriteria extends Model
 
     protected $fillable = [
         'project_id',
+        'industry_id',
         'criteria_id',
         'weight',
         'custom_description',
@@ -24,5 +25,10 @@ class ProjectCriteria extends Model
     public function project()
     {
         return $this->belongsTo(Project::class, 'project_id');
+    }
+
+    public function targets()
+    {
+        return $this->hasMany(ProjectCriteriaTarget::class, 'project_criteria_id');
     }
 }
