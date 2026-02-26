@@ -164,8 +164,8 @@ input[type="checkbox"].criteria-cb {
           <div class="hidden md:grid grid-cols-12 gap-4 pb-3 border-b border-[#f0f2f4] dark:border-gray-700 mb-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
             <div class="col-span-4">Criterion Name</div>
             <div class="col-span-2">Weight (%)</div>  
+            <div class="col-span-3">Value</div>
             <div class="col-span-2">Type</div>
-            <div class="col-span-3">Target Value</div>
             <div class="col-span-1 text-center">Action</div>
           </div>
 
@@ -454,7 +454,6 @@ input[type="checkbox"].criteria-cb {
 
       Object.keys(parents).forEach(pId => {
           const parent = parents[pId];
-          console.log('%', parent.info.criteriaPercent);
           const parentBlock = document.createElement('div');
           parentBlock.className = "mb-6 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm";
           parentBlock.innerHTML = `
@@ -494,6 +493,7 @@ input[type="checkbox"].criteria-cb {
                   const child = children[cId];
                   const typeId = child.typeId ?? child.info.criteriaTypeId ?? child.info.type?.id;
 									let valueFieldHTML = '';
+									let displayUnit = child.info?.type?.name ?? '';
 									if (typeId == 4) { // yes/no
 											valueFieldHTML = `
 													<select 
@@ -519,9 +519,9 @@ input[type="checkbox"].criteria-cb {
 									else {
 											valueFieldHTML = `
 													<input type="text" value="${child.value ?? ''}"
-															oninput="updateChildField('${pId}', '${cId}', 'value', this.value)"
-															placeholder="Enter target value..."
-															class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-primary outline-none" />
+                              oninput="updateChildField('${pId}', '${cId}', 'value', this.value)"
+                              placeholder="Enter description..."
+                              class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-primary outline-none" />
 											`;
 									}
                   const row = document.createElement('div');
@@ -543,11 +543,10 @@ input[type="checkbox"].criteria-cb {
                       <div class="col-span-2">
 												${valueFieldHTML}
                       </div>
-                      <div class="col-span-4">
-                          <input type="text" value="${child.value ?? ''}"
-                              oninput="updateChildField('${pId}', '${cId}', 'value', this.value)"
-                              placeholder="Enter target value..."
-                              class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-primary outline-none" />
+                      <div class="col-span-3">
+                          <div class="text-xs text-gray-400 italic">
+															${displayUnit ? displayUnit : `no type specified`} 
+													</div>
                       </div>
                   `;
                   childContainer.appendChild(row);
@@ -590,11 +589,11 @@ input[type="checkbox"].criteria-cb {
     let percent = 0;
 
     if (child.typeId == 4) { // yes/no
-        percent = selectedValue === 'yes' ? 100 : 0;
+        percent = selectedValue === 'yes' ? child.info.criteriaPercent : 0;
     }
 
     if (child.typeId == 3) { // 2H4R/4H9R
-        percent = selectedValue === '4H9R' ? 100 : 50;
+        percent = selectedValue === '4H9R' ? child.info.criteriaPercent : child.info.criteriaPercent / 2;
     }
 
     child.percentage = percent;

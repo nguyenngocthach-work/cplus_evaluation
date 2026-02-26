@@ -59,16 +59,23 @@ class Project extends Model
 
     public function criteria()
     {
-        return $this->belongsToMany(
-            Criteria::class,
-            'project_criteria',
-            'project_id',
-            'criteria_id'
-        )->withPivot(['weight', 'custom_description']);
+        return $this->belongsTo(Criteria::class, 'criteria_id');
     }
 
     public function projectIndustries()
     {
         return $this->hasMany(ProjectIndustry::class, 'project_id', 'project_id');
+    }
+
+    public function targets()
+    {
+        return $this->hasMany(
+            ProjectCriteriaTarget::class,
+            'parent_criteria_id',
+            'criteria_id'
+        )->whereColumn(
+            'project_criteria_target.project_id',
+            'project_criteria.project_id'
+        );
     }
 }

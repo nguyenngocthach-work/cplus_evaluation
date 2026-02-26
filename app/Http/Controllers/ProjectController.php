@@ -249,34 +249,95 @@ class ProjectController extends Controller
         return new StreamedResponse($callback, 200, $headers);
     }
 
-    public function getById(Project $project){
-        try{
-
-            if ($project->status > 3) {
-                return redirect()
-                    ->back()
-                    ->with('error', 'Dự án này đã được khóa, không thể cập nhật.');
-            }
-            
+    public function getById(Project $project)
+    {
+        try {
             $project->load([
                 'client',
                 'industries:id,industry_name',
-                'criteria' => function ($q) {
-                    $q->withPivot(['weight', 'custom_description']);
-                }
+                'projectCriteria.criteria:id,criteria_name,criteriaPercent,criteriaTypeId',
+                'projectCriteria.targets.criteria:id,criteria_name,criteriaPercent,criteriaTypeId,parentId',
+                'projectCriteria.targets.criteriaType:id,name',
             ]);
 
-            $allCriteria = Criteria::latest()->get();
+            $evaluationState = [];
 
-            return view('project.project_update', compact('project', 'allCriteria'));
-        } catch(\Exception $e){
+            foreach ($project->projectCriteria as $pc) {
+                $industryId = $pc->industry_id;
+
+                if (!isset($evaluationState[$industryId])) {
+                    $evaluationState[$industryId] = ['parents' => []];
+                }
+
+                $parentId = $pc->criteria_id;
+                $evaluationState[$industryId]['parents'][$parentId] = [
+                    'id'              => $parentId,
+                    'criteriaPercent' => $pc->weight,
+                    'info'            => [
+                        'id'             => $pc->criteria->id ?? $parentId,
+                        'criteria_name'  => $pc->criteria->criteria_name ?? '',
+                        'criteriaPercent'=> $pc->criteria->criteriaPercent ?? 0,
+                        'criteriaTypeId' => null,
+                        'children'       => [],
+                    ],
+                    'weight'   => $pc->weight,
+                    'children' => [],
+                ];
+
+                foreach ($pc->targets as $target) {
+                    $childId = $target->criteria_id;
+                    $evaluationState[$industryId]['parents'][$parentId]['children'][$childId] = [
+                        'id'             => $childId,
+                        'criteriaTypeId' => $target->criteria_type_id,
+                        'parentId'       => $parentId,
+                        'criteriaPercent'=> $target->weight,
+                        'name'           => $target->criteria->criteria_name ?? '',
+                        'value'          => $target->target_value ?? '',
+                        'originalPercent' => $target->criteria->criteriaPercent ?? 0,
+                        'info' => [
+                            'id'             => $childId,
+                            'criteria_name'  => $target->criteria->criteria_name ?? '',
+                            'criteriaTypeId' => $target->criteria_type_id,
+                            'parentId'       => $parentId,
+                            'criteriaPercent'=> $target->weight,
+                            'originalPercent' => $target->criteria->criteriaPercent ?? 0,
+                            'type'           => $target->criteriaType ? [
+                                'id'   => $target->criteriaType->id,
+                                'name' => $target->criteriaType->name,
+                            ] : null,
+                        ],
+                        'percentage' => $target->weight,
+                        'typeId'     => $target->criteria_type_id,
+                    ];
+
+                    $evaluationState[$industryId]['parents'][$parentId]['info']['children'][] = [
+                        'id'             => $childId,
+                        'criteria_name'  => $target->criteria->criteria_name ?? '',
+                        'criteriaTypeId' => $target->criteria_type_id,
+                        'parentId'       => $parentId,
+                        'criteriaPercent'=> $target->weight,
+                        'type'           => $target->criteriaType ? [
+                            'id'   => $target->criteriaType->id,
+                            'name' => $target->criteriaType->name,
+                        ] : null,
+                    ];
+                }
+            }
+
+            return view('project.project_update', compact(
+                'project',
+                'evaluationState'   
+            ));
+
+        } catch (\Exception $e) {
             Log::error('get project detail failed', [
                 'message' => $e->getMessage(),
-                'line' => $e->getLine(),
+                'line'    => $e->getLine(),
+                'file'    => $e->getFile(),
             ]);
             return redirect()
                 ->back()
-                ->with('error', 'get project detail failed.');
+                ->with('error', 'get project detail failed: ' . $e->getMessage());
         }
     }
 
@@ -285,10 +346,10 @@ class ProjectController extends Controller
         try{
             $project->load([
                 'client',
-                'industries:id,industry_name',
-                'criteria' => function ($q) {
-                    $q->withPivot(['weight', 'custom_description']);
-                }
+                'industries',
+                'projectCriteria.criteria',           
+                'projectCriteria.targets.criteria', 
+                'projectCriteria.targets.criteriaType',
             ]);
 
             return view('project.project_detail', compact('project'));
@@ -305,60 +366,96 @@ class ProjectController extends Controller
 
     public function update(Request $request, $id)
     {
-        try{
-            $project = Project::with('criteria')->findOrFail($id);
-            $data = $request->all();    
-            $validated = $request->validate([
-                'project_name' => 'required|string|max:255',
-                'description'  => 'nullable|string',
-                'start_date'   => 'required|date',
-                'end_date'     => 'required|date|after:start_date',
-                'status' => 'required|integer|between:0,4',
-                'criteria_ids' => 'required|array',
-                'criteria_ids.*' => 'exists:criteria,id',
+        try {
+            $project = Project::findOrFail($id);
+
+            $request->validate([
+                'evaluation_data' => 'nullable|string',
             ]);
-            // sau khi xong auth sẽ gởi user id từ view về
-            $userId = 2;
+
+            $userId = auth()->user()->id;
+            $status = 0;
 
             $project->update([
-                'project_name' => $request->project_name,
-                'description'  => $request->description,
-                'start_date'   => $request->start_date,
-                'end_date'     => $request->end_date,
-                'clientId'     => $request->client_id,
-                'userId'       => $userId,
-                'status'       => $request->status,
+                'userId'   => $userId,
+                'status'   => $status,
             ]);
 
-            if ($request->filled('locations')) {
-                $project->industries()->sync($request->locations);
-            } else {
-                $project->industries()->detach();
+            // 2. Parse evaluation_data
+            $evaluationData = [];
+            if ($request->filled('evaluation_data')) {
+                $evaluationData = json_decode($request->evaluation_data, true) ?? [];
             }
 
-            $syncData = [];
-            foreach ($request->criteria_ids as $cid) {
-                $syncData[$cid] = [
-                    'weight' => $request->criteria_percent[$cid] ?? 0,
-                    'custom_description' => $request->criteria_description[$cid] ?? '',
-                ];
+            if (empty($evaluationData)) {
+                return redirect()->route('projects.screen')
+                    ->with('success', 'Project updated successfully');
             }
 
-        $project->criteria()->sync($syncData);
+            //Lấy danh sách industry_id có trong request
+            $incomingIndustryIds = array_keys($evaluationData);
 
-        return redirect()->route('projects.screen')
-            ->with('success', 'Project updated successfully');
-        } catch(\Exception $e){
-            dd($e);
-            Log::error('update project detail failed', [
+            //Xóa project_criteria của những industry có trong payload
+            $existingCriteriaIds = ProjectCriteria::where('project_id', $project->project_id)
+                ->whereIn('industry_id', $incomingIndustryIds)
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($existingCriteriaIds)) {
+                //Xóa targets trước (FK constraint)
+                ProjectCriteriaTarget::whereIn('project_criteria_id', $existingCriteriaIds)
+                    ->delete();
+
+                // Xóa parent criteria
+                ProjectCriteria::whereIn('id', $existingCriteriaIds)->delete();
+            }
+
+            //Insert lại từ evaluationData
+            foreach ($evaluationData as $industryId => $locationData) {
+                $parents = $locationData['parents'] ?? [];
+
+                foreach ($parents as $parentId => $parentData) {
+                    $parentWeight = (int) ($parentData['criteriaPercent'] ?? 0);
+
+                    $projectCriteria = ProjectCriteria::create([
+                        'project_id'         => $project->project_id,
+                        'industry_id'        => (int) $industryId,
+                        'criteria_id'        => (int) $parentId,
+                        'weight'             => $parentWeight,
+                        'custom_description' => null,
+                    ]);
+
+                    $children = $parentData['children'] ?? [];
+                    foreach ($children as $childId => $childData) {
+                        ProjectCriteriaTarget::create([
+                            'project_id'          => $project->project_id,
+                            'project_criteria_id' => $projectCriteria->id,
+                            'industry_id'         => (int) $industryId,
+                            'criteria_id'         => (int) ($childData['id'] ?? $childId),
+                            'parent_criteria_id'  => (int) $parentId,
+                            'criteria_type_id'    => $childData['criteriaTypeId'] ?? null,
+                            'target_value'        => $childData['value'] ?? null,
+                            'weight'              => (int) ($childData['criteriaPercent'] ?? 0),
+                        ]);
+                    }
+                }
+            }
+
+            return redirect()->route('projects.screen')
+                ->with('success', 'Project updated successfully');
+
+        } catch (\Exception $e) {
+            Log::error('update project failed', [
                 'message' => $e->getMessage(),
-                'line' => $e->getLine(),
+                'line'    => $e->getLine(),
+                'file'    => $e->getFile(),
             ]);
             return redirect()
                 ->back()
-                ->with('error', 'update project detail failed.');
+                ->with('error', 'Update failed: ' . $e->getMessage());
         }
     }
+
 
     public function delete($project_id)
     {

@@ -15,6 +15,7 @@ class ProjectCriteriaTarget extends Model
         'parent_criteria_id',
         'criteria_type_id',
         'target_value',
+        'description',
         'weight',
     ];
 
@@ -35,5 +36,9 @@ class ProjectCriteriaTarget extends Model
     public function projectCriteria()
     {
         return $this->belongsTo(ProjectCriteria::class, 'project_criteria_id');
+    }
+    public function criteriaType()
+    {
+        return $this->belongsTo(CriteriaType::class, 'criteria_type_id');
     }
 }
