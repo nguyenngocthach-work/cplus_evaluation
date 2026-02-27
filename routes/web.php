@@ -50,8 +50,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{project}/detail', [ProjectController::class, 'detail'])
             ->name('projects.detail');
 
-        Route::get('/{project}/evaluations', [ProjectController::class, 'getEvaluationsById'])
-            ->name('projects.getEvaluationsId');
+        // Route::get('/{project}/evaluations', [ProjectController::class, 'getEvaluationsById'])
+        //     ->name('projects.getEvaluationsId');
+
+        Route::get('evaluations/{project}', [EvaluationsController::class, 'getEvaluationsById'])
+            ->name('projects.evaluations.screen');
+
+        Route::get('evaluations/{project}/export', [EvaluationsController::class, 'exportAll'])
+            ->name('projects.evaluations.export');
+            
+        Route::get('evaluations/{project}/export-location/{industry}', [EvaluationsController::class, 'exportLocation'])
+            ->name('projects.evaluations.exportLocation');
 
         Route::post('/evaluations', [ProjectController::class, 'scoreEvaluation'])
             ->name('projects.evaluationsScore');
@@ -130,14 +139,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('evaluations')->group(function () {
-        Route::get('/', [EvaluationsController::class, 'index'])
-            ->name('evaluations.screen');
-
-        Route::get('/create', [EvaluationsController::class, 'create'])
-            ->name('evaluations.create.screen');
-
-        Route::post('/', [EvaluationsController::class, 'store'])
-            ->name('evaluations.store');
+        
     });
 
     Route::prefix('criteria')->group(function (){

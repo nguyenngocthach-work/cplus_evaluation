@@ -196,7 +196,7 @@
                       title="Delete">
                       <span class="material-symbols-outlined !text-lg">delete</span>
                     </button>
-                    <a href="{{ route('projects.getEvaluationsId', $project) }}"
+                    <a href="{{ route('projects.evaluations.screen', $project) }}"
                       class="p-2 text-[#617589] hover:text-[#111418] dark:text-gray-400 dark:hover:text-white transition-colors"
                       title="View Evaluations">
                       <span class="material-symbols-outlined !text-lg">chevron_right</span>

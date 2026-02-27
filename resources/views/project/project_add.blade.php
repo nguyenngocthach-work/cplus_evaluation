@@ -593,7 +593,7 @@ input[type="checkbox"].criteria-cb {
     }
 
     if (child.typeId == 3) { // 2H4R/4H9R
-        percent = selectedValue === '4H9R' ? child.info.criteriaPercent : child.info.criteriaPercent / 2;
+        percent = selectedValue === '4H9R' ? child.info.criteriaPercent : child.info.criteriaPercent * 0.6;
     }
 
     child.percentage = percent;

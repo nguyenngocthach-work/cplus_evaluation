@@ -393,7 +393,7 @@ function handleSpecialType(pId, cId, selectedValue) {
 
     if (child.typeId == 3) {
         // 4H9R → full basePercent, 2H4R → nửa basePercent
-        child.percentage = selectedValue === '4H9R' ? basePercent : Math.round(basePercent / 2);
+        child.percentage = selectedValue === '4H9R' ? basePercent : Math.round(basePercent * 0.6);
     }
     renderCriteriaUI();
 }
