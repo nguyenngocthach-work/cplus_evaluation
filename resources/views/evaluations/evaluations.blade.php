@@ -50,7 +50,8 @@ body { font-family: 'Manrope', sans-serif; }
       </div>
       <div class="flex gap-2">
         <a href="{{ route('projects.evaluations.export', $project) }}"
-          class="h-9 px-4 flex items-center gap-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-sm">
+          class="export-btn opacity-50 pointer-events-none h-9 px-4 flex items-center gap-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-sm"
+          title="Đang lưu radar chart...">
             <span class="material-symbols-outlined text-sm">download</span>
             Export All (PDF)
         </a>
@@ -379,6 +380,7 @@ const labelColor = isDark ? '#94a3b8' : '#617589';
 
 // ==================== RADAR ====================
 const radarData = @json($radarData);
+let radarSaved = false;
 
 const radarChart = new Chart(document.getElementById('radarChart'), {
     type: 'radar',
@@ -390,8 +392,10 @@ const radarChart = new Chart(document.getElementById('radarChart'), {
         responsive: true,
         maintainAspectRatio: false,
         animation: {
-            // ✅ Sau khi animation xong mới save, tránh save ảnh trắng
             onComplete: () => {
+                if (radarSaved) return; // tránh gọi nhiều lần
+                radarSaved = true;
+
                 const base64 = radarChart.toBase64Image();
                 fetch('/projects/{{ $project->project_id }}/save-radar', {
                     method: 'POST',
@@ -400,6 +404,12 @@ const radarChart = new Chart(document.getElementById('radarChart'), {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({ image: base64 })
+                }).then(() => {
+                    // Mở khóa nút export sau khi đã lưu xong
+                    document.querySelectorAll('.export-btn').forEach(btn => {
+                        btn.classList.remove('opacity-50', 'pointer-events-none');
+                        btn.removeAttribute('title');
+                    });
                 });
             }
         },

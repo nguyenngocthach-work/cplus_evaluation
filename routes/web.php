@@ -56,6 +56,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('evaluations/{project}', [EvaluationsController::class, 'getEvaluationsById'])
             ->name('projects.evaluations.screen');
 
+        Route::post('/{project}/save-radar', [EvaluationsController::class, 'saveRadar']);
+
         Route::get('evaluations/{project}/export', [EvaluationsController::class, 'exportAll'])
             ->name('projects.evaluations.export');
             

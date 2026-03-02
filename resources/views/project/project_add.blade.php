@@ -494,6 +494,8 @@ input[type="checkbox"].criteria-cb {
                   const typeId = child.typeId ?? child.info.criteriaTypeId ?? child.info.type?.id;
 									let valueFieldHTML = '';
 									let displayUnit = child.info?.type?.name ?? '';
+									const showWeightError = (child.typeId == 3 || child.typeId == 4) && child._weightError;
+									const weightDisplayVal = child._rawWeight ?? child.percentage ?? child.info.criteriaPercent ?? '';
 									if (typeId == 4) { // yes/no
 											valueFieldHTML = `
 													<select 
@@ -539,6 +541,7 @@ input[type="checkbox"].criteria-cb {
                                   placeholder="0" />
                               <span class="absolute right-1 top-1 text-gray-400 text-[10px]">%</span>
                           </div>
+													${showWeightError ? `<p class="text-red-400 text-[10px] mt-1">Nhập weight trước khi chọn.</p>` : ''}
                       </div>
                       <div class="col-span-2">
 												${valueFieldHTML}
@@ -564,8 +567,12 @@ input[type="checkbox"].criteria-cb {
 
   function updateChildField(pId, cId, field, val) {
       const child = evaluationState[currentLocationId]?.parents[pId]?.children[cId];
-      if (!child) return;
-			child[field] = val;
+      child[field] = val;
+			// Nếu user nhập lại weight thì reset lỗi và lưu raw weight để tính lại
+			if (field === 'percentage') {
+					child._rawWeight = val;
+					child._weightError = false;
+			}
   }
 
   function removeParent(pId) {
@@ -586,14 +593,24 @@ input[type="checkbox"].criteria-cb {
 
     child.value = selectedValue;
 
+		const userWeight = parseFloat(child._rawWeight ?? child.percentage);
+
+    if (!userWeight || isNaN(userWeight)) {
+        child._weightError = true;
+        renderCriteriaUI();
+        return;
+    }
+
+    child._weightError = false;
+
     let percent = 0;
 
     if (child.typeId == 4) { // yes/no
-        percent = selectedValue === 'yes' ? child.info.criteriaPercent : 0;
+        percent = selectedValue === 'yes' ? userWeight : 0;
     }
 
     if (child.typeId == 3) { // 2H4R/4H9R
-        percent = selectedValue === '4H9R' ? child.info.criteriaPercent : child.info.criteriaPercent * 0.6;
+        percent = selectedValue === '4H9R' ? userWeight : userWeight * 0.6;
     }
 
     child.percentage = percent;

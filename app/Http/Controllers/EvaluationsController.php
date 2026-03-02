@@ -176,15 +176,16 @@ class EvaluationsController extends Controller
           ['industries' => $industries, 'scores' => $scores, 'scoringData' => $scoringData]
               = $this->buildScores($project);
 
+          // Đường dẫn tuyệt đối đến file PNG đã lưu
           $radarPath = storage_path('app/public/evaluations/radar_' . $project->project_id . '.png');
 
           return PDF::loadView('evaluations.pdf.export-all', [
               'project'     => $project,
               'scores'      => $scores,
               'scoringData' => $scoringData,
-              'radarPath'   => $radarPath,
+              'radarPath'   => file_exists($radarPath) ? $radarPath : null,
               'industries'  => $industries,
-          ])->setPaper('a4', 'portrait')
+          ])->setPaper('a4', 'landscape')  // landscape nếu nhiều cột
             ->download('Evaluation_' . $project->project_name . '.pdf');
       }
 
@@ -281,6 +282,6 @@ class EvaluationsController extends Controller
             'locationScore' => $locationScore,   // data của location này
             'scoringData'   => $scoringData,     // để render danh sách criteria
         ])->setPaper('a4', 'portrait')
-          ->download('Evaluation_' . $project->project_name . '_' . $industry->industry_name . '.pdf');
+            ->download('Evaluation_' . $project->project_name . '_' . $industry->industry_name . '.pdf');
     }
 }
