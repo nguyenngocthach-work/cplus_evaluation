@@ -55,6 +55,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('evaluations/{project}', [EvaluationsController::class, 'getEvaluationsById'])
             ->name('projects.evaluations.screen');
+        
+        Route::post('/{project}/evaluations/save', [EvaluationsController::class, 'saveJudgment'])
+            ->name('projects.evaluations.save');
 
         Route::post('/{project}/save-radar', [EvaluationsController::class, 'saveRadar']);
 

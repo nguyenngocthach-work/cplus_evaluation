@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Industry;
+use App\Models\ProjectIndustry;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use App\Models\Judgment;
+use App\Models\JudgmentDetail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -168,6 +171,69 @@ class EvaluationsController extends Controller
         } catch (\Exception $e) {
             Log::error('evaluation failed', ['message' => $e->getMessage(), 'line' => $e->getLine()]);
             return redirect()->back()->with('error', 'Evaluation failed: ' . $e->getMessage());
+        }
+    }
+
+		public function saveJudgment(Request $request, Project $project)
+    {
+        try {
+            ['industries' => $industries, 'scores' => $scores, 'scoringData' => $scoringData]
+                = $this->buildScores($project);
+            DB::transaction(function () use ($project, $industries, $scores, $scoringData, $request) {
+
+                foreach ($industries as $industry) {
+                    $iid = $industry->id;
+
+                  
+                    $projectIndustry = ProjectIndustry::where('project_id', $project->project_id)
+                        ->where('industry_id', $iid)
+                        ->firstOrFail();
+
+                    // Nếu đã có judgment cho project_industry này → xóa cũ, tạo mới
+                    Judgment::where('project_industry_id', $projectIndustry->id)->delete();
+
+                    $locationScore = $scores[$iid] ?? null;
+                    if (!$locationScore) continue;
+
+                    // INSERT judgment
+                    $judgment = Judgment::create([
+                        'project_industry_id' => $projectIndustry->id,
+                        'total_score'         => $locationScore['total'],
+                        'evaluator_notes'     => $request->input('notes'),
+                    ]);
+
+                    // INSERT judgment_detail — mỗi child criteria 1 row
+                    foreach ($scoringData as $parentId => $parentData) {
+                        $parentScore = $locationScore['parents'][$parentId] ?? null;
+                        if (!$parentScore) continue;
+
+                        foreach ($parentData['children'] as $childId => $childData) {
+                            $childScore = $parentScore['children'][$childId] ?? null;
+                            if (!$childScore) continue;
+
+                            JudgmentDetail::create([
+                                'judgment_id'          => $judgment->id,
+                                'criteriaId'           => $childId,
+                                'criteria_name'        => $childScore['name'],
+                                'criteria_parent_id'   => $parentId,
+                                'criteria_type'        => $childData['typeId'],
+                                'criteria_percentage'  => $childData['weight'][$iid] ?? 0,
+                                'criteria_point'       => $childScore['score'],
+                                'count'                => $childScore['maxScore'],
+                            ]);
+                        }
+                    }
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Results saved successfully.',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('saveJudgment failed', ['message' => $e->getMessage(), 'line' => $e->getLine()]);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 

@@ -8,12 +8,10 @@ body { font-family: 'Manrope', sans-serif; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-/* Modal accordion */
 .criteria-group { border-radius: 10px; overflow: hidden; border: 1px solid #e5e7eb; margin-bottom: 10px; }
 .criteria-group-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px; background: #f8fafc; cursor: pointer;
-    transition: background 0.15s;
+    padding: 12px 16px; background: #f8fafc; cursor: pointer; transition: background 0.15s;
 }
 .dark .criteria-group-header { background: #1e2d3d; }
 .criteria-group-header:hover { background: #f0f4f8; }
@@ -24,7 +22,6 @@ body { font-family: 'Manrope', sans-serif; }
 .dark .criteria-children { background: #1a2632; }
 .criteria-children.open { display: block; }
 
-/* Checkbox style */
 .child-checkbox-row {
     display: flex; align-items: center; gap-10px; padding: 8px 4px;
     border-radius: 6px; cursor: pointer; transition: background 0.12s;
@@ -35,6 +32,30 @@ input[type="checkbox"].criteria-cb {
     width: 16px; height: 16px; accent-color: var(--color-primary, #3b82f6);
     cursor: pointer; flex-shrink: 0;
 }
+
+/* input lỗi */
+.input-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 1px #ef4444 !important;
+}
+
+/* Toast */
+#val-toast {
+    position: fixed; top: 20px; right: 20px; z-index: 9999;
+    background: #fff; border: 1px solid #fecaca; border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.12); padding: 14px 18px;
+    max-width: 360px; display: flex; gap: 12px; align-items: flex-start;
+    transform: translateX(120%); transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.dark #val-toast { background: #1e2d3d; border-color: #7f1d1d; }
+#val-toast.show { transform: translateX(0); }
+#val-toast .toast-icon { color: #ef4444; font-size: 20px; flex-shrink:0; margin-top:1px; }
+#val-toast ul { margin: 4px 0 0; padding-left: 16px; font-size: .78rem; color: #dc2626; line-height: 1.6; }
+.dark #val-toast ul { color: #f87171; }
+#val-toast .toast-title { font-weight: 700; font-size: .85rem; color: #111; }
+.dark #val-toast .toast-title { color: #fff; }
+#val-toast .toast-close { margin-left:8px; cursor:pointer; color:#9ca3af; flex-shrink:0; font-size:18px; line-height:1; }
+#val-toast .toast-close:hover { color:#6b7280; }
 </style>
 @endpush
 @section('content')
@@ -79,23 +100,14 @@ input[type="checkbox"].criteria-cb {
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <label class="flex flex-col gap-2 col-span-2">
             <span class="text-[#111418] dark:text-gray-200 text-base font-medium">Project Name <span class="text-red-500">*</span></span>
-            <input name="project_name" required type="text" placeholder="e.g. Q4 Regional Retail Expansion"
+            <input id="inp-project-name" name="project_name" type="text" placeholder="e.g. Q4 Regional Retail Expansion"
+              oninput="clearErr(this)"
               class="form-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-[#617589]" />
           </label>
           <label class="flex flex-col gap-2 col-span-2">
             <span class="text-[#111418] dark:text-gray-200 text-base font-medium">Description</span>
             <textarea name="description" rows="4" placeholder="Briefly describe the goals and scope of this project..."
               class="form-textarea w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white p-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-[#617589] resize-none"></textarea>
-          </label>
-          <label class="flex flex-col gap-2">
-            <span class="text-[#111418] dark:text-gray-200 text-base font-medium">Start Date</span>
-            <input id="start-date" name="start_date" type="date"
-              class="form-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary transition-all" />
-          </label>
-          <label class="flex flex-col gap-2">
-            <span class="text-[#111418] dark:text-gray-200 text-base font-medium">End Date</span>
-            <input id="end-date" name="end_date" type="date"
-              class="form-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary transition-all" />
           </label>
         </div>
       </div>
@@ -107,12 +119,13 @@ input[type="checkbox"].criteria-cb {
 
           <!-- Clients -->
           <div class="flex flex-col gap-3">
-            <label class="text-[#111418] dark:text-gray-200 text-base font-medium">Assign Clients</label>
+            <label class="text-[#111418] dark:text-gray-200 text-base font-medium">Assign Client <span class="text-red-500">*</span></label>
             <div class="relative">
-              <div class="flex items-center w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] px-3 py-2 min-h-[48px] focus-within:ring-2 focus-within:ring-primary transition-all">
+              <div id="client-box" class="flex items-center w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] px-3 py-2 min-h-[48px] focus-within:ring-2 focus-within:ring-primary transition-all">
                 <span class="material-symbols-outlined text-[#617589] mr-2">search</span>
                 <div id="client-tags" class="flex flex-wrap gap-2 flex-1">
-                  <input id="client-search" type="text" placeholder="Search clients..."
+                  <input id="client-search" type="text" placeholder="Search client..."
+                    oninput="clearErr(document.getElementById('client-box'))"
                     class="bg-transparent border-none outline-none focus:ring-0 p-0 text-sm flex-1 min-w-[120px] dark:text-white" />
                 </div>
               </div>
@@ -124,12 +137,13 @@ input[type="checkbox"].criteria-cb {
 
           <!-- Locations -->
           <div class="flex flex-col gap-3">
-            <label class="text-[#111418] dark:text-gray-200 text-base font-medium">Assign Locations</label>
+            <label class="text-[#111418] dark:text-gray-200 text-base font-medium">Assign Locations <span class="text-red-500">*</span></label>
             <div class="relative">
-              <div class="flex items-center w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] px-3 py-2 min-h-[48px] focus-within:ring-2 focus-within:ring-primary transition-all">
+              <div id="location-box" class="flex items-center w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] px-3 py-2 min-h-[48px] focus-within:ring-2 focus-within:ring-primary transition-all">
                 <span class="material-symbols-outlined text-[#617589] mr-2">location_on</span>
                 <div id="location-tags" class="flex flex-wrap gap-2 flex-1">
                   <input id="location-search" type="text" placeholder="Search locations..."
+                    oninput="clearErr(document.getElementById('location-box'))"
                     class="bg-transparent border-none outline-none focus:ring-0 p-0 text-sm flex-1 min-w-[120px] dark:text-white" />
                 </div>
               </div>
@@ -143,14 +157,11 @@ input[type="checkbox"].criteria-cb {
 
       <!-- Section 3: Evaluation Criteria -->
       <div id="evaluation-criteria-list" class="bg-white dark:bg-[#1a2632] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-gray-700 overflow-hidden">
-
-        <!-- Location Tabs (inserted dynamically) -->
         <div id="location-tabs" class="flex gap-2 px-6 pt-4 overflow-x-auto border-b dark:border-gray-700"></div>
-
         <div class="flex items-center justify-between px-6 py-5 border-b border-[#f0f2f4] dark:border-gray-700">
           <div>
             <h2 class="text-[#111418] dark:text-white text-[22px] font-bold">Evaluation Criteria</h2>
-            <p class="text-sm text-[#617589] dark:text-gray-400 mt-1">Define the metrics used to evaluate success. Weights must sum to 100%.</p>
+            <p class="text-sm text-[#617589] dark:text-gray-400 mt-1">Define the metrics used to evaluate success.</p>
           </div>
           <button type="button" onclick="openCriteriaModal()"
             class="flex items-center gap-2 text-primary font-bold text-sm bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-lg transition-colors">
@@ -158,33 +169,25 @@ input[type="checkbox"].criteria-cb {
             Add Criterion
           </button>
         </div>
-
         <div class="p-6">
-          <!-- Header -->
           <div class="hidden md:grid grid-cols-12 gap-4 pb-3 border-b border-[#f0f2f4] dark:border-gray-700 mb-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
             <div class="col-span-4">Criterion Name</div>
-            <div class="col-span-2">Weight (%)</div>  
+            <div class="col-span-2">Weight (%)</div>
             <div class="col-span-3">Value</div>
             <div class="col-span-2">Type</div>
             <div class="col-span-1 text-center">Action</div>
           </div>
-
-          <!-- Criteria rows rendered here -->
           <div id="criteria-items-list"></div>
-
         </div>
       </div>
 
-      <!-- Mobile footer spacer -->
       <div class="h-16 md:hidden"></div>
     </form>
   </div>
 
-  <!-- ===================== SINGLE CRITERIA MODAL ===================== -->
+  <!-- CRITERIA MODAL -->
   <div id="criteriaModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white dark:bg-[#1a2632] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]">
-
-      <!-- Modal Header -->
       <div class="flex justify-between items-center px-6 py-4 border-b dark:border-gray-700 flex-shrink-0">
         <div>
           <h3 class="text-lg font-bold dark:text-white">Add Evaluation Criteria</h3>
@@ -194,11 +197,7 @@ input[type="checkbox"].criteria-cb {
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-
-      <!-- Modal Body: list of parent criteria with expandable children -->
       <div id="modal-criteria-body" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
-
-      <!-- Modal Footer -->
       <div class="px-6 py-4 border-t dark:border-gray-700 flex justify-between items-center flex-shrink-0">
         <span id="modal-selected-count" class="text-sm text-gray-500 dark:text-gray-400"></span>
         <div class="flex gap-2">
@@ -209,31 +208,155 @@ input[type="checkbox"].criteria-cb {
     </div>
   </div>
 
+  <!-- TOAST -->
+  <div id="val-toast">
+    <span class="material-symbols-outlined toast-icon">error</span>
+    <div class="flex-1">
+      <div class="toast-title">Vui lòng kiểm tra lại</div>
+      <ul id="val-toast-list"></ul>
+    </div>
+    <span class="material-symbols-outlined toast-close" onclick="hideToast()">close</span>
+  </div>
 </main>
 
 <script>
-  // ==================== DATA FROM BLADE ====================
-  const allClients   = @json($client);
-  const allLocations = @json($locations);
-  const criteriaData = @json($criteria); // [{id, criteria_name, description, criteriaPercent, children:[{id, criteria_name,...}]}]
+  const allClients              = @json($client);
+  const allLocations            = @json($locations);
+  const criteriaData            = @json($criteria);
+  const defaultCriteriaByLocation = @json($defaultCriteriaByLocation);
 
-  console.log('Criteria data from backend:', criteriaData);
-  let evaluationState  = {};
-  let selectedClients  = [];
+  let evaluationState   = {};
+  let selectedClients   = [];
   let selectedLocations = [];
   let currentLocationId = null;
+  let _toastTimer       = null;
+
+  // ==================== TOAST ====================
+  function showToast(errors) {
+      const list = document.getElementById('val-toast-list');
+      list.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+      const t = document.getElementById('val-toast');
+      t.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(hideToast, 6000);
+  }
+  function hideToast() {
+      document.getElementById('val-toast').classList.remove('show');
+  }
+
+  // ==================== ERROR HIGHLIGHT ====================
+  // Đánh dấu đỏ một input/box, tự xóa khi user nhập
+  function markErr(el) {
+      if (el) el.classList.add('input-error');
+  }
+  function clearErr(el) {
+      if (el) el.classList.remove('input-error');
+  }
+
+  // ==================== VALIDATE ====================
+  function validateForm() {
+    const errors = [];
+    let firstEl  = null;
+
+    // 1. Project name
+    const nameEl = document.getElementById('inp-project-name');
+    if (!nameEl.value.trim()) {
+        markErr(nameEl);
+        errors.push('Project name không được để trống.');
+        if (!firstEl) firstEl = nameEl;
+    }
+
+    // 2. Client
+    if (selectedClients.length === 0) {
+        const box = document.getElementById('client-box');
+        markErr(box);
+        errors.push('Chưa chọn client.');
+        if (!firstEl) firstEl = document.getElementById('client-search');
+    }
+
+    // 3. Location
+    if (selectedLocations.length === 0) {
+        const box = document.getElementById('location-box');
+        markErr(box);
+        errors.push('Chưa chọn location.');
+        if (!firstEl) firstEl = document.getElementById('location-search');
+    }
+
+    // 4. Validate theo từng location
+    selectedLocations.forEach(loc => {
+
+        const state = evaluationState[loc.id];
+        if (!state) return;
+
+        let parentTotal = 0;
+
+        Object.keys(state.parents).forEach(pId => {
+            const parent = state.parents[pId];
+            const pName  = parent.info.criteria_name;
+
+            const pwRaw = String(parent.weight ?? '').trim();
+
+            // ===== Parent bắt buộc > 0 =====
+            if (pwRaw === '') {
+                errors.push(`[${loc.industry_name}] "${pName}": weight không được để trống.`);
+            } else {
+                const pw = parseFloat(pwRaw);
+
+                if (isNaN(pw) || pw <= 0) {
+                    errors.push(`[${loc.industry_name}] "${pName}": weight phải lớn hơn 0.`);
+                } else {
+                    parentTotal += pw;
+                }
+            }
+
+            // ===== Child chỉ cần không rỗng =====
+            Object.keys(parent.children).forEach(cId => {
+                const child = parent.children[cId];
+                const cName = child.info.criteria_name;
+
+                const pct = String(child.percentage ?? '').trim();
+                const val = String(child.value ?? '').trim();
+
+                if (pct === '') {
+                    errors.push(`[${loc.industry_name}] "${pName} › ${cName}": weight không được để trống.`);
+                }
+
+                if (val === '') {
+                    errors.push(`[${loc.industry_name}] "${pName} › ${cName}": value không được để trống.`);
+                }
+            });
+
+        });
+
+        // ===== Tổng parent phải = 100 =====
+        if (parentTotal !== 100) {
+            errors.push(`[${loc.industry_name}] Tổng weight của tiêu chí phải bằng 100%.`);
+        }
+
+    });
+
+    if (errors.length > 0) {
+        showToast(errors);
+        if (firstEl) {
+            firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => firstEl.focus(), 350);
+        }
+        return false;
+    }
+
+    return true;
+  }
 
   // ==================== MODAL ====================
   function openCriteriaModal() {
       if (!currentLocationId) {
-          alert('Vui lòng chọn ít nhất một Location trước.');
+          showToast(['Vui lòng chọn ít nhất một Location trước.']);
           return;
       }
       renderModalBody();
       document.getElementById('criteriaModal').classList.remove('hidden');
       document.getElementById('criteriaModal').classList.add('flex');
   }
-
   function closeCriteriaModal() {
       document.getElementById('criteriaModal').classList.add('hidden');
       document.getElementById('criteriaModal').classList.remove('flex');
@@ -242,65 +365,48 @@ input[type="checkbox"].criteria-cb {
   function renderModalBody() {
       const body = document.getElementById('modal-criteria-body');
       body.innerHTML = '';
-
       const currentParents = evaluationState[currentLocationId]?.parents || {};
 
       criteriaData.forEach(parent => {
           const isParentAdded = !!currentParents[parent.id];
-
-          // Group container
           const group = document.createElement('div');
           group.className = 'criteria-group dark:border-gray-700';
 
-          // --- Parent header row ---
           const header = document.createElement('div');
           header.className = 'criteria-group-header';
           header.innerHTML = `
               <div class="flex items-center gap-3 flex-1">
-                  <input type="checkbox" class="criteria-cb parent-cb" id="pcb-${parent.id}" data-parent-id="${parent.id}"
-                      ${isParentAdded ? 'checked' : ''} />
+                  <input type="checkbox" class="criteria-cb parent-cb" id="pcb-${parent.id}" data-parent-id="${parent.id}" ${isParentAdded ? 'checked' : ''} />
                   <label for="pcb-${parent.id}" class="font-semibold text-sm dark:text-white cursor-pointer flex-1">
                       ${parent.criteria_name}
                       <span class="ml-2 text-xs text-primary font-normal">${parent.criteriaPercent ?? ''}%</span>
                   </label>
               </div>
-              ${parent.children && parent.children.length > 0 ? `
-              <span class="material-symbols-outlined toggle-icon text-gray-400 text-base ml-2">expand_more</span>
-              ` : ''}
+              ${parent.children && parent.children.length > 0 ? `<span class="material-symbols-outlined toggle-icon text-gray-400 text-base ml-2">expand_more</span>` : ''}
           `;
-
-          // Toggle accordion on header click (but NOT on checkbox click)
           header.addEventListener('click', function(e) {
               if (e.target.type === 'checkbox' || e.target.tagName === 'LABEL') return;
               header.classList.toggle('open');
               childrenEl.classList.toggle('open');
           });
-
-          // Parent checkbox: check/uncheck all children
           const parentCb = header.querySelector('.parent-cb');
           parentCb.addEventListener('change', function() {
-              const checked = this.checked;
-              group.querySelectorAll('.child-cb').forEach(cb => { cb.checked = checked; });
+              group.querySelectorAll('.child-cb').forEach(cb => { cb.checked = this.checked; });
               updateModalCount();
           });
-
           group.appendChild(header);
 
-          // --- Children list ---
           const childrenEl = document.createElement('div');
           childrenEl.className = 'criteria-children' + (isParentAdded ? ' open' : '');
-
           if (parent.children && parent.children.length > 0) {
               parent.children.forEach(child => {
                   const isChildAdded = isParentAdded && !!currentParents[parent.id]?.children[child.id];
                   const row = document.createElement('label');
                   row.className = 'child-checkbox-row flex items-center gap-3';
                   row.innerHTML = `
-                      <input type="checkbox" class="criteria-cb child-cb" data-parent-id="${parent.id}" data-child-id="${child.id}"
-                          ${isChildAdded ? 'checked' : ''} />
+                      <input type="checkbox" class="criteria-cb child-cb" data-parent-id="${parent.id}" data-child-id="${child.id}" ${isChildAdded ? 'checked' : ''} />
                       <span class="text-sm dark:text-gray-300">${child.criteria_name}</span>
                   `;
-                  // Child checkbox change → sync parent checkbox state
                   row.querySelector('.child-cb').addEventListener('change', function() {
                       syncParentCheckbox(parent.id, group);
                       updateModalCount();
@@ -310,19 +416,13 @@ input[type="checkbox"].criteria-cb {
           } else {
               childrenEl.innerHTML = '<p class="text-xs text-gray-400 py-2">No sub-criteria.</p>';
           }
-
-          // If parent has no children, auto-open isn't needed; still allow checking parent alone
           group.appendChild(childrenEl);
           body.appendChild(group);
-
-          // Open accordion if parent is already added
           if (isParentAdded) header.classList.add('open');
       });
-
       updateModalCount();
   }
 
-  // Keep parent checkbox in sync with its children
   function syncParentCheckbox(parentId, groupEl) {
       const childCbs = [...groupEl.querySelectorAll('.child-cb')];
       const parentCb = groupEl.querySelector('.parent-cb');
@@ -338,31 +438,18 @@ input[type="checkbox"].criteria-cb {
       document.getElementById('modal-selected-count').textContent = total > 0 ? `${total} item(s) selected` : '';
   }
 
-  // Apply checkbox selections → update evaluationState → sync all locations
   function applyModalSelections() {
       const body = document.getElementById('modal-criteria-body');
       const newParents = {};
-
-      // Read parent checkboxes
       body.querySelectorAll('.parent-cb').forEach(pcb => {
           const pId = pcb.dataset.parentId;
           const parentInfo = criteriaData.find(c => String(c.id) === String(pId));
           if (!parentInfo) return;
-
-          // If parent checked OR any child checked → include parent
           const childCbs = [...body.querySelectorAll(`.child-cb[data-parent-id="${pId}"]`)];
           const anyChildChecked = childCbs.some(cb => cb.checked);
-
           if (pcb.checked || anyChildChecked) {
-              // Preserve existing weight
               const existingParent = evaluationState[currentLocationId]?.parents[pId];
-              newParents[pId] = {
-                  info: parentInfo,
-                  weight: existingParent?.weight ?? '',
-                  children: {}
-              };
-
-              // Read child checkboxes
+              newParents[pId] = { info: parentInfo, weight: existingParent?.weight ?? '', children: {} };
               childCbs.forEach(ccb => {
                   if (ccb.checked) {
                       const cId = ccb.dataset.childId;
@@ -371,21 +458,16 @@ input[type="checkbox"].criteria-cb {
                       const existingChild = existingParent?.children[cId];
                       newParents[pId].children[cId] = {
                           info: childInfo,
-                          percentage: existingChild?.percentage ?? childInfo.criteriaPercent ??'',
+                          percentage: existingChild?.percentage ?? childInfo.criteriaPercent ?? '',
                           value: existingChild?.value ?? '',
-													typeId: childInfo.criteriaTypeId ?? null
+                          typeId: childInfo.criteriaTypeId ?? null
                       };
                   }
               });
           }
       });
-
-      // Update current location
       evaluationState[currentLocationId].parents = newParents;
-
-      // Sync structure to all other locations (preserve their own weight/value)
       syncStructureToAllLocations();
-
       closeCriteriaModal();
       renderCriteriaUI();
   }
@@ -393,39 +475,24 @@ input[type="checkbox"].criteria-cb {
   // ==================== SYNC ====================
   function syncStructureToAllLocations() {
       const sourceParents = evaluationState[currentLocationId]?.parents || {};
-
       selectedLocations.forEach(loc => {
           if (loc.id === currentLocationId) return;
           if (!evaluationState[loc.id]) evaluationState[loc.id] = { parents: {} };
-
           const targetParents = evaluationState[loc.id].parents;
-
-          // Remove parents no longer in source
-          Object.keys(targetParents).forEach(pId => {
-              if (!sourceParents[pId]) delete targetParents[pId];
-          });
-
-          // Add/update parents from source
+          Object.keys(targetParents).forEach(pId => { if (!sourceParents[pId]) delete targetParents[pId]; });
           Object.keys(sourceParents).forEach(pId => {
               const srcParent = sourceParents[pId];
               if (!targetParents[pId]) {
-                  targetParents[pId] = {
-                      info: JSON.parse(JSON.stringify(srcParent.info)),
-                      weight: srcParent.weight ?? '',
-                      children: {}
-                  };
+                  targetParents[pId] = { info: JSON.parse(JSON.stringify(srcParent.info)), weight: srcParent.weight ?? '', children: {} };
               }
               const targetChildren = targetParents[pId].children;
-              const srcChildren    = srcParent.children;
-
-              // Add children from source
-              Object.keys(srcChildren).forEach(cId => {
+              Object.keys(srcParent.children).forEach(cId => {
                   if (!targetChildren[cId]) {
                       targetChildren[cId] = {
-                          info: JSON.parse(JSON.stringify(srcChildren[cId].info)),
-                          percentage: srcChildren[cId].percentage ?? '',
-                          value: srcChildren[cId].value ?? '',
-                          typeId: srcChildren[cId].typeId ?? srcChildren[cId].info.criteriaTypeId ?? null
+                          info: JSON.parse(JSON.stringify(srcParent.children[cId].info)),
+                          percentage: srcParent.children[cId].percentage ?? '',
+                          value: srcParent.children[cId].value ?? '',
+                          typeId: srcParent.children[cId].typeId ?? srcParent.children[cId].info.criteriaTypeId ?? null
                       };
                   }
               });
@@ -438,11 +505,9 @@ input[type="checkbox"].criteria-cb {
       const container = document.getElementById('criteria-items-list');
       if (!container) return;
       container.innerHTML = '';
-
       if (!currentLocationId || !evaluationState[currentLocationId]) return;
 
       const parents = evaluationState[currentLocationId].parents;
-
       if (Object.keys(parents).length === 0) {
           container.innerHTML = `
               <div class="text-center py-10 text-gray-400 dark:text-gray-500">
@@ -465,7 +530,7 @@ input[type="checkbox"].criteria-cb {
                   <div class="col-span-2">
                       <div class="relative">
                           <input type="number" min="0" max="100" value="${parent.weight ?? parent.info.criteriaPercent ?? ''}"
-                              oninput="updateParentWeight('${pId}', this.value)"
+                              oninput="updateParentWeight('${pId}', this.value); clearErr(this);"
                               class="w-full border rounded-lg px-2 pr-6 py-1.5 text-sm dark:bg-[#253240] dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-primary outline-none"
                               placeholder="0" />
                           <span class="absolute right-2 top-1.5 text-gray-400 text-xs">%</span>
@@ -490,42 +555,36 @@ input[type="checkbox"].criteria-cb {
               childContainer.innerHTML = `<p class="text-xs text-gray-400 dark:text-gray-500 px-6 py-3 italic">No sub-criteria selected.</p>`;
           } else {
               Object.keys(children).forEach(cId => {
-                  const child = children[cId];
-                  const typeId = child.typeId ?? child.info.criteriaTypeId ?? child.info.type?.id;
-									let valueFieldHTML = '';
-									let displayUnit = child.info?.type?.name ?? '';
-									const showWeightError = (child.typeId == 3 || child.typeId == 4) && child._weightError;
-									const weightDisplayVal = child._rawWeight ?? child.percentage ?? child.info.criteriaPercent ?? '';
-									if (typeId == 4) { // yes/no
-											valueFieldHTML = `
-													<select 
-															onchange="handleSpecialType('${pId}', '${cId}', this.value)"
-															class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
-															<option value="">Select...</option>
-															<option value="yes" ${child.value === 'yes' ? 'selected' : ''}>Yes</option>
-															<option value="no" ${child.value === 'no' ? 'selected' : ''}>No</option>
-													</select>
-											`;
-									}
-									else if (typeId == 3) { // 2H4R/4H9R
-											valueFieldHTML = `
-													<select 
-															onchange="handleSpecialType('${pId}', '${cId}', this.value)"
-															class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
-															<option value="">Select...</option>
-															<option value="2H4R" ${child.value === '2H4R' ? 'selected' : ''}>2H4R</option>
-															<option value="4H9R" ${child.value === '4H9R' ? 'selected' : ''}>4H9R</option>
-													</select>
-											`;
-									}
-									else {
-											valueFieldHTML = `
-													<input type="text" value="${child.value ?? ''}"
-                              oninput="updateChildField('${pId}', '${cId}', 'value', this.value)"
+                  const child      = children[cId];
+                  const typeId     = child.typeId ?? child.info.criteriaTypeId ?? child.info.type?.id;
+                  const displayUnit = child.info?.type?.name ?? '';
+                  const showWeightError = (child.typeId == 3 || child.typeId == 4) && child._weightError;
+
+                  let valueFieldHTML = '';
+                  if (typeId == 4) {
+                      valueFieldHTML = `
+                          <select onchange="handleSpecialType('${pId}', '${cId}', this.value); clearErr(this);"
+                              class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
+                              <option value="">Select...</option>
+                              <option value="yes" ${child.value === 'yes' ? 'selected' : ''}>Yes</option>
+                              <option value="no"  ${child.value === 'no'  ? 'selected' : ''}>No</option>
+                          </select>`;
+                  } else if (typeId == 3) {
+                      valueFieldHTML = `
+                          <select onchange="handleSpecialType('${pId}', '${cId}', this.value); clearErr(this);"
+                              class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
+                              <option value="">Select...</option>
+                              <option value="2H4R" ${child.value === '2H4R' ? 'selected' : ''}>2H4R</option>
+                              <option value="4H9R" ${child.value === '4H9R' ? 'selected' : ''}>4H9R</option>
+                          </select>`;
+                  } else {
+                      valueFieldHTML = `
+                          <input type="text" value="${child.value ?? ''}"
+                              oninput="updateChildField('${pId}', '${cId}', 'value', this.value); clearErr(this);"
                               placeholder="Enter description..."
-                              class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-primary outline-none" />
-											`;
-									}
+                              class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-primary outline-none" />`;
+                  }
+
                   const row = document.createElement('div');
                   row.className = "grid grid-cols-12 gap-4 items-center px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/20 transition-all";
                   row.innerHTML = `
@@ -536,27 +595,22 @@ input[type="checkbox"].criteria-cb {
                       <div class="col-span-2">
                           <div class="relative">
                               <input type="number" min="0" max="100" value="${child.percentage ?? child.info.criteriaPercent ?? ''}"
-                                  oninput="updateChildField('${pId}', '${cId}', 'percentage', this.value)"
+                                  oninput="updateChildField('${pId}', '${cId}', 'percentage', this.value); clearErr(this);"
                                   class="w-full border rounded px-2 pr-5 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-primary outline-none"
                                   placeholder="0" />
                               <span class="absolute right-1 top-1 text-gray-400 text-[10px]">%</span>
                           </div>
-													${showWeightError ? `<p class="text-red-400 text-[10px] mt-1">Nhập weight trước khi chọn.</p>` : ''}
+                          ${showWeightError ? `<p class="text-red-400 text-[10px] mt-1">Nhập weight trước khi chọn.</p>` : ''}
                       </div>
-                      <div class="col-span-2">
-												${valueFieldHTML}
-                      </div>
+                      <div class="col-span-2">${valueFieldHTML}</div>
                       <div class="col-span-3">
-                          <div class="text-xs text-gray-400 italic">
-															${displayUnit ? displayUnit : `no type specified`} 
-													</div>
+                          <div class="text-xs text-gray-400 italic">${displayUnit || 'no type specified'}</div>
                       </div>
                   `;
                   childContainer.appendChild(row);
               });
           }
       });
-
   }
 
   // ==================== STATE UPDATERS ====================
@@ -567,65 +621,40 @@ input[type="checkbox"].criteria-cb {
 
   function updateChildField(pId, cId, field, val) {
       const child = evaluationState[currentLocationId]?.parents[pId]?.children[cId];
+      if (!child) return;
       child[field] = val;
-			// Nếu user nhập lại weight thì reset lỗi và lưu raw weight để tính lại
-			if (field === 'percentage') {
-					child._rawWeight = val;
-					child._weightError = false;
-			}
+      if (field === 'percentage') { child._rawWeight = val; child._weightError = false; }
   }
 
   function removeParent(pId) {
       selectedLocations.forEach(loc => {
-          if (evaluationState[loc.id]?.parents[pId])
-              delete evaluationState[loc.id].parents[pId];
+          if (evaluationState[loc.id]?.parents[pId]) delete evaluationState[loc.id].parents[pId];
       });
       renderCriteriaUI();
   }
 
-	function handleSpecialType(pId, cId, selectedValue) {
-
-    const child = evaluationState[currentLocationId]
-        ?.parents[pId]
-        ?.children[cId];
-
-    if (!child) return;
-
-    child.value = selectedValue;
-
-		const userWeight = parseFloat(child._rawWeight ?? child.percentage);
-
-    if (!userWeight || isNaN(userWeight)) {
-        child._weightError = true;
-        renderCriteriaUI();
-        return;
-    }
-
-    child._weightError = false;
-
-    let percent = 0;
-
-    if (child.typeId == 4) { // yes/no
-        percent = selectedValue === 'yes' ? userWeight : 0;
-    }
-
-    if (child.typeId == 3) { // 2H4R/4H9R
-        percent = selectedValue === '4H9R' ? userWeight : userWeight * 0.6;
-    }
-
-    child.percentage = percent;
-
-    renderCriteriaUI();
-	}
+  function handleSpecialType(pId, cId, selectedValue) {
+      const child = evaluationState[currentLocationId]?.parents[pId]?.children[cId];
+      if (!child) return;
+      child.value = selectedValue;
+      const userWeight = parseFloat(child._rawWeight ?? child.percentage);
+      if (!userWeight || isNaN(userWeight)) { child._weightError = true; renderCriteriaUI(); return; }
+      child._weightError = false;
+      let percent = 0;
+      if (child.typeId == 4) percent = selectedValue === 'yes' ? userWeight : 0;
+      if (child.typeId == 3) percent = selectedValue === '4H9R' ? userWeight : userWeight * 0.6;
+      child.percentage = percent;
+      renderCriteriaUI();
+  }
 
   // ==================== CLIENT LOGIC ====================
   const clientInput    = document.getElementById('client-search');
   const clientDropdown = document.getElementById('client-dropdown');
 
+  clientInput.addEventListener('focus', () => renderClientDropdown(allClients));
   clientInput.addEventListener('input', function() {
       const kw = this.value.toLowerCase().trim();
-      if (!kw) { clientDropdown.classList.add('hidden'); return; }
-      renderClientDropdown(allClients.filter(c => c.client_name.toLowerCase().includes(kw)));
+      renderClientDropdown(!kw ? allClients : allClients.filter(c => c.client_name.toLowerCase().includes(kw)));
   });
 
   document.addEventListener('click', e => {
@@ -648,13 +677,18 @@ input[type="checkbox"].criteria-cb {
   }
 
   function addClient(client) {
-      if (selectedClients.find(c => c.id === client.id)) return;
-      selectedClients.push(client);
       const tags = document.getElementById('client-tags');
-      const tag  = document.createElement('div');
-      tag.className = 'flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium';
-      tag.innerHTML = `${client.client_name}<button type="button" class="ml-1 hover:text-red-500">✕</button><input type="hidden" name="clients[]" value="${client.id}">`;
-      tag.querySelector('button').onclick = () => { selectedClients = selectedClients.filter(c => c.id !== client.id); tag.remove(); };
+      const oldTag = tags.querySelector('.client-tag');
+      if (oldTag) oldTag.remove();
+      selectedClients = [client];
+      clearErr(document.getElementById('client-box'));
+
+      const tag = document.createElement('div');
+      tag.className = 'client-tag flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium';
+      tag.innerHTML = `${client.client_name}
+          <button type="button" class="ml-1 hover:text-red-500">✕</button>
+          <input type="hidden" name="client_id" value="${client.id}">`;
+      tag.querySelector('button').onclick = () => { selectedClients = []; tag.remove(); };
       tags.insertBefore(tag, clientInput);
       clientInput.value = '';
       clientDropdown.classList.add('hidden');
@@ -664,10 +698,10 @@ input[type="checkbox"].criteria-cb {
   const locationInput    = document.getElementById('location-search');
   const locationDropdown = document.getElementById('location-dropdown');
 
+  locationInput.addEventListener('focus', () => renderLocationDropdown(allLocations));
   locationInput.addEventListener('input', function() {
       const kw = this.value.toLowerCase().trim();
-      if (!kw) { locationDropdown.classList.add('hidden'); return; }
-      renderLocationDropdown(allLocations.filter(l => l.industry_name.toLowerCase().includes(kw)));
+      renderLocationDropdown(!kw ? allLocations : allLocations.filter(l => l.industry_name.toLowerCase().includes(kw)));
   });
 
   function renderLocationDropdown(list) {
@@ -684,23 +718,38 @@ input[type="checkbox"].criteria-cb {
 
   function addLocation(location) {
       if (selectedLocations.find(l => l.id === location.id)) return;
+      clearErr(document.getElementById('location-box'));
 
-      // Init state, copy structure from current location if exists
       evaluationState[location.id] = { parents: {} };
-      if (currentLocationId && evaluationState[currentLocationId]) {
+      const defaults = defaultCriteriaByLocation[location.id];
+
+      if (defaults && Object.keys(defaults).length > 0) {
+          Object.keys(defaults).forEach(pId => {
+              const def = defaults[pId];
+              const parentInfo = criteriaData.find(c => String(c.id) === String(pId));
+              if (!parentInfo) return;
+              evaluationState[location.id].parents[pId] = { info: parentInfo, weight: def.weight ?? '', children: {} };
+              Object.keys(def.children).forEach(cId => {
+                  const dc = def.children[cId];
+                  const childInfo = (parentInfo.children ?? []).find(c => String(c.id) === String(cId));
+                  if (!childInfo) return;
+                  evaluationState[location.id].parents[pId].children[cId] = {
+                      info: childInfo, percentage: dc.weight ?? '', value: dc.value ?? '',
+                      typeId: dc.typeId ?? childInfo.criteriaTypeId ?? null
+                  };
+              });
+          });
+      } else if (currentLocationId && evaluationState[currentLocationId]) {
           const src = evaluationState[currentLocationId].parents;
           Object.keys(src).forEach(pId => {
               evaluationState[location.id].parents[pId] = {
-                  info: JSON.parse(JSON.stringify(src[pId].info)),
-                  weight: '',
-                  children: {}
+                  info: JSON.parse(JSON.stringify(src[pId].info)), weight: '', children: {}
               };
               Object.keys(src[pId].children).forEach(cId => {
                   evaluationState[location.id].parents[pId].children[cId] = {
                       info: JSON.parse(JSON.stringify(src[pId].children[cId].info)),
-                      percentage: '',
-                      value: '',
-											typeId: src[pId].children[cId].typeId ?? src[pId].children[cId].info.criteriaTypeId ?? null
+                      percentage: '', value: '',
+                      typeId: src[pId].children[cId].typeId ?? src[pId].children[cId].info.criteriaTypeId ?? null
                   };
               });
           });
@@ -709,7 +758,6 @@ input[type="checkbox"].criteria-cb {
       selectedLocations.push(location);
       renderLocationTag(location);
       switchLocation(location.id);
-
       locationInput.value = '';
       locationDropdown.classList.add('hidden');
   }
@@ -754,60 +802,38 @@ input[type="checkbox"].criteria-cb {
 
   // ==================== FORM SUBMIT ====================
   function submitProjectForm() {
-    const form = document.getElementById('project-form');
+      if (!validateForm()) return; // block nếu có lỗi
 
-    // Slim down evaluationState trước khi gửi
-    const cleanData = {};
+      const form = document.getElementById('project-form');
+      const cleanData = {};
 
-    Object.keys(evaluationState).forEach(locId => {
-        cleanData[locId] = { parents: {} };
+      Object.keys(evaluationState).forEach(locId => {
+          cleanData[locId] = { parents: {} };
+          Object.keys(evaluationState[locId].parents).forEach(pId => {
+              const parent = evaluationState[locId].parents[pId];
+              cleanData[locId].parents[pId] = { id: parent.info.id, criteriaPercent: parent.weight, children: {} };
+              Object.keys(parent.children).forEach(cId => {
+                  const child = parent.children[cId];
+                  cleanData[locId].parents[pId].children[cId] = {
+                      id: child.info.id,
+                      criteriaTypeId: child.typeId ?? child.info.criteriaTypeId ?? null,
+                      parentId: child.info.parentId,
+                      criteriaPercent: child.percentage,
+                      name: child.info.criteria_name,
+                      value: child.value ?? ''
+                  };
+              });
+          });
+      });
 
-        Object.keys(evaluationState[locId].parents).forEach(pId => {
-            const parent = evaluationState[locId].parents[pId];
-
-            cleanData[locId].parents[pId] = {
-                id:             parent.info.id,
-                criteriaPercent: parent.weight,   // % do user nhập
-                children:       {}
-            };
-
-            Object.keys(parent.children).forEach(cId => {
-                const child = parent.children[cId];
-
-                cleanData[locId].parents[pId].children[cId] = {
-                    id:              child.info.id,
-                    criteriaTypeId:  child.typeId ?? child.info.criteriaTypeId ?? null,
-                    parentId:        child.info.parentId,
-                    criteriaPercent: child.percentage,  // % do user nhập
-                    name:            child.info.criteria_name,
-                    value:           child.value ?? ''
-                };
-            });
-        });
-    });
-
-    // Xóa input cũ nếu có
-    const oldInput = form.querySelector('input[name="evaluation_data"]');
-    if (oldInput) oldInput.remove();
-
-    const input = document.createElement('input');
-    input.type  = 'hidden';
-    input.name  = 'evaluation_data';
-    input.value = JSON.stringify(cleanData);
-    form.appendChild(input);
-
-    form.submit();
-  }
-	
-  // ==================== DATE VALIDATION ====================
-  const startDateInput = document.getElementById('start-date');
-  const endDateInput   = document.getElementById('end-date');
-  [startDateInput, endDateInput].forEach(el => el.addEventListener('change', validateDates));
-  function validateDates() {
-      if (startDateInput.value && endDateInput.value && new Date(endDateInput.value) <= new Date(startDateInput.value)) {
-          alert('End Date must be later than Start Date');
-          endDateInput.value = '';
-      }
+      const oldInput = form.querySelector('input[name="evaluation_data"]');
+      if (oldInput) oldInput.remove();
+      const input = document.createElement('input');
+      input.type  = 'hidden';
+      input.name  = 'evaluation_data';
+      input.value = JSON.stringify(cleanData);
+      form.appendChild(input);
+      form.submit();
   }
 </script>
 

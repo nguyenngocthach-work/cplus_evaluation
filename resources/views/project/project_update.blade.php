@@ -81,18 +81,6 @@ input[type="checkbox"].criteria-cb { width: 16px; height: 16px; accent-color: va
               {{ $project->description ?? '—' }}
             </div>
           </div>
-          <div>
-            <span class="text-sm text-[#617589] dark:text-gray-400">Start Date</span>
-            <p class="font-medium text-[#111418] dark:text-white mt-1">
-              {{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('d/m/Y') : '—' }}
-            </p>
-          </div>
-          <div>
-            <span class="text-sm text-[#617589] dark:text-gray-400">End Date</span>
-            <p class="font-medium text-[#111418] dark:text-white mt-1">
-              {{ $project->end_date ? \Carbon\Carbon::parse($project->end_date)->format('d/m/Y') : '—' }}
-            </p>
-          </div>
         </div>
       </div>
 

@@ -79,20 +79,54 @@ class ProjectController extends Controller
         $locations = Industry::all();
         $client = Client::all();
 
-        return view('project.project_add', compact('criteria', 'locations', 'client'));
+        $latestIds = \DB::table('project_criteria')
+            ->select(\DB::raw('MAX(id) as max_id'))
+            ->groupBy('industry_id', 'criteria_id')
+            ->pluck('max_id');
+
+        $parentRows = \DB::table('project_criteria')
+            ->whereIn('id', $latestIds)
+            ->get();
+
+        $targetRows = \DB::table('project_criteria_target')
+            ->whereIn('project_criteria_id', $latestIds)
+            ->get()
+            ->groupBy('project_criteria_id');
+
+        $defaultCriteriaByLocation = [];
+
+        foreach ($parentRows as $pc) {
+            $iid = $pc->industry_id;
+            $pid = $pc->criteria_id;
+
+            $children = [];
+            foreach ($targetRows->get($pc->id, collect()) as $t) {
+                $children[$t->criteria_id] = [
+                    'weight' => $t->weight,
+                    'value'  => $t->target_value ?? '',
+                    'typeId' => $t->criteria_type_id,
+                ];
+            }
+
+            $defaultCriteriaByLocation[$iid][$pid] = [
+                'weight'   => $pc->weight,
+                'children' => $children,
+            ];
+        }
+
+        return view('project.project_add', compact('criteria', 'locations', 'client', 'defaultCriteriaByLocation'));
     }
     
     public function store(Request $request)
     {
         try {
+            // dd($request->all());
             $request->validate([
                 'project_name'    => 'required|string|max:255',
                 'description'     => 'nullable|string',
-                'start_date'      => 'required|date',
-                'end_date'        => 'required|date|after_or_equal:start_date',
                 'locations'       => 'nullable|array',
                 'locations.*'     => 'exists:industry,id',
-                'clients'         => 'nullable|array',
+                'client_id'         => 'required|exists:clients,id',
                 'evaluation_data' => 'nullable|string',
             ]);
 
@@ -105,7 +139,7 @@ class ProjectController extends Controller
                 'start_date'   => $request->start_date,
                 'end_date'     => $request->end_date,
                 'userId'       => $userId,
-                'clientId'     => $request->clients[0] ?? null, // client đầu tiên
+                'clientId'     => $request->client_id,
                 'status'       => 0,
             ]);
 
