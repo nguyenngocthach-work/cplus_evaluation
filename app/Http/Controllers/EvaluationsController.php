@@ -116,6 +116,10 @@ class EvaluationsController extends Controller
                     ->with('warning', 'No locations assigned to this project.');
             }
 
+						if ($project->status !== 1) {
+              $project->update(['status' => 1]);
+            }
+
             $radarLabels   = array_values(array_map(fn($p) => $p['name'], $scoringData));
             $radarMaxes    = array_values(array_map(fn($p) => max(array_values($p['weight']) ?: [0]), $scoringData));
 
@@ -184,7 +188,6 @@ class EvaluationsController extends Controller
                 foreach ($industries as $industry) {
                     $iid = $industry->id;
 
-                  
                     $projectIndustry = ProjectIndustry::where('project_id', $project->project_id)
                         ->where('industry_id', $iid)
                         ->firstOrFail();

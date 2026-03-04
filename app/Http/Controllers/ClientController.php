@@ -92,13 +92,10 @@ class ClientController extends Controller
                 'client_country' => 'required|string|max:255',
                 'client_city' => 'required|string|max:100',
                 'client_state_province' => 'required|string|max:255',
-                'client_zipcode' => 'required|string|max:20',
                 'client_logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-                // 'userId' => 'required',
             ]);
 
-            $userId = 2;
-            $data['userId'] = $userId;
+            $userId = auth()->user()->id;
             
             if($validator->fails()){
                 return redirect()->back()->withErrors($validator)->withInput();
@@ -114,7 +111,7 @@ class ClientController extends Controller
             $client->client_contact_name = $data['client_contact_name'];
             $client->client_active = $data['client_active'];;
             $client->notes = $data['notes'];
-            $client->userId = $data['userId'];
+            $client->userId = $userId;
             $client->project_id = $data['project_id'] ?? null; 
             $client->save();
             
@@ -131,7 +128,6 @@ class ClientController extends Controller
             $clientLocation->client_country = $data['client_country'];
             $clientLocation->client_city = $data['client_city'];
             $clientLocation->client_state_province = $data['client_state_province'];
-            $clientLocation->client_zipcode = $data['client_zipcode'];
             $clientLocation->client_id = $data['client_id'];
             $clientLocation->save();
 

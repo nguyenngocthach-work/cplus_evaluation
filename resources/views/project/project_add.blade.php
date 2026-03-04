@@ -289,6 +289,7 @@ input[type="checkbox"].criteria-cb {
         if (!state) return;
 
         let parentTotal = 0;
+				let hasWeightErr  = false;   // có lỗi weight rỗng/không hợp lệ ở location này không
 
         Object.keys(state.parents).forEach(pId => {
             const parent = state.parents[pId];
@@ -299,6 +300,7 @@ input[type="checkbox"].criteria-cb {
             // ===== Parent bắt buộc > 0 =====
             if (pwRaw === '') {
                 errors.push(`[${loc.industry_name}] "${pName}": weight không được để trống.`);
+								hasWeightErr = true;
             } else {
                 const pw = parseFloat(pwRaw);
 
@@ -309,7 +311,7 @@ input[type="checkbox"].criteria-cb {
                 }
             }
 
-            // ===== Child chỉ cần không rỗng =====
+            // ===== Child fields =====
             Object.keys(parent.children).forEach(cId => {
                 const child = parent.children[cId];
                 const cName = child.info.criteria_name;
@@ -329,10 +331,14 @@ input[type="checkbox"].criteria-cb {
         });
 
         // ===== Tổng parent phải = 100 =====
-        if (parentTotal !== 100) {
-            errors.push(`[${loc.industry_name}] Tổng weight của tiêu chí phải bằng 100%.`);
-        }
-
+					if (!hasWeightErr) {
+					const rounded = Math.round(parentTotal * 100) / 100;   // tránh floating-point (99.9999...)
+					if (rounded < 100) {
+							errors.push(`[${loc.industry_name}] Tổng weight của tiêu chí đang là ${rounded}% — còn thiếu ${Math.round((100 - rounded) * 100) / 100}% để đạt 100%.`);
+					} else if (rounded > 100) {
+							errors.push(`[${loc.industry_name}] Tổng weight của tiêu chí đang là ${rounded}% — vượt quá ${Math.round((rounded - 100) * 100) / 100}% so với 100%.`);
+					}
+				}
     });
 
     if (errors.length > 0) {

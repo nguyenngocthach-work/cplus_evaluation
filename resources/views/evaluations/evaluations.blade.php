@@ -335,39 +335,6 @@ body { font-family: 'Manrope', sans-serif; }
       </div>
     </div>
 
-    {{-- ===== RANKING SUMMARY ===== --}}
-    @php
-      $ranked = collect($scores)->sortByDesc('total')->values();
-    @endphp
-    <div class="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e5e7eb] dark:border-gray-700 shadow-sm p-6">
-      <h3 class="font-bold text-[#111418] dark:text-white mb-4 flex items-center gap-2">
-        <span class="material-symbols-outlined text-primary">leaderboard</span>
-        Final Ranking
-      </h3>
-      <div class="space-y-3">
-        @foreach($ranked as $rank => $iScore)
-          @php
-            $origIdx = array_search($iScore['industry_name'], array_column($scores, 'industry_name'));
-            $rColor  = $palette[array_search($iScore, array_values($scores)) % count($palette)];
-            $medals  = ['🥇','🥈','🥉'];
-          @endphp
-          <div class="flex items-center gap-4 p-3 rounded-xl {{ $rank === 0 ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700' : 'bg-gray-50 dark:bg-gray-800/40' }}">
-            <span class="text-2xl w-8 text-center">{{ $medals[$rank] ?? '#'.($rank+1) }}</span>
-            <div class="flex-1">
-              <div class="font-bold text-[#111418] dark:text-white">{{ $iScore['industry_name'] }}</div>
-              <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 mt-1">
-                <div class="h-2 rounded-full score-bar-fill" style="width:{{ $iScore['total'] }}%;background:{{ $rColor }}"></div>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="text-xl font-black" style="color:{{ $rColor }}">{{ $iScore['total'] }}</span>
-              <span class="text-gray-400 text-xs"> /100</span>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    </div>
-
     <div class="h-8"></div>
   </div>
 </main>
