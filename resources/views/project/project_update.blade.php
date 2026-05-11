@@ -55,11 +55,12 @@ input[type="checkbox"].criteria-cb { width: 16px; height: 16px; accent-color: va
           class="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-transparent text-[#111418] dark:text-white text-sm font-bold border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
           <span class="truncate">Cancel</span>
         </a>
-        <button type="button" onclick="submitProjectForm()"
-          class="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:bg-blue-600 shadow-md transition-all">
+        <button id="save-project-btn" type="button" onclick="submitProjectForm()"
+          class="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:bg-blue-600 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary">
           <span class="truncate">Save Changes</span>
         </button>
       </div>
+      <p id="save-project-reason" class="w-full text-right text-xs text-red-500 mt-1 hidden"></p>
     </div>
 
     <!-- Main Form -->
@@ -181,6 +182,53 @@ let currentLocationId = null;
 // selectedLocations lấy từ project.industries
 let selectedLocations = projectIndustries.map(i => ({ id: i.id, industry_name: i.industry_name }));
 
+function collectWeightValidationIssues() {
+    const issues = [];
+    selectedLocations.forEach(loc => {
+        const state = evaluationState[loc.id];
+        if (!state) return;
+        Object.values(state.parents || {}).forEach(parent => {
+            const pName = parent.info?.criteria_name ?? 'Criterion';
+            const pw = parseFloat(parent.weight);
+            if (isNaN(pw) || pw <= 0) {
+                issues.push(`[${loc.industry_name}] "${pName}" main weight must be > 0%.`);
+            }
+
+            let childTotal = 0;
+            let hasChildErr = false;
+            Object.values(parent.children || {}).forEach(child => {
+                const cw = parseFloat(child.percentage);
+                if (isNaN(cw) || cw < 0) hasChildErr = true;
+                else childTotal += cw;
+            });
+
+            const hasChildren = Object.keys(parent.children || {}).length > 0;
+            const rounded = Math.round(childTotal * 100) / 100;
+            if (hasChildren && (hasChildErr || rounded !== 100)) {
+                issues.push(`[${loc.industry_name}] "${pName}" child total is ${rounded}% (must be 100%).`);
+            }
+        });
+    });
+    return issues;
+}
+
+function refreshSaveButtonState() {
+    const btn = document.getElementById('save-project-btn');
+    const reasonEl = document.getElementById('save-project-reason');
+    if (!btn || !reasonEl) return;
+
+    const reasons = collectWeightValidationIssues();
+    const hasInvalid = reasons.length > 0;
+    btn.disabled = hasInvalid;
+    if (hasInvalid) {
+        reasonEl.textContent = reasons[0];
+        reasonEl.classList.remove('hidden');
+    } else {
+        reasonEl.textContent = '';
+        reasonEl.classList.add('hidden');
+    }
+}
+
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', function () {
     // Render tabs từ locations đã có
@@ -188,6 +236,7 @@ document.addEventListener('DOMContentLoaded', function () {
         renderLocationTabs();
         switchLocation(selectedLocations[0].id);
     }
+    refreshSaveButtonState();
 });
 // ==================== SYNC ====================
 function syncStructureToAllLocations() {
@@ -260,6 +309,7 @@ function switchLocation(id) {
 
     renderLocationTabs();
     renderCriteriaUI();
+    refreshSaveButtonState();
 }
 
 // ==================== RENDER CRITERIA UI ====================
@@ -284,6 +334,15 @@ function renderCriteriaUI() {
 
     Object.keys(parents).forEach(pId => {
         const parent = parents[pId];
+        const childTotal = Object.values(parent.children || {}).reduce((sum, child) => {
+            const v = parseFloat(child?.percentage);
+            return sum + (isNaN(v) ? 0 : v);
+        }, 0);
+        const childRounded = Math.round(childTotal * 100) / 100;
+        const childIsInvalid = Object.keys(parent.children || {}).length > 0 && childRounded !== 100;
+        const childStatusHtml = Object.keys(parent.children || {}).length > 0
+            ? `<span id="child-total-${pId}" class="${childIsInvalid ? 'text-amber-500' : 'text-emerald-600'}">Child total: ${childRounded}% ${childIsInvalid ? '(must be 100%)' : ''}</span>`
+            : '<span>No sub-criteria selected</span>';
         const parentBlock = document.createElement('div');
         parentBlock.className = "mb-6 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm";
         parentBlock.innerHTML = `
@@ -302,7 +361,7 @@ function renderCriteriaUI() {
                         <span class="absolute right-2 top-1.5 text-gray-400 text-xs">%</span>
                     </div>
                 </div>
-                <div class="col-span-4 text-xs text-gray-400 italic">Main criterion weight</div>
+                <div class="col-span-4 text-xs text-gray-400 italic">${childStatusHtml}</div>
             </div>
             <div id="children-of-${pId}" class="divide-y divide-gray-50 dark:divide-gray-700/50 bg-white dark:bg-[#1a2632]"></div>
         `;
@@ -376,36 +435,77 @@ function renderCriteriaUI() {
 }
 
 // ==================== STATE UPDATERS ====================
+function syncParentWeightAcrossLocations(pId, val) {
+    selectedLocations.forEach(loc => {
+        const parent = evaluationState[loc.id]?.parents?.[pId];
+        if (parent) parent.weight = val;
+    });
+}
+
+function syncChildWeightAcrossLocations(pId, cId, val) {
+    selectedLocations.forEach(loc => {
+        const child = evaluationState[loc.id]?.parents?.[pId]?.children?.[cId];
+        if (child) child.percentage = val;
+    });
+}
+
 function updateParentWeight(pId, val) {
-    if (evaluationState[currentLocationId]?.parents[pId])
-        evaluationState[currentLocationId].parents[pId].weight = val;
+    if (!evaluationState[currentLocationId]?.parents[pId]) return;
+    evaluationState[currentLocationId].parents[pId].weight = val;
+    syncParentWeightAcrossLocations(pId, val);
     updateTotalWeight();
+    refreshSaveButtonState();
+}
+
+function refreshChildTotalDisplay(pId) {
+    const indicator = document.getElementById(`child-total-${pId}`);
+    const parent = evaluationState[currentLocationId]?.parents?.[pId];
+    if (!indicator || !parent) return;
+    const childTotal = Object.values(parent.children || {}).reduce((sum, child) => {
+        const v = parseFloat(child?.percentage);
+        return sum + (isNaN(v) ? 0 : v);
+    }, 0);
+    const rounded = Math.round(childTotal * 100) / 100;
+    const invalid = Object.keys(parent.children || {}).length > 0 && rounded !== 100;
+    indicator.classList.remove('text-amber-500', 'text-emerald-600');
+    indicator.classList.add(invalid ? 'text-amber-500' : 'text-emerald-600');
+    indicator.textContent = `Child total: ${rounded}% ${invalid ? '(must be 100%)' : ''}`;
 }
 
 function updateChildField(pId, cId, field, val) {
     const child = evaluationState[currentLocationId]?.parents[pId]?.children[cId];
-    if (child) child[field] = val;
+    if (!child) return;
+    child[field] = val;
+    if (field === 'percentage') {
+        syncChildWeightAcrossLocations(pId, cId, val);
+        refreshChildTotalDisplay(pId);
+    }
+    refreshSaveButtonState();
 }
 
 function handleSpecialType(pId, cId, selectedValue) {
     const child = evaluationState[currentLocationId]?.parents[pId]?.children[cId];
     if (!child) return;
     child.value = selectedValue;
+    if (child.typeId == 4) {
+        // yes/no should not overwrite manually entered percentage
+        renderCriteriaUI();
+        refreshChildTotalDisplay(pId);
+        refreshSaveButtonState();
+        return;
+    }
 
     const basePercent = child.originalPercent
         ?? child.info?.originalPercent
         ?? 0;
-        
-    if (child.typeId == 4) {
-        // yes → 100% của basePercent, no → 0
-        child.percentage = selectedValue === 'yes' ? basePercent : 0;
-    }
 
     if (child.typeId == 3) {
         // 4H9R → full basePercent, 2H4R → nửa basePercent
         child.percentage = selectedValue === '4H9R' ? basePercent : Math.round(basePercent * 0.6);
     }
     renderCriteriaUI();
+    refreshChildTotalDisplay(pId);
+    refreshSaveButtonState();
 }
 
 function updateTotalWeight() {

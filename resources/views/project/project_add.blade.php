@@ -83,11 +83,12 @@ input[type="checkbox"].criteria-cb {
           class="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-transparent text-[#111418] dark:text-white text-sm font-bold border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
           <span class="truncate">Cancel</span>
         </a>
-        <button type="button" onclick="submitProjectForm()"
-          class="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:bg-blue-600 shadow-md transition-all">
+        <button id="save-project-btn" type="button" onclick="submitProjectForm()"
+          class="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:bg-blue-600 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary">
           <span class="truncate">Save Project</span>
         </button>
       </div>
+      <p id="save-project-reason" class="w-full text-right text-xs text-red-500 mt-1 hidden"></p>
     </div>
 
     <!-- Main Form -->
@@ -253,6 +254,120 @@ input[type="checkbox"].criteria-cb {
   let currentLocationId = null;
   let _toastTimer       = null;
 
+  function evenSplit100(count) {
+      if (!count || count <= 0) return [];
+      const base = Math.floor((100 / count) * 100) / 100;
+      const arr = Array(count).fill(base);
+      const sum = arr.reduce((s, v) => s + v, 0);
+      arr[count - 1] = Math.round((100 - sum + arr[count - 1]) * 100) / 100;
+      return arr;
+  }
+
+  function isBlankWeight(v) {
+      return v === '' || v === null || typeof v === 'undefined';
+  }
+
+  function autoDistributeDefaultWeightsForLocation(locationId) {
+      const parents = evaluationState[locationId]?.parents || {};
+      const parentIds = Object.keys(parents);
+      if (!parentIds.length) return;
+
+      // Only auto-fill if ALL parent weights are blank.
+      const allParentBlank = parentIds.every(pId => isBlankWeight(parents[pId].weight));
+      if (allParentBlank) {
+          const parentShares = evenSplit100(parentIds.length);
+          parentIds.forEach((pId, idx) => { parents[pId].weight = parentShares[idx]; });
+      }
+
+      // For each parent, only auto-fill child weights if all are blank.
+      parentIds.forEach(pId => {
+          const childIds = Object.keys(parents[pId].children || {});
+          if (!childIds.length) return;
+          const allChildBlank = childIds.every(cId => isBlankWeight(parents[pId].children[cId].percentage));
+          if (!allChildBlank) return;
+          const childShares = evenSplit100(childIds.length);
+          childIds.forEach((cId, idx) => {
+              parents[pId].children[cId].percentage = childShares[idx];
+              parents[pId].children[cId]._rawWeight = childShares[idx];
+          });
+      });
+  }
+
+  function autoDistributeDefaultWeightsForAllLocations() {
+      selectedLocations.forEach(loc => autoDistributeDefaultWeightsForLocation(loc.id));
+  }
+
+  function collectWeightValidationIssues() {
+      const totalIssues = [];
+      const childIssues = [];
+      const otherIssues = [];
+      selectedLocations.forEach(loc => {
+          const state = evaluationState[loc.id];
+          if (!state) return;
+          let parentTotal = 0;
+          Object.values(state.parents || {}).forEach(parent => {
+              const pName = parent.info?.criteria_name ?? 'Criterion';
+              const parentWeight = parseFloat(parent.weight);
+              if (isNaN(parentWeight) || parentWeight <= 0) {
+                  otherIssues.push(`[${loc.industry_name}] "${pName}" main weight must be > 0%.`);
+              } else {
+                  parentTotal += parentWeight;
+              }
+
+              let childTotal = 0;
+              let hasChildErr = false;
+              Object.values(parent.children || {}).forEach(child => {
+                  if (isBlankWeight(child.percentage)) {
+                      hasChildErr = true;
+                      return;
+                  }
+                  const w = parseFloat(child.percentage);
+                  if (isNaN(w) || w < 0) {
+                      hasChildErr = true;
+                  } else {
+                      childTotal += w;
+                  }
+              });
+
+              const hasChildren = Object.keys(parent.children || {}).length > 0;
+              const rounded = Math.round(childTotal * 100) / 100;
+              if (hasChildren && (hasChildErr || rounded !== 100)) {
+                  childIssues.push(`[${loc.industry_name}] "${pName}" child total is ${rounded}% (must be 100%).`);
+              }
+          });
+
+          if (Object.keys(state.parents || {}).length > 0) {
+              const roundedParentTotal = Math.round(parentTotal * 100) / 100;
+              if (roundedParentTotal !== 100) {
+                  totalIssues.push(`[${loc.industry_name}] total main criterion weight is ${roundedParentTotal}% (must be 100%).`);
+              }
+          }
+      });
+      return [...totalIssues, ...childIssues, ...otherIssues];
+  }
+
+  function refreshSaveButtonState() {
+      const btn = document.getElementById('save-project-btn');
+      const reasonEl = document.getElementById('save-project-reason');
+      if (!btn || !reasonEl) return;
+
+      const reasons = [];
+      if (!document.getElementById('inp-project-name')?.value.trim()) reasons.push('Project name is required.');
+      if (selectedClients.length === 0) reasons.push('Select at least 1 client.');
+      if (selectedLocations.length === 0) reasons.push('Select at least 1 location.');
+      reasons.push(...collectWeightValidationIssues());
+
+      const hasInvalid = reasons.length > 0;
+      btn.disabled = hasInvalid;
+      if (hasInvalid) {
+          reasonEl.textContent = reasons[0];
+          reasonEl.classList.remove('hidden');
+      } else {
+          reasonEl.textContent = '';
+          reasonEl.classList.add('hidden');
+      }
+  }
+
   // ==================== TOAST ====================
   function showToast(errors) {
       const list = document.getElementById('val-toast-list');
@@ -316,6 +431,8 @@ input[type="checkbox"].criteria-cb {
         Object.keys(state.parents).forEach(pId => {
             const parent = state.parents[pId];
             const pName  = parent.info.criteria_name;
+            let childTotal = 0;
+            let hasChildWeightErr = false;
 
             const pwRaw = String(parent.weight ?? '').trim();
 
@@ -343,12 +460,29 @@ input[type="checkbox"].criteria-cb {
 
                 if (pct === '') {
                     errors.push(`[${loc.industry_name}] "${pName} › ${cName}": weight không được để trống.`);
+                    hasChildWeightErr = true;
+                } else {
+                    const cp = parseFloat(pct);
+                    if (isNaN(cp) || cp < 0) {
+                        errors.push(`[${loc.industry_name}] "${pName} › ${cName}": weight không hợp lệ.`);
+                        hasChildWeightErr = true;
+                    } else {
+                        childTotal += cp;
+                    }
                 }
 
-                if (val === '') {
-                    errors.push(`[${loc.industry_name}] "${pName} › ${cName}": value không được để trống.`);
-                }
+                // Value is optional on create-project.
             });
+
+            // ===== Tổng child mỗi parent phải = 100 =====
+            if (!hasChildWeightErr && Object.keys(parent.children).length > 0) {
+                const childRounded = Math.round(childTotal * 100) / 100;
+                if (childRounded < 100) {
+                    errors.push(`[${loc.industry_name}] "${pName}": tổng child weight là ${childRounded}% — còn thiếu ${Math.round((100 - childRounded) * 100) / 100}%.`);
+                } else if (childRounded > 100) {
+                    errors.push(`[${loc.industry_name}] "${pName}": tổng child weight là ${childRounded}% — vượt ${Math.round((childRounded - 100) * 100) / 100}%.`);
+                }
+            }
 
         });
 
@@ -361,6 +495,11 @@ input[type="checkbox"].criteria-cb {
 							errors.push(`[${loc.industry_name}] Tổng weight của tiêu chí đang là ${rounded}% — vượt quá ${Math.round((rounded - 100) * 100) / 100}% so với 100%.`);
 					}
 				}
+    });
+
+    const liveIssues = collectWeightValidationIssues();
+    liveIssues.forEach(i => {
+        if (!errors.includes(i)) errors.push(i);
     });
 
     if (errors.length > 0) {
@@ -496,8 +635,10 @@ input[type="checkbox"].criteria-cb {
       });
       evaluationState[currentLocationId].parents = newParents;
       syncStructureToAllLocations();
+      autoDistributeDefaultWeightsForAllLocations();
       closeCriteriaModal();
       renderCriteriaUI();
+      refreshSaveButtonState();
   }
 
   // ==================== SYNC ====================
@@ -542,11 +683,21 @@ input[type="checkbox"].criteria-cb {
                   <span class="material-symbols-outlined text-4xl mb-2 block">playlist_add</span>
                   <p class="text-sm">No criteria added yet. Click <strong>Add Criterion</strong> to start.</p>
               </div>`;
+          refreshSaveButtonState();
           return;
       }
 
       Object.keys(parents).forEach(pId => {
           const parent = parents[pId];
+          const childTotal = Object.values(parent.children || {}).reduce((sum, child) => {
+              const v = parseFloat(child?.percentage);
+              return sum + (isNaN(v) ? 0 : v);
+          }, 0);
+          const childRounded = Math.round(childTotal * 100) / 100;
+          const childIsInvalid = Object.keys(parent.children || {}).length > 0 && childRounded !== 100;
+          const childStatusHtml = Object.keys(parent.children || {}).length > 0
+              ? `<span id="child-total-${pId}" class="${childIsInvalid ? 'text-amber-500' : 'text-emerald-600'}">Child total: ${childRounded}% ${childIsInvalid ? '(must be 100%)' : ''}</span>`
+              : '<span>No sub-criteria selected</span>';
           const parentBlock = document.createElement('div');
           parentBlock.className = "mb-6 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm";
           parentBlock.innerHTML = `
@@ -564,7 +715,7 @@ input[type="checkbox"].criteria-cb {
                           <span class="absolute right-2 top-1.5 text-gray-400 text-xs">%</span>
                       </div>
                   </div>
-                  <div class="col-span-4 text-xs text-gray-400 italic">Main criterion weight</div>
+                  <div class="col-span-4 text-xs text-gray-400 italic">${childStatusHtml}</div>
                   <div class="col-span-2 flex justify-end">
                       <button type="button" onclick="removeParent('${pId}')"
                           class="text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-md transition-colors">
@@ -639,19 +790,60 @@ input[type="checkbox"].criteria-cb {
               });
           }
       });
+      refreshSaveButtonState();
   }
 
   // ==================== STATE UPDATERS ====================
+  function syncParentWeightAcrossLocations(pId, val) {
+      selectedLocations.forEach(loc => {
+          const parent = evaluationState[loc.id]?.parents?.[pId];
+          if (parent) parent.weight = val;
+      });
+  }
+
+  function syncChildWeightAcrossLocations(pId, cId, val) {
+      selectedLocations.forEach(loc => {
+          const child = evaluationState[loc.id]?.parents?.[pId]?.children?.[cId];
+          if (!child) return;
+          child.percentage = val;
+          child._rawWeight = val;
+          child._weightError = false;
+      });
+  }
+
   function updateParentWeight(pId, val) {
-      if (evaluationState[currentLocationId]?.parents[pId])
-          evaluationState[currentLocationId].parents[pId].weight = val;
+      if (!evaluationState[currentLocationId]?.parents[pId]) return;
+      evaluationState[currentLocationId].parents[pId].weight = val;
+      syncParentWeightAcrossLocations(pId, val);
+      refreshSaveButtonState();
+  }
+
+  function refreshChildTotalDisplay(pId) {
+      const indicator = document.getElementById(`child-total-${pId}`);
+      const parent = evaluationState[currentLocationId]?.parents?.[pId];
+      if (!indicator || !parent) return;
+      const childTotal = Object.values(parent.children || {}).reduce((sum, child) => {
+          const v = parseFloat(child?.percentage);
+          return sum + (isNaN(v) ? 0 : v);
+      }, 0);
+      const rounded = Math.round(childTotal * 100) / 100;
+      const invalid = Object.keys(parent.children || {}).length > 0 && rounded !== 100;
+      indicator.classList.remove('text-amber-500', 'text-emerald-600');
+      indicator.classList.add(invalid ? 'text-amber-500' : 'text-emerald-600');
+      indicator.textContent = `Child total: ${rounded}% ${invalid ? '(must be 100%)' : ''}`;
   }
 
   function updateChildField(pId, cId, field, val) {
       const child = evaluationState[currentLocationId]?.parents[pId]?.children[cId];
       if (!child) return;
       child[field] = val;
-      if (field === 'percentage') { child._rawWeight = val; child._weightError = false; }
+      if (field === 'percentage') {
+          child._rawWeight = val;
+          child._weightError = false;
+          syncChildWeightAcrossLocations(pId, cId, val);
+          refreshChildTotalDisplay(pId);
+      }
+      refreshSaveButtonState();
   }
 
   function removeParent(pId) {
@@ -659,20 +851,29 @@ input[type="checkbox"].criteria-cb {
           if (evaluationState[loc.id]?.parents[pId]) delete evaluationState[loc.id].parents[pId];
       });
       renderCriteriaUI();
+      refreshSaveButtonState();
   }
 
   function handleSpecialType(pId, cId, selectedValue) {
       const child = evaluationState[currentLocationId]?.parents[pId]?.children[cId];
       if (!child) return;
       child.value = selectedValue;
+      if (child.typeId == 4) {
+          // yes/no should not overwrite manually entered percentage
+          renderCriteriaUI();
+          refreshChildTotalDisplay(pId);
+          refreshSaveButtonState();
+          return;
+      }
       const userWeight = parseFloat(child._rawWeight ?? child.percentage);
       if (!userWeight || isNaN(userWeight)) { child._weightError = true; renderCriteriaUI(); return; }
       child._weightError = false;
       let percent = 0;
-      if (child.typeId == 4) percent = selectedValue === 'yes' ? userWeight : 0;
       if (child.typeId == 3) percent = selectedValue === '4H9R' ? userWeight : userWeight * 0.6;
       child.percentage = percent;
       renderCriteriaUI();
+      refreshChildTotalDisplay(pId);
+      refreshSaveButtonState();
   }
 
   // ==================== CLIENT LOGIC ====================
@@ -691,6 +892,7 @@ input[type="checkbox"].criteria-cb {
       if (!locationInput.contains(e.target) && !locationDropdown.contains(e.target))
           locationDropdown.classList.add('hidden');
   });
+  document.getElementById('inp-project-name')?.addEventListener('input', refreshSaveButtonState);
 
   function renderClientDropdown(list) {
       clientDropdown.innerHTML = '';
@@ -716,10 +918,15 @@ input[type="checkbox"].criteria-cb {
       tag.innerHTML = `${client.client_name}
           <button type="button" class="ml-1 hover:text-red-500">✕</button>
           <input type="hidden" name="client_id" value="${client.id}">`;
-      tag.querySelector('button').onclick = () => { selectedClients = []; tag.remove(); };
+      tag.querySelector('button').onclick = () => {
+          selectedClients = [];
+          tag.remove();
+          refreshSaveButtonState();
+      };
       tags.insertBefore(tag, clientInput);
       clientInput.value = '';
       clientDropdown.classList.add('hidden');
+      refreshSaveButtonState();
   }
 
   // ==================== LOCATION LOGIC ====================
@@ -783,11 +990,14 @@ input[type="checkbox"].criteria-cb {
           });
       }
 
+      autoDistributeDefaultWeightsForLocation(location.id);
+
       selectedLocations.push(location);
       renderLocationTag(location);
       switchLocation(location.id);
       locationInput.value = '';
       locationDropdown.classList.add('hidden');
+      refreshSaveButtonState();
   }
 
   function renderLocationTag(location) {
@@ -804,6 +1014,7 @@ input[type="checkbox"].criteria-cb {
               currentLocationId = selectedLocations.length > 0 ? selectedLocations[0].id : null;
           renderLocationTabs();
           renderCriteriaUI();
+          refreshSaveButtonState();
       };
       tags.insertBefore(tag, locationInput);
   }
@@ -826,6 +1037,7 @@ input[type="checkbox"].criteria-cb {
       currentLocationId = id;
       renderLocationTabs();
       renderCriteriaUI();
+      refreshSaveButtonState();
   }
 
   // ==================== FORM SUBMIT ====================
@@ -863,6 +1075,8 @@ input[type="checkbox"].criteria-cb {
       form.appendChild(input);
       form.submit();
   }
+
+  refreshSaveButtonState();
 </script>
 
 @endsection
