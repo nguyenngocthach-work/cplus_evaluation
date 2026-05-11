@@ -748,6 +748,16 @@ input[type="checkbox"].criteria-cb {
                               <option value="yes" ${child.value === 'yes' ? 'selected' : ''}>Yes</option>
                               <option value="no"  ${child.value === 'no'  ? 'selected' : ''}>No</option>
                           </select>`;
+                  } else if (typeId == 7) {
+                      valueFieldHTML = `
+                          <select onchange="updateChildField('${pId}', '${cId}', 'value', this.value); clearErr(this);"
+                              class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
+                              <option value="">Select...</option>
+                              <option value="1" ${String(child.value) === '1' ? 'selected' : ''}>1</option>
+                              <option value="2" ${String(child.value) === '2' ? 'selected' : ''}>2</option>
+                              <option value="3" ${String(child.value) === '3' ? 'selected' : ''}>3</option>
+                              <option value="4" ${String(child.value) === '4' ? 'selected' : ''}>4</option>
+                          </select>`;
                   } else if (typeId == 3) {
                       valueFieldHTML = `
                           <select onchange="handleSpecialType('${pId}', '${cId}', this.value); clearErr(this);"
