@@ -203,7 +203,9 @@ function collectWeightValidationIssues() {
             let childTotal = 0;
             let hasChildErr = false;
             Object.values(parent.children || {}).forEach(child => {
-                const cw = parseFloat(child.percentage);
+                const raw = String(child.percentage ?? '').trim();
+                if (raw === '') return; // blank is allowed, treated as 0
+                const cw = parseFloat(raw);
                 if (isNaN(cw) || cw < 0) hasChildErr = true;
                 else childTotal += cw;
             });
@@ -449,7 +451,11 @@ function renderCriteriaUI() {
         return;
     }
 
-    Object.keys(parents).forEach(pId => {
+    const sortedParentIds = Object.keys(parents).sort((a, b) =>
+        String(parents[a]?.info?.criteria_name || '').localeCompare(String(parents[b]?.info?.criteria_name || ''))
+    );
+
+    sortedParentIds.forEach(pId => {
         const parent = parents[pId];
         const childTotal = Object.values(parent.children || {}).reduce((sum, child) => {
             const v = parseFloat(child?.percentage);

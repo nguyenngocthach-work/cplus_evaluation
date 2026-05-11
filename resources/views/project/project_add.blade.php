@@ -220,6 +220,10 @@ input[type="checkbox"].criteria-cb {
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
+      <div class="px-6 pt-4">
+        <input id="modal-criteria-search" type="text" placeholder="Search main criterion..."
+          class="w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-sm px-3 py-2 dark:text-white focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all" />
+      </div>
       <div id="modal-criteria-body" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
       <div class="px-6 py-4 border-t dark:border-gray-700 flex justify-between items-center flex-shrink-0">
         <span id="modal-selected-count" class="text-sm text-gray-500 dark:text-gray-400"></span>
@@ -253,6 +257,7 @@ input[type="checkbox"].criteria-cb {
   let selectedLocations = [];
   let currentLocationId = null;
   let _toastTimer       = null;
+  let modalCriteriaKeyword = '';
 
   function evenSplit100(count) {
       if (!count || count <= 0) return [];
@@ -317,11 +322,9 @@ input[type="checkbox"].criteria-cb {
               let childTotal = 0;
               let hasChildErr = false;
               Object.values(parent.children || {}).forEach(child => {
-                  if (isBlankWeight(child.percentage)) {
-                      hasChildErr = true;
-                      return;
-                  }
-                  const w = parseFloat(child.percentage);
+                  const raw = String(child.percentage ?? '').trim();
+                  if (raw === '') return; // blank is allowed, treated as 0
+                  const w = parseFloat(raw);
                   if (isNaN(w) || w < 0) {
                       hasChildErr = true;
                   } else {
@@ -458,10 +461,7 @@ input[type="checkbox"].criteria-cb {
                 const pct = String(child.percentage ?? '').trim();
                 const val = String(child.value ?? '').trim();
 
-                if (pct === '') {
-                    errors.push(`[${loc.industry_name}] "${pName} › ${cName}": weight không được để trống.`);
-                    hasChildWeightErr = true;
-                } else {
+                if (pct !== '') {
                     const cp = parseFloat(pct);
                     if (isNaN(cp) || cp < 0) {
                         errors.push(`[${loc.industry_name}] "${pName} › ${cName}": weight không hợp lệ.`);
@@ -533,8 +533,19 @@ input[type="checkbox"].criteria-cb {
       const body = document.getElementById('modal-criteria-body');
       body.innerHTML = '';
       const currentParents = evaluationState[currentLocationId]?.parents || {};
+      const keyword = (modalCriteriaKeyword || '').toLowerCase().trim();
 
-      criteriaData.forEach(parent => {
+      const sortedCriteria = [...criteriaData].sort((a, b) =>
+          String(a.criteria_name || '').localeCompare(String(b.criteria_name || ''))
+      );
+
+      sortedCriteria.forEach(parent => {
+          const parentName = String(parent.criteria_name || '').toLowerCase();
+          const hasChildMatch = (parent.children || []).some(ch =>
+              String(ch.criteria_name || '').toLowerCase().includes(keyword)
+          );
+          if (keyword && !parentName.includes(keyword) && !hasChildMatch) return;
+
           const isParentAdded = !!currentParents[parent.id];
           const group = document.createElement('div');
           group.className = 'criteria-group dark:border-gray-700';
@@ -587,6 +598,10 @@ input[type="checkbox"].criteria-cb {
           body.appendChild(group);
           if (isParentAdded) header.classList.add('open');
       });
+
+      if (!body.children.length) {
+          body.innerHTML = '<p class="text-sm text-gray-400 dark:text-gray-500 px-2 py-4">No criteria found.</p>';
+      }
       updateModalCount();
   }
 
@@ -687,7 +702,11 @@ input[type="checkbox"].criteria-cb {
           return;
       }
 
-      Object.keys(parents).forEach(pId => {
+      const sortedParentIds = Object.keys(parents).sort((a, b) =>
+          String(parents[a]?.info?.criteria_name || '').localeCompare(String(parents[b]?.info?.criteria_name || ''))
+      );
+
+      sortedParentIds.forEach(pId => {
           const parent = parents[pId];
           const childTotal = Object.values(parent.children || {}).reduce((sum, child) => {
               const v = parseFloat(child?.percentage);
@@ -903,6 +922,10 @@ input[type="checkbox"].criteria-cb {
           locationDropdown.classList.add('hidden');
   });
   document.getElementById('inp-project-name')?.addEventListener('input', refreshSaveButtonState);
+  document.getElementById('modal-criteria-search')?.addEventListener('input', function() {
+      modalCriteriaKeyword = this.value || '';
+      renderModalBody();
+  });
 
   function renderClientDropdown(list) {
       clientDropdown.innerHTML = '';
