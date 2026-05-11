@@ -134,6 +134,7 @@ class EvaluationsController extends Controller
                 }
                 $color = $palette[$ci % count($palette)];
                 $radarDatasets[] = [
+                    'industry_id'           => $iid,
                     'label'                => $iScore['industry_name'],
                     'data'                 => $data,
                     'borderColor'          => $color,
@@ -247,12 +248,18 @@ class EvaluationsController extends Controller
 
           // Đường dẫn tuyệt đối đến file PNG đã lưu
           $radarPath = storage_path('app/public/evaluations/radar_' . $project->project_id . '.png');
+          $radarByLocationPaths = [];
+          foreach ($industries as $ind) {
+              $p = storage_path('app/public/evaluations/radar_' . $project->project_id . '_' . $ind->id . '.png');
+              $radarByLocationPaths[$ind->id] = file_exists($p) ? $p : null;
+          }
 
           return PDF::loadView('evaluations.pdf.export-all', [
               'project'     => $project,
               'scores'      => $scores,
               'scoringData' => $scoringData,
               'radarPath'   => file_exists($radarPath) ? $radarPath : null,
+              'radarByLocationPaths' => $radarByLocationPaths,
               'industries'  => $industries,
           ])->setPaper('a4', 'landscape')  // landscape nếu nhiều cột
             ->download('Evaluation_' . $project->project_name . '.pdf');
@@ -332,6 +339,24 @@ class EvaluationsController extends Controller
         return response()->json(['ok']);
     }
 
+    public function saveRadarLocation(Request $request, Project $project)
+    {
+        $industryId = $request->input('industry_id');
+        $image = $request->input('image');
+
+        if (!$industryId || !$image) {
+            return response()->json(['error' => 'industry_id and image are required'], 422);
+        }
+
+        $image = str_replace('data:image/png;base64,', '', $image);
+        $image = str_replace(' ', '+', $image);
+
+        $fileName = 'radar_' . $project->project_id . '_' . $industryId . '.png';
+        Storage::disk('public')->put('evaluations/' . $fileName, base64_decode($image));
+
+        return response()->json(['ok']);
+    }
+
     public function exportLocation(Project $project, Industry $industry)
     {
         ['scores' => $scores, 'scoringData' => $scoringData]
@@ -344,12 +369,14 @@ class EvaluationsController extends Controller
             return back()->with('error', 'Location not found in this project.');
         }
 
-        
+        $locationRadarPath = storage_path('app/public/evaluations/radar_' . $project->project_id . '_' . $industry->id . '.png');
+
         return PDF::loadView('evaluations.pdf.single-location', [
             'project'       => $project,
             'industry'      => $industry,
             'locationScore' => $locationScore,   // data của location này
             'scoringData'   => $scoringData,     // để render danh sách criteria
+            'locationRadarPath' => file_exists($locationRadarPath) ? $locationRadarPath : null,
         ])->setPaper('a4', 'portrait')
             ->download('Evaluation_' . $project->project_name . '_' . $industry->industry_name . '.pdf');
     }

@@ -85,6 +85,13 @@ th {
 {{-- SCORE TABLE --}}
 <div class="section-title">Detailed Scoring</div>
 
+@if(!empty($locationRadarPath) && file_exists($locationRadarPath))
+<div class="section-title">Spider / Radar Chart</div>
+<div style="text-align:center; margin-bottom: 12px;">
+    <img src="{{ $locationRadarPath }}" width="340">
+</div>
+@endif
+
 <table>
     <thead>
         <tr>

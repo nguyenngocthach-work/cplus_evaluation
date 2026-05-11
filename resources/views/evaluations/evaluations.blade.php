@@ -149,7 +149,7 @@ body { font-family: 'Manrope', sans-serif; }
           <span class="material-symbols-outlined text-primary">radar</span>
           Spider / Radar Chart
         </h3>
-        <div class="relative h-72">
+        <div class="relative w-full max-w-[360px] mx-auto aspect-square">
           <canvas id="radarChart"></canvas>
         </div>
       </div>
@@ -165,6 +165,26 @@ body { font-family: 'Manrope', sans-serif; }
         </div>
       </div>
 
+    </div>
+
+    {{-- ===== RADAR BY LOCATION ===== --}}
+    <div class="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e5e7eb] dark:border-gray-700 shadow-sm p-6">
+      <h3 class="font-bold text-[#111418] dark:text-white mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">radar</span>
+        Spider / Radar Chart by Location
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        @foreach($industries as $ind)
+          <div class="rounded-xl border border-[#e5e7eb] dark:border-gray-700 p-4">
+            <div class="text-sm font-semibold text-[#111418] dark:text-white mb-3">
+              {{ $ind->industry_name }}
+            </div>
+            <div class="relative w-full max-w-[320px] mx-auto aspect-square">
+              <canvas id="radarChartLocation-{{ $ind->id }}"></canvas>
+            </div>
+          </div>
+        @endforeach
+      </div>
     </div>
 
     {{-- ===== DETAILED COMPARISON TABLE ===== --}}
@@ -347,6 +367,7 @@ const labelColor = isDark ? '#94a3b8' : '#617589';
 
 // ==================== RADAR ====================
 const radarData = @json($radarData);
+const industries = @json($industries->map(fn($i) => ['id' => $i->id, 'industry_name' => $i->industry_name])->values());
 let radarSaved = false;
 
 const radarChart = new Chart(document.getElementById('radarChart'), {
@@ -357,7 +378,8 @@ const radarChart = new Chart(document.getElementById('radarChart'), {
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
+        aspectRatio: 1,
         animation: {
             onComplete: () => {
                 if (radarSaved) return; // tránh gọi nhiều lần
@@ -395,6 +417,71 @@ const radarChart = new Chart(document.getElementById('radarChart'), {
             tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} pts` } }
         },
     }
+});
+
+// ==================== RADAR BY LOCATION ====================
+const radarDatasetByIndustryId = {};
+(radarData.radarDatasets || []).forEach(ds => {
+    if (typeof ds.industry_id !== 'undefined') {
+        radarDatasetByIndustryId[String(ds.industry_id)] = ds;
+    }
+});
+
+industries.forEach(ind => {
+    const el = document.getElementById(`radarChartLocation-${ind.id}`);
+    if (!el) return;
+
+    const ds = radarDatasetByIndustryId[String(ind.id)];
+    if (!ds) return;
+
+    let locationRadarSaved = false;
+    const locationRadarChart = new Chart(el, {
+        type: 'radar',
+        data: {
+            labels: radarData.radarLabels,
+            datasets: [{
+                ...ds,
+                data: Array.isArray(ds.data) ? [...ds.data] : []
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 1,
+            animation: {
+                onComplete: () => {
+                    if (locationRadarSaved) return;
+                    locationRadarSaved = true;
+                    const base64 = locationRadarChart.toBase64Image();
+                    fetch('/projects/{{ $project->project_id }}/save-radar-location', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            industry_id: ind.id,
+                            image: base64
+                        })
+                    });
+                }
+            },
+            scales: {
+                r: {
+                    min: 0,
+                    suggestedMax: Math.max(...(radarData.radarMaxes || [100])),
+                    ticks: { color: labelColor, backdropColor: 'transparent', font: { size: 10 } },
+                    grid:        { color: gridColor },
+                    angleLines:  { color: gridColor },
+                    pointLabels: { color: labelColor, font: { size: 11, weight: '600' } },
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} pts` } }
+            },
+        }
+    });
 });
 
 // ==================== BAR ====================

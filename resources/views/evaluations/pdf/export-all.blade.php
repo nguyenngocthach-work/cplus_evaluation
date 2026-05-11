@@ -108,6 +108,13 @@ th {
         {{ $industry->industry_name }}
     </div>
 
+    @if(!empty($radarByLocationPaths[$industry->id]) && file_exists($radarByLocationPaths[$industry->id]))
+        <div class="image-box center">
+            <div style="font-weight:bold;margin-bottom:6px;">Spider / Radar Chart</div>
+            <img src="{{ $radarByLocationPaths[$industry->id] }}" width="320">
+        </div>
+    @endif
+
     {{-- Representative Image --}}
     @if(isset($images[$industry->id]) && file_exists($images[$industry->id]))
         <div class="image-box">

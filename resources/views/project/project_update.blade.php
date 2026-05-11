@@ -61,6 +61,7 @@ input[type="checkbox"].criteria-cb { width: 16px; height: 16px; accent-color: va
         </button>
       </div>
       <p id="save-project-reason" class="w-full text-right text-xs text-red-500 mt-1 hidden"></p>
+      <p id="autosave-status" class="w-full text-right text-xs text-gray-500 mt-1">Autosave idle</p>
     </div>
 
     <!-- Main Form -->
@@ -178,6 +179,11 @@ const projectIndustries = @json($project->industries->values());
 
 let evaluationState   = @json($evaluationState);
 let currentLocationId = null;
+let autosaveTimer = null;
+let autosaveInFlight = false;
+let autosaveQueued = false;
+let lastSavedSignature = '';
+const AUTOSAVE_DELAY_MS = 800;
 
 // selectedLocations lấy từ project.industries
 let selectedLocations = projectIndustries.map(i => ({ id: i.id, industry_name: i.industry_name }));
@@ -227,6 +233,116 @@ function refreshSaveButtonState() {
         reasonEl.textContent = '';
         reasonEl.classList.add('hidden');
     }
+    updateAutosaveStatus();
+    if (!hasInvalid) scheduleAutosave();
+}
+
+function updateAutosaveStatus(message = null, mode = 'neutral') {
+    const el = document.getElementById('autosave-status');
+    if (!el) return;
+
+    if (message !== null) {
+        el.textContent = message;
+        el.classList.remove('text-gray-500', 'text-emerald-600', 'text-amber-500', 'text-red-500');
+        el.classList.add(
+            mode === 'success' ? 'text-emerald-600'
+            : mode === 'warning' ? 'text-amber-500'
+            : mode === 'error' ? 'text-red-500'
+            : 'text-gray-500'
+        );
+        return;
+    }
+
+    const hasInvalid = collectWeightValidationIssues().length > 0;
+    if (hasInvalid) {
+        el.textContent = 'Autosave paused: fix validation errors';
+        el.classList.remove('text-gray-500', 'text-emerald-600', 'text-red-500');
+        el.classList.add('text-amber-500');
+    } else {
+        el.textContent = 'Autosave ready';
+        el.classList.remove('text-amber-500', 'text-emerald-600', 'text-red-500');
+        el.classList.add('text-gray-500');
+    }
+}
+
+function buildEvaluationPayload() {
+    const cleanData = {};
+    Object.keys(evaluationState).forEach(locId => {
+        cleanData[locId] = { parents: {} };
+        Object.keys(evaluationState[locId].parents).forEach(pId => {
+            const parent = evaluationState[locId].parents[pId];
+            cleanData[locId].parents[pId] = {
+                id:              parent.info?.id ?? pId,
+                criteriaPercent: parent.weight,
+                children:        {}
+            };
+            Object.keys(parent.children).forEach(cId => {
+                const child = parent.children[cId];
+                cleanData[locId].parents[pId].children[cId] = {
+                    id:              child.info?.id ?? cId,
+                    criteriaTypeId:  child.typeId ?? child.info?.criteriaTypeId ?? null,
+                    parentId:        pId,
+                    criteriaPercent: child.percentage,
+                    name:            child.info?.criteria_name ?? '',
+                    value:           child.value ?? ''
+                };
+            });
+        });
+    });
+    return cleanData;
+}
+
+function getCurrentSignature() {
+    return JSON.stringify(buildEvaluationPayload());
+}
+
+function scheduleAutosave() {
+    if (collectWeightValidationIssues().length > 0) return;
+    const signature = getCurrentSignature();
+    if (signature === lastSavedSignature) return;
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => autosaveNow(), AUTOSAVE_DELAY_MS);
+}
+
+async function autosaveNow() {
+    if (autosaveInFlight) {
+        autosaveQueued = true;
+        return;
+    }
+    if (collectWeightValidationIssues().length > 0) return;
+
+    const form = document.getElementById('project-form');
+    const signature = getCurrentSignature();
+    if (signature === lastSavedSignature) return;
+
+    autosaveInFlight = true;
+    updateAutosaveStatus('Saving...', 'neutral');
+    try {
+        const formData = new FormData(form);
+        formData.set('evaluation_data', signature);
+
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        lastSavedSignature = signature;
+        updateAutosaveStatus('All changes saved', 'success');
+    } catch (err) {
+        updateAutosaveStatus('Autosave failed. Please click Save Changes.', 'error');
+    } finally {
+        autosaveInFlight = false;
+        if (autosaveQueued) {
+            autosaveQueued = false;
+            scheduleAutosave();
+        }
+    }
 }
 
 // ==================== INIT ====================
@@ -236,6 +352,7 @@ document.addEventListener('DOMContentLoaded', function () {
         renderLocationTabs();
         switchLocation(selectedLocations[0].id);
     }
+    lastSavedSignature = getCurrentSignature();
     refreshSaveButtonState();
 });
 // ==================== SYNC ====================
@@ -525,30 +642,7 @@ function submitProjectForm() {
     const oldInput = form.querySelector('input[name="evaluation_data"]');
     if (oldInput) oldInput.remove();
 
-    // Slim down payload
-    const cleanData = {};
-    Object.keys(evaluationState).forEach(locId => {
-        cleanData[locId] = { parents: {} };
-        Object.keys(evaluationState[locId].parents).forEach(pId => {
-            const parent = evaluationState[locId].parents[pId];
-            cleanData[locId].parents[pId] = {
-                id:              parent.info?.id ?? pId,
-                criteriaPercent: parent.weight,
-                children:        {}
-            };
-            Object.keys(parent.children).forEach(cId => {
-                const child = parent.children[cId];
-                cleanData[locId].parents[pId].children[cId] = {
-                    id:              child.info?.id ?? cId,
-                    criteriaTypeId:  child.typeId ?? child.info?.criteriaTypeId ?? null,
-                    parentId:        pId,
-                    criteriaPercent: child.percentage,
-                    name:            child.info?.criteria_name ?? '',
-                    value:           child.value ?? ''
-                };
-            });
-        });
-    });
+    const cleanData = buildEvaluationPayload();
 
     const input = document.createElement('input');
     input.type  = 'hidden';
