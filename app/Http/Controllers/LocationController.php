@@ -89,7 +89,7 @@ class LocationController extends Controller
             $location->street = $data['street'];
             $location->city = $data['city'];
             $location->state_province = $data['state_province'];
-            $location->zipcode = $data['zipcode'] ?? null;
+            $location->zipcode = trim((string) ($data['zipcode'] ?? ''));
             $location->country = $data['country'];
             $location->user_id = $data['user_id'];
             $location->save();
