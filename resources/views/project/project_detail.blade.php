@@ -49,11 +49,32 @@ body { font-family: 'Manrope', sans-serif; }
           <p class="font-medium text-[#111418] dark:text-white mt-1">{{ $project->project_name }}</p>
         </div>
         <div class="col-span-2">
-          <span class="text-sm text-[#617589] dark:text-gray-400">Description</span>
-          <div class="mt-1 bg-gray-50 dark:bg-[#253240] p-4 rounded-lg text-sm text-[#111418] dark:text-white">
-            {{ $project->description ?? '—' }}
-          </div>
-        </div>
+            <span class="text-sm text-[#617589] dark:text-gray-400">Note I</span>
+            <div class="mt-1 bg-gray-50 dark:bg-[#253240] p-3 rounded-lg text-sm text-[#111418] dark:text-white">
+                {{ $project->notes_1 ?? '—' }}
+            </div>
+            </div>
+
+            <div class="col-span-2">
+            <span class="text-sm text-[#617589] dark:text-gray-400">Note II</span>
+            <div class="mt-1 bg-gray-50 dark:bg-[#253240] p-3 rounded-lg text-sm text-[#111418] dark:text-white">
+                {{ $project->notes_2 ?? '—' }}
+            </div>
+            </div>
+
+            <div class="col-span-2">
+            <span class="text-sm text-[#617589] dark:text-gray-400">Note III</span>
+            <div class="mt-1 bg-gray-50 dark:bg-[#253240] p-3 rounded-lg text-sm text-[#111418] dark:text-white">
+                {{ $project->notes_3 ?? '—' }}
+            </div>
+            </div>
+
+            <div class="col-span-2">
+            <span class="text-sm text-[#617589] dark:text-gray-400">Note IV</span>
+            <div class="mt-1 bg-gray-50 dark:bg-[#253240] p-3 rounded-lg text-sm text-[#111418] dark:text-white">
+                {{ $project->notes_4 ?? '—' }}
+            </div>
+            </div>
       </div>
     </div>
 

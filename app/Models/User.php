@@ -30,12 +30,4 @@ class User extends Authenticatable
     /**
      * The attributes that should be cast.
      */
-
-    /**
-        * Get the name of the unique identifier for the user.
-     */
-    public function getAuthIdentifierName()
-    {
-        return 'username';
-    }
 }

@@ -62,10 +62,10 @@
                 Client Name</th>
               <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
                 Location</th>
-              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
+              <!-- <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
                 Start Date</th>
               <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
-                End Date</th>
+                End Date</th> -->
               <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#617589] dark:text-gray-400">
                 Status</th>
               <th
@@ -84,35 +84,35 @@
             'bar' => 'bg-gray-400'
             ],
             1 => [
-            'label' => 'In Progress',
-            'badge' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
-            'progress' => 25,
-            'bar' => 'bg-primary'
-            ],
-            2 => [
-            'label' => 'Pending Review',
-            'badge' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
-            'progress' => 50,
-            'bar' => 'bg-yellow-500'
-            ],
-            3 => [
-            'label' => 'Progressing',
-            'badge' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
-            'progress' => 75,
-            'bar' => 'bg-primary'
-            ],
-            4 => [
             'label' => 'Success',
             'badge' => 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
             'progress' => 100,
             'bar' => 'bg-green-500'
             ],
-            5 => [
-            'label' => 'Reject',
-            'badge' => 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
-            'progress' => 100,
-            'bar' => 'bg-red-500'
-            ],
+            // 2 => [
+            // 'label' => 'Pending Review',
+            // 'badge' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
+            // 'progress' => 50,
+            // 'bar' => 'bg-yellow-500'
+            // ],
+            // 3 => [
+            // 'label' => 'Progressing',
+            // 'badge' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+            // 'progress' => 75,
+            // 'bar' => 'bg-primary'
+            // ],
+            // 4 => [
+            // 'label' => 'Success',
+            // 'badge' => 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
+            // 'progress' => 100,
+            // 'bar' => 'bg-green-500'
+            // ],
+            // 5 => [
+            // 'label' => 'Reject',
+            // 'badge' => 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
+            // 'progress' => 100,
+            // 'bar' => 'bg-red-500'
+            // ],
             ];
             ?>
             <?php $__empty_1 = true; $__currentLoopData = $projects; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $project): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
@@ -162,7 +162,7 @@
                 <?php endif; ?>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <!-- <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-[#111418] dark:text-white">
                   <?php echo e(\Carbon\Carbon::parse($project->start_date)->format('d/m/Y')); ?>
 
@@ -173,7 +173,7 @@
                   <?php echo e(\Carbon\Carbon::parse($project->end_date)->format('d/m/Y')); ?>
 
                 </div>
-              </td>
+              </td> -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-[#111418] dark:text-white">
                   <span
@@ -201,7 +201,7 @@
                       title="Delete">
                       <span class="material-symbols-outlined !text-lg">delete</span>
                     </button>
-                    <a href="<?php echo e(route('projects.getEvaluationsId', $project)); ?>"
+                    <a href="<?php echo e(route('projects.evaluations.screen', $project)); ?>"
                       class="p-2 text-[#617589] hover:text-[#111418] dark:text-gray-400 dark:hover:text-white transition-colors"
                       title="View Evaluations">
                       <span class="material-symbols-outlined !text-lg">chevron_right</span>

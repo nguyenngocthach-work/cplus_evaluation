@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 
 class LocationController extends Controller
@@ -71,16 +72,12 @@ class LocationController extends Controller
                 'street' => 'required|string|max:500',
                 'city' => 'required|string|max:100',
                 'state_province' => 'required|string|max:100',
-                'zipcode' => 'required|string|max:20',
                 'country' => 'required|string|max:100',
                 'photos' => 'nullable|array|max:7', // Giới hạn mảng tối đa 7 hình
                 'photos.*' => 'image|mimes:jpg,jpeg,png|max:5120', // Từng file phải là ảnh
-                // sau khi develop xong phan user va photos thi mo lai
-                // 'user_id' => 'required|numeric',
             ]);
 
-            $user_id = 2; // to be removed later
-            $data['user_id'] = $user_id;
+            $data['user_id'] = Auth::id();
             
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 422);
@@ -92,7 +89,7 @@ class LocationController extends Controller
             $location->street = $data['street'];
             $location->city = $data['city'];
             $location->state_province = $data['state_province'];
-            $location->zipcode = $data['zipcode'];
+            $location->zipcode = $data['zipcode'] ?? null;
             $location->country = $data['country'];
             $location->user_id = $data['user_id'];
             $location->save();

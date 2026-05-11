@@ -327,7 +327,6 @@
       <h3 class="text-lg font-bold mb-4 text-[#111418] dark:text-white">
         Start Evaluation
       </h3>
-      <form method="GET" action="<?php echo e(route('evaluations.create.screen')); ?>">
         <label class="block text-sm font-medium mb-2 text-[#617589]">
           Select Project
         </label>
@@ -357,7 +356,6 @@
             Start
           </button>
         </div>
-      </form>
     </div>
   </div>
 
@@ -381,7 +379,7 @@
       return;
     }
 
-    window.location.href = `/projects/${projectId}/evaluations`;
+    window.location.href = "<?php echo e(route('projects.evaluations.screen', ':projectId')); ?>".replace(':projectId', projectId)  ;
   }
 </script>
 

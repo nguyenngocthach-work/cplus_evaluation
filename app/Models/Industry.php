@@ -27,7 +27,7 @@ class Industry extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'userId');
+        return $this->belongsTo(User::class, 'user_id');
     }
     public function photos()
     {

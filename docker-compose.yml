@@ -1,0 +1,39 @@
+# MySQL riêng cho cplus_evaluation (data volume tách biệt).
+#
+# Laravel .env:
+#   DB_CONNECTION=mysql
+#   DB_HOST=127.0.0.1
+#   DB_PORT=3307
+#   DB_DATABASE=sit27847_evaluation
+#   DB_USERNAME=cplus
+#   DB_PASSWORD=cplus_evaluation
+#
+# Chạy: docker compose up -d
+# Import chỉ chạy lần đầu (volume trống). Đổi data: docker compose down -v rồi up lại.
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: cplus_evaluation_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: sit27847_evaluation
+      MYSQL_USER: cplus
+      MYSQL_PASSWORD: cplus_evaluation
+      MYSQL_ROOT_PASSWORD: root_cplus_evaluation
+    ports:
+      - "3307:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - cplus_evaluation_mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+volumes:
+  cplus_evaluation_mysql_data:
+    name: cplus_evaluation_mysql_data

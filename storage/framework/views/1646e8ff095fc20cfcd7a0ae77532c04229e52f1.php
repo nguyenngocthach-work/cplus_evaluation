@@ -135,23 +135,23 @@
               <input type="text" name="client_country" placeholder="Country"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
             </div>
-            <div class="space-y-2">
+            <div class="space-y-3">
               <label class="block text-sm font-medium text-gray-700">City <span class="text-red-500">*</span></label>
               <input type="text" name="client_city" placeholder="City"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
             </div>
-            <div class="space-y-2">
+            <div class="space-y-3">
               <label class="block text-sm font-medium text-gray-700">State / Province <span
                   class="text-red-500">*</span></label>
               <input type="text" name="client_state_province" placeholder="State"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
             </div>
-            <div class="space-y-2">
+            <!-- <div class="space-y-2">
               <label class="block text-sm font-medium text-gray-700">Zip / Postal Code <span
                   class="text-red-500">*</span></label>
               <input type="text" name="client_zipcode" placeholder="Zip Code"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
-            </div>
+            </div> -->
           </div>
         </div>
       </section>

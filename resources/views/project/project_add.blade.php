@@ -105,10 +105,32 @@ input[type="checkbox"].criteria-cb {
               class="form-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-[#617589]" />
           </label>
           <label class="flex flex-col gap-2 col-span-2">
-            <span class="text-[#111418] dark:text-gray-200 text-base font-medium">Description</span>
-            <textarea name="description" rows="4" placeholder="Briefly describe the goals and scope of this project..."
-              class="form-textarea w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white p-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-[#617589] resize-none"></textarea>
-          </label>
+            <span class="text-[#111418] dark:text-gray-200 text-base font-medium">Note I</span>
+            <input type="text" name="notes_1"
+                placeholder="Enter note I"
+                class="form-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-12 px-4">
+            </label>
+
+            <label class="flex flex-col gap-2 col-span-2">
+            <span class="text-[#111418] dark:text-gray-200 text-base font-medium">Note II</span>
+            <input type="text" name="notes_2"
+                placeholder="Enter note II"
+                class="form-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-12 px-4">
+            </label>
+
+            <label class="flex flex-col gap-2 col-span-2">
+            <span class="text-[#111418] dark:text-gray-200 text-base font-medium">Note III</span>
+            <input type="text" name="notes_3"
+                placeholder="Enter note III"
+                class="form-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-12 px-4">
+            </label>
+
+            <label class="flex flex-col gap-2 col-span-2">
+            <span class="text-[#111418] dark:text-gray-200 text-base font-medium">Note IV</span>
+            <input type="text" name="notes_4"
+                placeholder="Enter note IV"
+                class="form-input w-full rounded-lg border border-[#dbe0e6] dark:border-gray-600 bg-white dark:bg-[#253240] text-[#111418] dark:text-white h-12 px-4">
+            </label>
         </div>
       </div>
 

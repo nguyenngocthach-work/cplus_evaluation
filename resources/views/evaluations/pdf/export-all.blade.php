@@ -68,7 +68,6 @@ th {
     <div class="subtitle">Project: {{ $project->project_name }}</div>
     <div class="subtitle">Total Locations: {{ $industries->count() }}</div>
 </div>
-
 {{-- RADAR --}}
 @if(file_exists($radarPath))
 <div class="section-title">Radar Chart</div>
@@ -140,6 +139,30 @@ th {
     </table>
 
 @endforeach
+
+{{-- NOTES --}}
+<div class="section-title">Notes</div>
+<table>
+    <tbody>
+        <tr>
+            <td width="8%"><strong>I.</strong></td>
+            <td>{{ $project->notes_1 }}</td>
+        </tr>
+        <tr>
+            <td width="8%"><strong>II.</strong></td>
+            <td>{{ $project->notes_2 }}</td>
+        </tr>
+        <tr>
+            <td width="8%"><strong>III.</strong></td>
+            <td>{{ $project->notes_3 }}</td>
+        </tr>
+        <tr>
+            <td width="8%"><strong>IV.</strong></td>
+            <td>{{ $project->notes_4 }}</td>
+        </tr>
+    </tbody>
+</table>
+
 
 {{-- DISCLAIMER --}}
 <div class="footer">

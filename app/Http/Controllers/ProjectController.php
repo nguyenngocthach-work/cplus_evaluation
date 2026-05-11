@@ -38,7 +38,10 @@ class ProjectController extends Controller
                 'clientId',
                 'start_date',
                 'end_date',
-                'description',
+                'notes_1',
+                'notes_2',
+                'notes_3',
+                'notes_4',
                 'status',
                 'created_at'
             );
@@ -123,7 +126,10 @@ class ProjectController extends Controller
             // dd($request->all());
             $request->validate([
                 'project_name'    => 'required|string|max:255',
-                'description'     => 'nullable|string',
+                'notes_1' => 'nullable|string|max:255',
+                'notes_2' => 'nullable|string|max:255',
+                'notes_3' => 'nullable|string|max:255',
+                'notes_4' => 'nullable|string|max:255',
                 'locations'       => 'nullable|array',
                 'locations.*'     => 'exists:industry,id',
                 'client_id'         => 'required|exists:clients,id',
@@ -135,7 +141,10 @@ class ProjectController extends Controller
             // 1. Tạo project
             $project = Project::create([
                 'project_name' => $request->project_name,
-                'description'  => $request->description,
+                'notes_1' => $request->notes_1,
+                'notes_2' => $request->notes_2,
+                'notes_3' => $request->notes_3,
+                'notes_4' => $request->notes_4,
                 'start_date'   => $request->start_date,
                 'end_date'     => $request->end_date,
                 'userId'       => $userId,
@@ -217,8 +226,6 @@ class ProjectController extends Controller
             'project_id',
             'project_name',
             'clientId',
-            'start_date',
-            'end_date',
             'status',
             'created_at'
         );
@@ -248,8 +255,6 @@ class ProjectController extends Controller
                 'Client Name',
                 'Locations',
                 'Status',
-                'Start Date',
-                'End Date',
             ]);
 
             $statusMap = [
