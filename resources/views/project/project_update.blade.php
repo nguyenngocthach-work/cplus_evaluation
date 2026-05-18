@@ -666,11 +666,9 @@ function updateChildField(pId, cId, field, val) {
 }
 
 function handleSpecialType(pId, cId, selectedValue) {
-    selectedLocations.forEach(loc => {
-        const child = evaluationState[loc.id]?.parents?.[pId]?.children?.[cId];
-        if (!child) return;
-        child.value = selectedValue;
-    });
+    const child = evaluationState[currentLocationId]?.parents?.[pId]?.children?.[cId];
+    if (!child) return;
+    child.value = selectedValue;
 
     renderCriteriaUI();
     refreshChildTotalDisplay(pId);

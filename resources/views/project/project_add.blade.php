@@ -679,7 +679,7 @@ input[type="checkbox"].criteria-cb {
                       targetChildren[cId] = {
                           info: JSON.parse(JSON.stringify(srcParent.children[cId].info)),
                           percentage: srcParent.children[cId].percentage ?? '',
-                          value: srcParent.children[cId].value ?? '',
+                          value: '',
                           typeId: srcParent.children[cId].typeId ?? srcParent.children[cId].info.criteriaTypeId ?? null,
                           originalPercent: srcParent.children[cId].originalPercent ?? srcParent.children[cId].info?.criteriaPercent ?? 0,
                           _rawWeight: srcParent.children[cId]._rawWeight ?? ''
@@ -932,11 +932,9 @@ input[type="checkbox"].criteria-cb {
   }
 
   function handleSpecialType(pId, cId, selectedValue) {
-      selectedLocations.forEach(loc => {
-          const child = evaluationState[loc.id]?.parents?.[pId]?.children?.[cId];
-          if (!child) return;
-          child.value = selectedValue;
-      });
+      const child = evaluationState[currentLocationId]?.parents?.[pId]?.children?.[cId];
+      if (!child) return;
+      child.value = selectedValue;
 
       renderCriteriaUI();
       refreshChildTotalDisplay(pId);
