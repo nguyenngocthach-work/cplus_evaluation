@@ -224,11 +224,33 @@ body { font-family: 'Manrope', sans-serif; }
                           <span class="text-gray-400 text-xs">—</span>
                         @endif
 
-                      @elseif($typeId == 3) {{-- 2H4R/4H9R --}}
+                      @elseif($typeId == 3) {{-- 4H9R / 2H4R / ZERO --}}
                         @if($val)
-                          <span class="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
+                          @php $u = strtoupper(trim($val)); @endphp
+                          <span class="inline-block text-xs font-bold px-3 py-1 rounded-full
+                            {{ $u === '4H9R' ? 'bg-blue-100 text-blue-700' : ($u === 'ZERO' ? 'bg-gray-200 text-gray-600' : 'bg-gray-100 text-gray-700') }}">
                             {{ $val }}
                           </span>
+                        @else
+                          <span class="text-gray-400 text-xs">—</span>
+                        @endif
+
+                      @elseif($typeId == 6)
+                        @if($val)
+                          <span class="inline-block bg-violet-100 text-violet-800 text-xs font-medium px-3 py-1 rounded-full capitalize">{{ $val }}</span>
+                        @else
+                          <span class="text-gray-400 text-xs">—</span>
+                        @endif
+
+                      @elseif($typeId == 5)
+                        @if($val)
+                          @if((int) $child->criteria_id === 27)
+                            <span class="inline-block bg-amber-100 text-amber-900 text-xs font-medium px-3 py-1 rounded-full">Vùng {{ $val }}</span>
+                          @elseif((int) $child->criteria_id === 18)
+                            <span class="inline-block bg-slate-100 text-slate-800 text-xs font-medium px-3 py-1 rounded-full">CIT {{ $val }}%</span>
+                          @else
+                            <span class="inline-block bg-slate-100 text-slate-700 text-xs font-medium px-3 py-1 rounded-full capitalize">{{ $val }}</span>
+                          @endif
                         @else
                           <span class="text-gray-400 text-xs">—</span>
                         @endif

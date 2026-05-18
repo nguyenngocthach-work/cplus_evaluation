@@ -259,8 +259,8 @@ body { font-family: 'Manrope', sans-serif; }
                           @case(2) dist @break
                           @case(3) 2H/4H @break
                           @case(4) yes/no @break
-                          @case(5) cond @break
-                          @case(6) year @break
+                          @case(5) min.wage / CIT @break
+                          @case(6) scale @break
                           @default type{{ $cData['typeId'] }}
                         @endswitch
                       </span>
@@ -300,9 +300,14 @@ body { font-family: 'Manrope', sans-serif; }
                                 <span class="text-red-400">✗ No</span>
                               @endif
                             @elseif($cs['typeId'] == 3)
-                              <span class="font-bold {{ strtoupper($cs['value']) === '4H9R' ? 'text-blue-600' : 'text-gray-500' }}">
+                              @php $u = strtoupper((string) ($cs['value'] ?? '')); @endphp
+                              <span class="font-bold {{ $u === '4H9R' ? 'text-blue-600' : ($u === 'ZERO' ? 'text-gray-500' : 'text-gray-600') }}">
                                 {{ $cs['value'] ?: '—' }}
                               </span>
+                            @elseif($cs['typeId'] == 6)
+                              <span class="text-violet-600 font-medium capitalize">{{ $cs['value'] ?: '—' }}</span>
+                            @elseif($cs['typeId'] == 5)
+                              <span class="text-amber-800 font-medium">{{ $cs['value'] ?: '—' }}</span>
                             @else
                               {{ $cs['value'] ?: '—' }}
                             @endif

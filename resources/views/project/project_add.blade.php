@@ -259,13 +259,12 @@ input[type="checkbox"].criteria-cb {
   let _toastTimer       = null;
   let modalCriteriaKeyword = '';
 
-  function evenSplit100(count) {
-      if (!count || count <= 0) return [];
-      const base = Math.floor((100 / count) * 100) / 100;
-      const arr = Array(count).fill(base);
-      const sum = arr.reduce((s, v) => s + v, 0);
-      arr[count - 1] = Math.round((100 - sum + arr[count - 1]) * 100) / 100;
-      return arr;
+  /** Default weight from `criteria.criteriaPercent` (parent or child row in criteriaData). */
+  function defaultPercentFromCriteria(info) {
+      const v = info?.criteriaPercent;
+      if (v === null || v === undefined || v === '') return '';
+      const n = Number(v);
+      return Number.isFinite(n) ? String(n) : String(v).trim();
   }
 
   function isBlankWeight(v) {
@@ -277,23 +276,26 @@ input[type="checkbox"].criteria-cb {
       const parentIds = Object.keys(parents);
       if (!parentIds.length) return;
 
-      // Only auto-fill if ALL parent weights are blank.
+      // Only auto-fill if ALL parent weights are blank — use master criteriaPercent, not even split.
       const allParentBlank = parentIds.every(pId => isBlankWeight(parents[pId].weight));
       if (allParentBlank) {
-          const parentShares = evenSplit100(parentIds.length);
-          parentIds.forEach((pId, idx) => { parents[pId].weight = parentShares[idx]; });
+          parentIds.forEach(pId => {
+              parents[pId].weight = defaultPercentFromCriteria(parents[pId].info);
+          });
       }
 
-      // For each parent, only auto-fill child weights if all are blank.
+      // For each parent, only auto-fill child % if all blank — use each child's criteriaPercent.
       parentIds.forEach(pId => {
           const childIds = Object.keys(parents[pId].children || {});
           if (!childIds.length) return;
           const allChildBlank = childIds.every(cId => isBlankWeight(parents[pId].children[cId].percentage));
           if (!allChildBlank) return;
-          const childShares = evenSplit100(childIds.length);
-          childIds.forEach((cId, idx) => {
-              parents[pId].children[cId].percentage = childShares[idx];
-              parents[pId].children[cId]._rawWeight = childShares[idx];
+          childIds.forEach(cId => {
+              const pct = defaultPercentFromCriteria(parents[pId].children[cId].info);
+              parents[pId].children[cId].percentage = pct;
+              parents[pId].children[cId]._rawWeight = pct;
+              parents[pId].children[cId].originalPercent =
+                  parseFloat(parents[pId].children[cId].info?.criteriaPercent) || 0;
           });
       });
   }
@@ -642,7 +644,9 @@ input[type="checkbox"].criteria-cb {
                           info: childInfo,
                           percentage: existingChild?.percentage ?? childInfo.criteriaPercent ?? '',
                           value: existingChild?.value ?? '',
-                          typeId: childInfo.criteriaTypeId ?? null
+                          typeId: childInfo.criteriaTypeId ?? null,
+                          originalPercent: childInfo.criteriaPercent ?? 0,
+                          _rawWeight: existingChild?._rawWeight ?? ''
                       };
                   }
               });
@@ -676,7 +680,9 @@ input[type="checkbox"].criteria-cb {
                           info: JSON.parse(JSON.stringify(srcParent.children[cId].info)),
                           percentage: srcParent.children[cId].percentage ?? '',
                           value: srcParent.children[cId].value ?? '',
-                          typeId: srcParent.children[cId].typeId ?? srcParent.children[cId].info.criteriaTypeId ?? null
+                          typeId: srcParent.children[cId].typeId ?? srcParent.children[cId].info.criteriaTypeId ?? null,
+                          originalPercent: srcParent.children[cId].originalPercent ?? srcParent.children[cId].info?.criteriaPercent ?? 0,
+                          _rawWeight: srcParent.children[cId]._rawWeight ?? ''
                       };
                   }
               });
@@ -756,7 +762,6 @@ input[type="checkbox"].criteria-cb {
                   const child      = children[cId];
                   const typeId     = child.typeId ?? child.info.criteriaTypeId ?? child.info.type?.id;
                   const displayUnit = child.info?.type?.name ?? '';
-                  const showWeightError = (child.typeId == 3 || child.typeId == 4) && child._weightError;
 
                   let valueFieldHTML = '';
                   if (typeId == 4) {
@@ -782,9 +787,55 @@ input[type="checkbox"].criteria-cb {
                           <select onchange="handleSpecialType('${pId}', '${cId}', this.value); clearErr(this);"
                               class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
                               <option value="">Select...</option>
-                              <option value="2H4R" ${child.value === '2H4R' ? 'selected' : ''}>2H4R</option>
-                              <option value="4H9R" ${child.value === '4H9R' ? 'selected' : ''}>4H9R</option>
+                              <option value="4H9R" ${String(child.value).toUpperCase() === '4H9R' ? 'selected' : ''}>4H9R (100%)</option>
+                              <option value="2H4R" ${String(child.value).toUpperCase() === '2H4R' ? 'selected' : ''}>2H4R (50%)</option>
+                              <option value="ZERO" ${String(child.value).toUpperCase() === 'ZERO' ? 'selected' : ''}>ZERO (0%)</option>
                           </select>`;
+                  } else if (typeId == 6) {
+                      const v = String(child.value ?? '').toLowerCase();
+                      valueFieldHTML = `
+                          <select onchange="handleSpecialType('${pId}', '${cId}', this.value); clearErr(this);"
+                              class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
+                              <option value="">Select...</option>
+                              <option value="verygood" ${v === 'verygood' ? 'selected' : ''}>Very good (100%)</option>
+                              <option value="good" ${v === 'good' ? 'selected' : ''}>Good (70%)</option>
+                              <option value="fair" ${v === 'fair' ? 'selected' : ''}>Fair (50%)</option>
+                              <option value="poor" ${v === 'poor' ? 'selected' : ''}>Poor (30%)</option>
+                              <option value="bad" ${v === 'bad' ? 'selected' : ''}>Bad (0%)</option>
+                          </select>`;
+                  } else if (typeId == 5) {
+                      const cidNum = Number(cId);
+                      if (cidNum === 27) {
+                          valueFieldHTML = `
+                              <select onchange="handleSpecialType('${pId}', '${cId}', this.value); clearErr(this);"
+                                  class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
+                                  <option value="">Select...</option>
+                                  <option value="1" ${String(child.value) === '1' ? 'selected' : ''}>Vùng 1 (40%)</option>
+                                  <option value="2" ${String(child.value) === '2' ? 'selected' : ''}>Vùng 2 (60%)</option>
+                                  <option value="3" ${String(child.value) === '3' ? 'selected' : ''}>Vùng 3 (80%)</option>
+                                  <option value="4" ${String(child.value) === '4' ? 'selected' : ''}>Vùng 4 (100%)</option>
+                              </select>`;
+                      } else if (cidNum === 18) {
+                          valueFieldHTML = `
+                              <select onchange="handleSpecialType('${pId}', '${cId}', this.value); clearErr(this);"
+                                  class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
+                                  <option value="">Select...</option>
+                                  <option value="20" ${String(child.value) === '20' ? 'selected' : ''}>CIT 20% (50%)</option>
+                                  <option value="17" ${String(child.value) === '17' ? 'selected' : ''}>CIT 17% (70%)</option>
+                                  <option value="15" ${String(child.value) === '15' ? 'selected' : ''}>CIT 15% (80%)</option>
+                                  <option value="10" ${String(child.value) === '10' ? 'selected' : ''}>CIT 10% (100%)</option>
+                              </select>`;
+                      } else {
+                          const lv = String(child.value ?? '').toLowerCase();
+                          valueFieldHTML = `
+                              <select onchange="handleSpecialType('${pId}', '${cId}', this.value); clearErr(this);"
+                                  class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
+                                  <option value="">Select...</option>
+                                  <option value="good" ${lv === 'good' ? 'selected' : ''}>Good</option>
+                                  <option value="fair" ${lv === 'fair' ? 'selected' : ''}>Fair</option>
+                                  <option value="bad" ${lv === 'bad' ? 'selected' : ''}>Bad</option>
+                              </select>`;
+                      }
                   } else {
                       valueFieldHTML = `
                           <input type="text" value="${child.value ?? ''}"
@@ -808,7 +859,6 @@ input[type="checkbox"].criteria-cb {
                                   placeholder="0" />
                               <span class="absolute right-1 top-1 text-gray-400 text-[10px]">%</span>
                           </div>
-                          ${showWeightError ? `<p class="text-red-400 text-[10px] mt-1">Nhập weight trước khi chọn.</p>` : ''}
                       </div>
                       <div class="col-span-2">${valueFieldHTML}</div>
                       <div class="col-span-3">
@@ -836,7 +886,6 @@ input[type="checkbox"].criteria-cb {
           if (!child) return;
           child.percentage = val;
           child._rawWeight = val;
-          child._weightError = false;
       });
   }
 
@@ -868,7 +917,6 @@ input[type="checkbox"].criteria-cb {
       child[field] = val;
       if (field === 'percentage') {
           child._rawWeight = val;
-          child._weightError = false;
           syncChildWeightAcrossLocations(pId, cId, val);
           refreshChildTotalDisplay(pId);
       }
@@ -884,22 +932,12 @@ input[type="checkbox"].criteria-cb {
   }
 
   function handleSpecialType(pId, cId, selectedValue) {
-      const child = evaluationState[currentLocationId]?.parents[pId]?.children[cId];
-      if (!child) return;
-      child.value = selectedValue;
-      if (child.typeId == 4) {
-          // yes/no should not overwrite manually entered percentage
-          renderCriteriaUI();
-          refreshChildTotalDisplay(pId);
-          refreshSaveButtonState();
-          return;
-      }
-      const userWeight = parseFloat(child._rawWeight ?? child.percentage);
-      if (!userWeight || isNaN(userWeight)) { child._weightError = true; renderCriteriaUI(); return; }
-      child._weightError = false;
-      let percent = 0;
-      if (child.typeId == 3) percent = selectedValue === '4H9R' ? userWeight : userWeight * 0.6;
-      child.percentage = percent;
+      selectedLocations.forEach(loc => {
+          const child = evaluationState[loc.id]?.parents?.[pId]?.children?.[cId];
+          if (!child) return;
+          child.value = selectedValue;
+      });
+
       renderCriteriaUI();
       refreshChildTotalDisplay(pId);
       refreshSaveButtonState();
@@ -1003,7 +1041,8 @@ input[type="checkbox"].criteria-cb {
                   if (!childInfo) return;
                   evaluationState[location.id].parents[pId].children[cId] = {
                       info: childInfo, percentage: dc.weight ?? '', value: dc.value ?? '',
-                      typeId: dc.typeId ?? childInfo.criteriaTypeId ?? null
+                      typeId: dc.typeId ?? childInfo.criteriaTypeId ?? null,
+                      originalPercent: childInfo.criteriaPercent ?? 0
                   };
               });
           });
@@ -1017,7 +1056,8 @@ input[type="checkbox"].criteria-cb {
                   evaluationState[location.id].parents[pId].children[cId] = {
                       info: JSON.parse(JSON.stringify(src[pId].children[cId].info)),
                       percentage: '', value: '',
-                      typeId: src[pId].children[cId].typeId ?? src[pId].children[cId].info.criteriaTypeId ?? null
+                      typeId: src[pId].children[cId].typeId ?? src[pId].children[cId].info.criteriaTypeId ?? null,
+                      originalPercent: src[pId].children[cId].originalPercent ?? src[pId].children[cId].info?.criteriaPercent ?? 0
                   };
               });
           });

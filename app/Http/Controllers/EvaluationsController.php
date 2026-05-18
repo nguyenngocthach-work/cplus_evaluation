@@ -74,6 +74,7 @@ class EvaluationsController extends Controller
                     $allValues     = array_filter($childData['values'], fn($v) => $v !== null && $v !== '');
                     $childScore    = $this->calculateChildScore(
                         $childData['typeId'],
+                        (int) $childId,
                         $childData['values'][$iid] ?? null,
                         $allValues,
                         $childMaxScore
@@ -270,6 +271,7 @@ class EvaluationsController extends Controller
     // =========================================================
     private function calculateChildScore(
         ?int   $typeId,
+        int    $criteriaId,
         mixed  $currentValue,
         array  $allValues,
         float  $maxScore
@@ -280,49 +282,96 @@ class EvaluationsController extends Controller
 
         // --- YES / NO ---
         if ($typeId == 4) {
-            return strtolower(trim($currentValue)) === 'yes' ? $maxScore : 0;
+            return strtolower(trim((string) $currentValue)) === 'yes' ? $maxScore : 0;
         }
 
-        // --- 2H4R / 4H9R ---
+        // --- type 3: 4H9R 100%, 2H4R 50%, ZERO 0% ---
         if ($typeId == 3) {
-            $val = strtoupper(trim($currentValue));
-            if ($val === '4H9R') return $maxScore;
-            if ($val === '2H4R') return $maxScore * 0.6; // 15/25 = 60%
-            return 0;
+            $val = strtoupper(trim((string) $currentValue));
+            if ($val === '4H9R') {
+                return $maxScore;
+            }
+            if ($val === '2H4R') {
+                return $maxScore * 0.5;
+            }
+            if ($val === 'ZERO') {
+                return 0.0;
+            }
+
+            return 0.0;
         }
 
-        // --- CONDITION: Good / Fair / Bad ---
-        if ($typeId == 5) {
-            $map = ['good' => 1.0, 'fair' => 0.66, 'bad' => 0.33];
-            $key = strtolower(trim($currentValue));
+        // --- type 6: qualitative scale (sentiment) ---
+        if ($typeId == 6) {
+            $key = strtolower(trim((string) $currentValue));
+            $map = [
+                'verygood' => 1.0,
+                'good' => 0.7,
+                'fair' => 0.5,
+                'poor' => 0.3,
+                'bad' => 0.0,
+            ];
+
             return $maxScore * ($map[$key] ?? 0);
         }
 
-        // --- NUMERIC TYPES ---
-        if (in_array($typeId, [1, 2, 6], true) || $typeId === null) {
+        // --- type 5: minimum wage (27), CIT (18), or legacy Good/Fair/Bad ---
+        if ($typeId == 5) {
+            $raw = trim((string) $currentValue);
+            $lower = strtolower($raw);
+
+            if ($criteriaId === 27) {
+                $n = (int) preg_replace('/\D/', '', $raw);
+
+                return match ($n) {
+                    1 => $maxScore * 0.4,
+                    2 => $maxScore * 0.6,
+                    3 => $maxScore * 0.8,
+                    4 => $maxScore * 1.0,
+                    default => 0.0,
+                };
+            }
+
+            if ($criteriaId === 18) {
+                $p = (int) preg_replace('/\D/', '', $raw);
+
+                return match ($p) {
+                    20 => $maxScore * 0.5,
+                    17 => $maxScore * 0.7,
+                    15 => $maxScore * 0.8,
+                    10 => $maxScore * 1.0,
+                    default => 0.0,
+                };
+            }
+
+            $map = ['good' => 1.0, 'fair' => 0.66, 'bad' => 0.33];
+
+            return $maxScore * ($map[$lower] ?? 0);
+        }
+
+        // --- NUMERIC types 1, 2 (lower is better) ---
+        if (in_array($typeId, [1, 2], true) || $typeId === null) {
             // Parse numeric — strip units like "km", "$", ","
             $parseNum = fn($v) => is_numeric($v)
                 ? (float) $v
-                : (float) preg_replace('/[^0-9.]/', '', str_replace(',', '', $v));
+                : (float) preg_replace('/[^0-9.]/', '', str_replace(',', '', (string) $v));
 
             $currentNum = $parseNum($currentValue);
-            if ($currentNum <= 0) return 0;
+            if ($currentNum <= 0) {
+                return 0;
+            }
 
             $numericAll = array_filter(
                 array_map($parseNum, $allValues),
                 fn($v) => $v > 0
             );
-            if (empty($numericAll)) return 0;
-
-            if ($typeId == 6) {
-                // HIGHER is better: score = max × (current / maxVal)
-                $best = max($numericAll);
-                return $best > 0 ? min($maxScore, $maxScore * ($currentNum / $best)) : 0;
-            } else {
-                // LOWER is better: score = max × (minVal / current)
-                $best = min($numericAll);
-                return min($maxScore, $maxScore * ($best / $currentNum));
+            if (empty($numericAll)) {
+                return 0;
             }
+
+            $best = min($numericAll);
+
+            return min($maxScore, $maxScore * ($best / $currentNum));
         }
 
         return 0;

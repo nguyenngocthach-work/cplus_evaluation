@@ -393,7 +393,7 @@ function syncStructureToAllLocations() {
                         percentage: '',
                         value: '',
                         typeId: srcChildren[cId].typeId ?? srcChildren[cId].info?.criteriaTypeId ?? null,
-                        originalPercent: srcChildren[cId].info.criteriaPercent ?? 0
+                        originalPercent: srcChildren[cId].originalPercent ?? 0
                     };
                 }
             });
@@ -524,9 +524,55 @@ function renderCriteriaUI() {
                         <select onchange="handleSpecialType('${pId}', '${cId}', this.value)"
                             class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
                             <option value="">Select...</option>
-                            <option value="2H4R" ${child.value === '2H4R' ? 'selected' : ''}>2H4R</option>
-                            <option value="4H9R" ${child.value === '4H9R' ? 'selected' : ''}>4H9R</option>
+                            <option value="4H9R" ${String(child.value).toUpperCase() === '4H9R' ? 'selected' : ''}>4H9R (100%)</option>
+                            <option value="2H4R" ${String(child.value).toUpperCase() === '2H4R' ? 'selected' : ''}>2H4R (50%)</option>
+                            <option value="ZERO" ${String(child.value).toUpperCase() === 'ZERO' ? 'selected' : ''}>ZERO (0%)</option>
                         </select>`;
+                } else if (typeId == 6) {
+                    const v = String(child.value ?? '').toLowerCase();
+                    valueFieldHTML = `
+                        <select onchange="handleSpecialType('${pId}', '${cId}', this.value)"
+                            class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
+                            <option value="">Select...</option>
+                            <option value="verygood" ${v === 'verygood' ? 'selected' : ''}>Very good (100%)</option>
+                            <option value="good" ${v === 'good' ? 'selected' : ''}>Good (70%)</option>
+                            <option value="fair" ${v === 'fair' ? 'selected' : ''}>Fair (50%)</option>
+                            <option value="poor" ${v === 'poor' ? 'selected' : ''}>Poor (30%)</option>
+                            <option value="bad" ${v === 'bad' ? 'selected' : ''}>Bad (0%)</option>
+                        </select>`;
+                } else if (typeId == 5) {
+                    const cidNum = Number(cId);
+                    if (cidNum === 27) {
+                        valueFieldHTML = `
+                            <select onchange="handleSpecialType('${pId}', '${cId}', this.value)"
+                                class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
+                                <option value="">Select...</option>
+                                <option value="1" ${String(child.value) === '1' ? 'selected' : ''}>Vùng 1 (40%)</option>
+                                <option value="2" ${String(child.value) === '2' ? 'selected' : ''}>Vùng 2 (60%)</option>
+                                <option value="3" ${String(child.value) === '3' ? 'selected' : ''}>Vùng 3 (80%)</option>
+                                <option value="4" ${String(child.value) === '4' ? 'selected' : ''}>Vùng 4 (100%)</option>
+                            </select>`;
+                    } else if (cidNum === 18) {
+                        valueFieldHTML = `
+                            <select onchange="handleSpecialType('${pId}', '${cId}', this.value)"
+                                class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
+                                <option value="">Select...</option>
+                                <option value="20" ${String(child.value) === '20' ? 'selected' : ''}>CIT 20% (50%)</option>
+                                <option value="17" ${String(child.value) === '17' ? 'selected' : ''}>CIT 17% (70%)</option>
+                                <option value="15" ${String(child.value) === '15' ? 'selected' : ''}>CIT 15% (80%)</option>
+                                <option value="10" ${String(child.value) === '10' ? 'selected' : ''}>CIT 10% (100%)</option>
+                            </select>`;
+                    } else {
+                        const lv = String(child.value ?? '').toLowerCase();
+                        valueFieldHTML = `
+                            <select onchange="handleSpecialType('${pId}', '${cId}', this.value)"
+                                class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
+                                <option value="">Select...</option>
+                                <option value="good" ${lv === 'good' ? 'selected' : ''}>Good</option>
+                                <option value="fair" ${lv === 'fair' ? 'selected' : ''}>Fair</option>
+                                <option value="bad" ${lv === 'bad' ? 'selected' : ''}>Bad</option>
+                            </select>`;
+                    }
                 } else {
                     valueFieldHTML = `
                         <input type="text" value="${child.value ?? ''}"
@@ -578,7 +624,10 @@ function syncParentWeightAcrossLocations(pId, val) {
 function syncChildWeightAcrossLocations(pId, cId, val) {
     selectedLocations.forEach(loc => {
         const child = evaluationState[loc.id]?.parents?.[pId]?.children?.[cId];
-        if (child) child.percentage = val;
+        if (child) {
+            child.percentage = val;
+            child._rawWeight = val;
+        }
     });
 }
 
@@ -617,25 +666,12 @@ function updateChildField(pId, cId, field, val) {
 }
 
 function handleSpecialType(pId, cId, selectedValue) {
-    const child = evaluationState[currentLocationId]?.parents[pId]?.children[cId];
-    if (!child) return;
-    child.value = selectedValue;
-    if (child.typeId == 4) {
-        // yes/no should not overwrite manually entered percentage
-        renderCriteriaUI();
-        refreshChildTotalDisplay(pId);
-        refreshSaveButtonState();
-        return;
-    }
+    selectedLocations.forEach(loc => {
+        const child = evaluationState[loc.id]?.parents?.[pId]?.children?.[cId];
+        if (!child) return;
+        child.value = selectedValue;
+    });
 
-    const basePercent = child.originalPercent
-        ?? child.info?.originalPercent
-        ?? 0;
-
-    if (child.typeId == 3) {
-        // 4H9R → full basePercent, 2H4R → nửa basePercent
-        child.percentage = selectedValue === '4H9R' ? basePercent : Math.round(basePercent * 0.6);
-    }
     renderCriteriaUI();
     refreshChildTotalDisplay(pId);
     refreshSaveButtonState();
