@@ -22,6 +22,7 @@ class EvaluationsController extends Controller
           'industries:id,industry_name',
           'projectCriteria.criteria:id,criteria_name,criteriaPercent',
           'projectCriteria.targets.criteria:id,criteria_name,criteriaTypeId,criteriaPercent',
+          'projectCriteria.targets.criteria.type:id,name',
           'projectCriteria.targets.criteriaType:id,name',
       ]);
 
@@ -44,16 +45,32 @@ class EvaluationsController extends Controller
 
             foreach ($pc->targets as $target) {
                 $childId = $target->criteria_id;
+                $resolvedTypeId = $this->resolveChildTypeId($target);
+                $resolvedTypeName = $target->criteriaType?->name
+                    ?? $target->criteria?->type?->name;
+
                 if (!isset($scoringData[$parentId]['children'][$childId])) {
                     $scoringData[$parentId]['children'][$childId] = [
-                        'name'   => $target->criteria->criteria_name ?? "Sub #$childId",
-                        'typeId' => $target->criteria_type_id,
-                        'weight' => [],
-                        'values' => [],
+                        'name'     => $target->criteria->criteria_name ?? "Sub #$childId",
+                        'typeId'   => $resolvedTypeId,
+                        'typeName' => $resolvedTypeName,
+                        'typeIds'  => [],
+                        'weight'   => [],
+                        'values'   => [],
                     ];
                 }
-                $scoringData[$parentId]['children'][$childId]['weight'][$industryId] = $target->weight;
-                $scoringData[$parentId]['children'][$childId]['values'][$industryId] = $target->target_value;
+
+                $childRef = &$scoringData[$parentId]['children'][$childId];
+                $childRef['typeIds'][$industryId] = $resolvedTypeId;
+                if ($resolvedTypeName) {
+                    $childRef['typeName'] = $resolvedTypeName;
+                }
+                if (!$childRef['typeId'] && $resolvedTypeId) {
+                    $childRef['typeId'] = $resolvedTypeId;
+                }
+                $childRef['weight'][$industryId] = $target->weight;
+                $childRef['values'][$industryId] = $target->target_value;
+                unset($childRef);
             }
         }
 
@@ -72,8 +89,9 @@ class EvaluationsController extends Controller
                 foreach ($parentData['children'] as $childId => $childData) {
                     $childMaxScore = $parentWeight * (($childData['weight'][$iid] ?? 0) / 100);
                     $allValues     = array_filter($childData['values'], fn($v) => $v !== null && $v !== '');
+                    $typeId        = $childData['typeIds'][$iid] ?? $childData['typeId'] ?? null;
                     $childScore    = $this->calculateChildScore(
-                        $childData['typeId'],
+                        $typeId,
                         (int) $childId,
                         $childData['values'][$iid] ?? null,
                         $allValues,
@@ -85,7 +103,8 @@ class EvaluationsController extends Controller
                         'maxScore' => round($childMaxScore, 2),
                         'pct'      => $childMaxScore > 0 ? round($childScore / $childMaxScore * 100, 1) : 0,
                         'value'    => $childData['values'][$iid] ?? null,
-                        'typeId'   => $childData['typeId'],
+                        'typeId'   => $typeId,
+                        'typeName' => $childData['typeName'] ?? null,
                     ];
                     $parentScore += $childScore;
                 }
@@ -266,6 +285,16 @@ class EvaluationsController extends Controller
             ->download('Evaluation_' . $project->project_name . '.pdf');
       }
 
+    /**
+     * Type on project target, else master criteria row (criteria.criteriaTypeId).
+     */
+    private function resolveChildTypeId($target): ?int
+    {
+        $typeId = $target->criteria_type_id ?? $target->criteria?->criteriaTypeId;
+
+        return $typeId !== null && $typeId !== '' ? (int) $typeId : null;
+    }
+
     // =========================================================
     // SCORING ENGINE
     // =========================================================
@@ -347,6 +376,30 @@ class EvaluationsController extends Controller
             $map = ['good' => 1.0, 'fair' => 0.66, 'bad' => 0.33];
 
             return $maxScore * ($map[$lower] ?? 0);
+        }
+
+        // --- type 7: best value across all locations → score = maxScore × (value / bestValue) ---
+        if ($typeId == 7) {
+            $parseNum = fn($v) => is_numeric($v)
+                ? (float) $v
+                : (float) preg_replace('/[^0-9.]/', '', str_replace(',', '', (string) $v));
+
+            $currentNum = $parseNum($currentValue);
+            if ($currentNum <= 0) {
+                return 0.0;
+            }
+
+            $numericAll = array_filter(
+                array_map($parseNum, $allValues),
+                fn($v) => $v > 0
+            );
+            if (empty($numericAll)) {
+                return 0.0;
+            }
+
+            $bestValue = max($numericAll);
+
+            return min($maxScore, $maxScore * ($currentNum / $bestValue));
         }
 
         // --- NUMERIC types 1, 2 (lower is better) ---

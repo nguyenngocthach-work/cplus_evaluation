@@ -17,6 +17,23 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProjectController extends Controller
 {
+    /** criteria_type_id on target, else master criteria.criteriaTypeId when saving project. */
+    private function resolveCriteriaTypeIdForSave(array $childData): ?int
+    {
+        if (isset($childData['criteriaTypeId']) && $childData['criteriaTypeId'] !== '' && $childData['criteriaTypeId'] !== null) {
+            return (int) $childData['criteriaTypeId'];
+        }
+
+        $criteriaId = (int) ($childData['id'] ?? 0);
+        if ($criteriaId <= 0) {
+            return null;
+        }
+
+        $masterTypeId = Criteria::where('id', $criteriaId)->value('criteriaTypeId');
+
+        return $masterTypeId !== null ? (int) $masterTypeId : null;
+    }
+
     public function index(Request $request)
     {   
         try{
@@ -191,7 +208,7 @@ class ProjectController extends Controller
                             'industry_id'         => (int) $industryId,
                             'criteria_id'         => (int) $childData['id'],
                             'parent_criteria_id'  => (int) $parentId,
-                            'criteria_type_id'    => $childData['criteriaTypeId'] ?? null,
+                            'criteria_type_id'    => $this->resolveCriteriaTypeIdForSave($childData),
                             'target_value'        => $childData['value'] ?? null,
                             'weight'              => (int) ($childData['criteriaPercent'] ?? 0),
                         ]);
@@ -296,6 +313,7 @@ class ProjectController extends Controller
                 'industries:id,industry_name',
                 'projectCriteria.criteria:id,criteria_name,criteriaPercent,criteriaTypeId',
                 'projectCriteria.targets.criteria:id,criteria_name,criteriaPercent,criteriaTypeId,parentId',
+                'projectCriteria.targets.criteria.type:id,name',
                 'projectCriteria.targets.criteriaType:id,name',
             ]);
 
@@ -325,9 +343,12 @@ class ProjectController extends Controller
 
                 foreach ($pc->targets as $target) {
                     $childId = $target->criteria_id;
+                    $resolvedTypeId = $target->criteria_type_id ?? $target->criteria?->criteriaTypeId;
+                    $typeRelation = $target->criteriaType ?? $target->criteria?->type;
+
                     $evaluationState[$industryId]['parents'][$parentId]['children'][$childId] = [
                         'id'             => $childId,
-                        'criteriaTypeId' => $target->criteria_type_id,
+                        'criteriaTypeId' => $resolvedTypeId,
                         'parentId'       => $parentId,
                         'criteriaPercent'=> $target->weight,
                         'name'           => $target->criteria->criteria_name ?? '',
@@ -336,28 +357,28 @@ class ProjectController extends Controller
                         'info' => [
                             'id'             => $childId,
                             'criteria_name'  => $target->criteria->criteria_name ?? '',
-                            'criteriaTypeId' => $target->criteria_type_id,
+                            'criteriaTypeId' => $resolvedTypeId,
                             'parentId'       => $parentId,
                             'criteriaPercent'=> $target->weight,
                             'originalPercent' => $target->criteria->criteriaPercent ?? 0,
-                            'type'           => $target->criteriaType ? [
-                                'id'   => $target->criteriaType->id,
-                                'name' => $target->criteriaType->name,
+                            'type'           => $typeRelation ? [
+                                'id'   => $typeRelation->id,
+                                'name' => $typeRelation->name,
                             ] : null,
                         ],
                         'percentage' => $target->weight,
-                        'typeId'     => $target->criteria_type_id,
+                        'typeId'     => $resolvedTypeId,
                     ];
 
                     $evaluationState[$industryId]['parents'][$parentId]['info']['children'][] = [
                         'id'             => $childId,
                         'criteria_name'  => $target->criteria->criteria_name ?? '',
-                        'criteriaTypeId' => $target->criteria_type_id,
+                        'criteriaTypeId' => $resolvedTypeId,
                         'parentId'       => $parentId,
                         'criteriaPercent'=> $target->weight,
-                        'type'           => $target->criteriaType ? [
-                            'id'   => $target->criteriaType->id,
-                            'name' => $target->criteriaType->name,
+                        'type'           => $typeRelation ? [
+                            'id'   => $typeRelation->id,
+                            'name' => $typeRelation->name,
                         ] : null,
                     ];
                 }
@@ -472,7 +493,7 @@ class ProjectController extends Controller
                             'industry_id'         => (int) $industryId,
                             'criteria_id'         => (int) ($childData['id'] ?? $childId),
                             'parent_criteria_id'  => (int) $parentId,
-                            'criteria_type_id'    => $childData['criteriaTypeId'] ?? null,
+                            'criteria_type_id'    => $this->resolveCriteriaTypeIdForSave($childData),
                             'target_value'        => $childData['value'] ?? null,
                             'weight'              => (int) ($childData['criteriaPercent'] ?? 0),
                         ]);

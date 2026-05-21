@@ -24,6 +24,23 @@ body { font-family: 'Manrope', sans-serif; }
 
 /* Score bar */
 .score-bar-fill { transition: width 1s ease-in-out; }
+
+/* Radar: extra room so point labels are not clipped */
+.radar-chart-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  min-height: 300px;
+  margin-left: auto;
+  margin-right: auto;
+  aspect-ratio: 1;
+  padding: 1.75rem 1.25rem;
+}
+.radar-chart-wrap--sm {
+  max-width: 440px;
+  min-height: 260px;
+  padding: 1.5rem 1rem;
+}
 </style>
 @endpush
 
@@ -149,7 +166,7 @@ body { font-family: 'Manrope', sans-serif; }
           <span class="material-symbols-outlined text-primary">radar</span>
           Spider / Radar Chart
         </h3>
-        <div class="relative w-full max-w-[360px] mx-auto aspect-square">
+        <div class="radar-chart-wrap">
           <canvas id="radarChart"></canvas>
         </div>
       </div>
@@ -179,7 +196,7 @@ body { font-family: 'Manrope', sans-serif; }
             <div class="text-sm font-semibold text-[#111418] dark:text-white mb-3">
               {{ $ind->industry_name }}
             </div>
-            <div class="relative w-full max-w-[320px] mx-auto aspect-square">
+            <div class="radar-chart-wrap radar-chart-wrap--sm">
               <canvas id="radarChartLocation-{{ $ind->id }}"></canvas>
             </div>
           </div>
@@ -252,17 +269,22 @@ body { font-family: 'Manrope', sans-serif; }
                   <td class="px-4 py-2.5 pl-10 dark:text-gray-300 text-xs flex items-center gap-2">
                     <span class="text-gray-300 dark:text-gray-600">└</span>
                     {{ $cData['name'] }}
-                    @if($cData['typeId'])
+                    @if($cData['typeId'] || !empty($cData['typeName']))
                       <span class="bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[9px] px-1.5 py-0.5 rounded ml-1 uppercase">
-                        @switch($cData['typeId'])
-                          @case(1) cost @break
-                          @case(2) dist @break
-                          @case(3) 2H/4H @break
-                          @case(4) yes/no @break
-                          @case(5) min.wage / CIT @break
-                          @case(6) scale @break
-                          @default type{{ $cData['typeId'] }}
-                        @endswitch
+                        @if(!empty($cData['typeName']))
+                          {{ $cData['typeName'] }}
+                        @else
+                          @switch($cData['typeId'])
+                            @case(1) cost @break
+                            @case(2) dist @break
+                            @case(3) 2H/4H @break
+                            @case(4) yes/no @break
+                            @case(5) min.wage / CIT @break
+                            @case(6) scale @break
+                            @case(7) 1–10 @break
+                            @default type{{ $cData['typeId'] }}
+                          @endswitch
+                        @endif
                       </span>
                     @endif
                   </td>
@@ -308,6 +330,8 @@ body { font-family: 'Manrope', sans-serif; }
                               <span class="text-violet-600 font-medium capitalize">{{ $cs['value'] ?: '—' }}</span>
                             @elseif($cs['typeId'] == 5)
                               <span class="text-amber-800 font-medium">{{ $cs['value'] ?: '—' }}</span>
+                            @elseif($cs['typeId'] == 7)
+                              <span class="font-medium text-slate-700 dark:text-slate-300">{{ $cs['value'] !== null && $cs['value'] !== '' ? $cs['value'] : '—' }}</span>
                             @else
                               {{ $cs['value'] ?: '—' }}
                             @endif
@@ -373,18 +397,85 @@ const labelColor = isDark ? '#94a3b8' : '#617589';
 // ==================== RADAR ====================
 const radarData = @json($radarData);
 const industries = @json($industries->map(fn($i) => ['id' => $i->id, 'industry_name' => $i->industry_name])->values());
+
+/** Split long criterion names into multiple lines for radar pointLabels (Chart.js accepts string[]). */
+function wrapRadarLabel(text, maxLen = 14) {
+    const s = String(text ?? '').trim();
+    if (!s) return [''];
+    if (s.length <= maxLen) return [s];
+
+    if (/\s/.test(s)) {
+        const lines = [];
+        let line = '';
+        for (const w of s.split(/\s+/)) {
+            const next = line ? `${line} ${w}` : w;
+            if (next.length <= maxLen) {
+                line = next;
+                continue;
+            }
+            if (line) lines.push(line);
+            if (w.length > maxLen) {
+                for (let i = 0; i < w.length; i += maxLen) lines.push(w.slice(i, i + maxLen));
+                line = '';
+            } else {
+                line = w;
+            }
+        }
+        if (line) lines.push(line);
+        return lines.length ? lines : [s];
+    }
+
+    const chunks = [];
+    for (let i = 0; i < s.length; i += maxLen) chunks.push(s.slice(i, i + maxLen));
+    return chunks;
+}
+
+function formatRadarLabels(rawLabels, maxLen = 14) {
+    return (rawLabels || []).map(l => wrapRadarLabel(l, maxLen));
+}
+
+function radarLabelLineCount(formattedLabels) {
+    return Math.max(1, ...(formattedLabels || []).map(l => (Array.isArray(l) ? l.length : 1)));
+}
+
+function buildRadarScales(suggestedMax, formattedLabels) {
+    const lines = radarLabelLineCount(formattedLabels);
+    const fontSize = lines >= 3 ? 9 : (lines === 2 ? 10 : 11);
+    const padding = lines >= 3 ? 16 : 12;
+
+    return {
+        r: {
+            min: 0,
+            suggestedMax,
+            ticks: { color: labelColor, backdropColor: 'transparent', font: { size: 10 }, maxTicksLimit: 6 },
+            grid: { color: gridColor },
+            angleLines: { color: gridColor },
+            pointLabels: {
+                color: labelColor,
+                font: { size: fontSize, weight: '600' },
+                padding,
+            },
+        },
+    };
+}
+
+const labelCount = (radarData.radarLabels || []).length;
+const labelMaxLen = labelCount >= 10 ? 11 : (labelCount >= 7 ? 13 : 16);
+const radarLabelsFormatted = formatRadarLabels(radarData.radarLabels, labelMaxLen);
+const radarSuggestedMax = Math.max(...(radarData.radarMaxes || [100]));
 let radarSaved = false;
 
 const radarChart = new Chart(document.getElementById('radarChart'), {
     type: 'radar',
     data: {
-        labels:   radarData.radarLabels,
+        labels:   radarLabelsFormatted,
         datasets: radarData.radarDatasets,
     },
     options: {
         responsive: true,
         maintainAspectRatio: true,
         aspectRatio: 1,
+        layout: { padding: 32 },
         animation: {
             onComplete: () => {
                 if (radarSaved) return; // tránh gọi nhiều lần
@@ -407,19 +498,18 @@ const radarChart = new Chart(document.getElementById('radarChart'), {
                 });
             }
         },
-        scales: {
-            r: {
-                min: 0,
-                suggestedMax: Math.max(...(radarData.radarMaxes || [100])),
-                ticks: { color: labelColor, backdropColor: 'transparent', font: { size: 10 } },
-                grid:        { color: gridColor },
-                angleLines:  { color: gridColor },
-                pointLabels: { color: labelColor, font: { size: 11, weight: '600' } },
-            }
-        },
+        scales: buildRadarScales(radarSuggestedMax, radarLabelsFormatted),
         plugins: {
             legend: { position: 'bottom', labels: { color: labelColor, boxWidth: 12, padding: 16 } },
-            tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} pts` } }
+            tooltip: {
+                callbacks: {
+                    title: items => {
+                        const t = items[0]?.label;
+                        return Array.isArray(t) ? t.join(' ') : (t ?? '');
+                    },
+                    label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} pts`,
+                },
+            },
         },
     }
 });
@@ -443,7 +533,7 @@ industries.forEach(ind => {
     const locationRadarChart = new Chart(el, {
         type: 'radar',
         data: {
-            labels: radarData.radarLabels,
+            labels: radarLabelsFormatted,
             datasets: [{
                 ...ds,
                 data: Array.isArray(ds.data) ? [...ds.data] : []
@@ -453,6 +543,7 @@ industries.forEach(ind => {
             responsive: true,
             maintainAspectRatio: true,
             aspectRatio: 1,
+            layout: { padding: 28 },
             animation: {
                 onComplete: () => {
                     if (locationRadarSaved) return;
@@ -471,19 +562,18 @@ industries.forEach(ind => {
                     });
                 }
             },
-            scales: {
-                r: {
-                    min: 0,
-                    suggestedMax: Math.max(...(radarData.radarMaxes || [100])),
-                    ticks: { color: labelColor, backdropColor: 'transparent', font: { size: 10 } },
-                    grid:        { color: gridColor },
-                    angleLines:  { color: gridColor },
-                    pointLabels: { color: labelColor, font: { size: 11, weight: '600' } },
-                }
-            },
+            scales: buildRadarScales(radarSuggestedMax, radarLabelsFormatted),
             plugins: {
                 legend: { display: false },
-                tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} pts` } }
+                tooltip: {
+                    callbacks: {
+                        title: items => {
+                            const t = items[0]?.label;
+                            return Array.isArray(t) ? t.join(' ') : (t ?? '');
+                        },
+                        label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} pts`,
+                    },
+                },
             },
         }
     });

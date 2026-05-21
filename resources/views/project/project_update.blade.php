@@ -282,7 +282,7 @@ function buildEvaluationPayload() {
                 const child = parent.children[cId];
                 cleanData[locId].parents[pId].children[cId] = {
                     id:              child.info?.id ?? cId,
-                    criteriaTypeId:  child.typeId ?? child.info?.criteriaTypeId ?? null,
+                    criteriaTypeId:  child.info?.criteriaTypeId ?? child.typeId ?? null,
                     parentId:        pId,
                     criteriaPercent: child.percentage,
                     name:            child.info?.criteria_name ?? '',
@@ -511,14 +511,10 @@ function renderCriteriaUI() {
                         </select>`;
                 } else if (typeId == 7) {
                     valueFieldHTML = `
-                        <select onchange="updateChildField('${pId}', '${cId}', 'value', this.value)"
-                            class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white">
-                            <option value="">Select...</option>
-                            <option value="1" ${String(child.value) === '1' ? 'selected' : ''}>1</option>
-                            <option value="2" ${String(child.value) === '2' ? 'selected' : ''}>2</option>
-                            <option value="3" ${String(child.value) === '3' ? 'selected' : ''}>3</option>
-                            <option value="4" ${String(child.value) === '4' ? 'selected' : ''}>4</option>
-                        </select>`;
+                        <input type="number" min="0" step="any" value="${child.value ?? ''}"
+                            oninput="updateChildField('${pId}', '${cId}', 'value', this.value)"
+                            placeholder="Enter value..."
+                            class="w-full border rounded px-2 py-1 text-xs dark:bg-[#253240] dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-primary outline-none" />`;
                 } else if (typeId == 3) {
                     valueFieldHTML = `
                         <select onchange="handleSpecialType('${pId}', '${cId}', this.value)"
