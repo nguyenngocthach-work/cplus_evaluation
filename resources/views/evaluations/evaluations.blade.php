@@ -132,7 +132,7 @@ body { font-family: 'Manrope', sans-serif; }
                 <a href="{{ route('projects.evaluations.exportLocation', [$project, $iid]) }}"
                   class="w-full h-8 flex items-center justify-center gap-2 text-xs font-semibold rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all dark:text-white">
                     <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
-                    Export {{ $iScore['industry_name'] }}
+                    Export
                 </a>
             </div>
           </div>
@@ -172,13 +172,15 @@ body { font-family: 'Manrope', sans-serif; }
       </div>
 
       {{-- Bar Chart --}}
-      <div class="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e5e7eb] dark:border-gray-700 shadow-sm p-6">
+      <div class="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e5e7eb] dark:border-gray-700 shadow-sm p-6 flex flex-col">
         <h3 class="font-bold text-[#111418] dark:text-white mb-4 flex items-center gap-2">
           <span class="material-symbols-outlined text-primary">bar_chart</span>
           Score by Criterion
         </h3>
-        <div class="relative h-72">
-          <canvas id="barChart"></canvas>
+        <div class="relative h-72 flex items-center justify-center">
+          <div class="w-full h-64">
+            <canvas id="barChart"></canvas>
+          </div>
         </div>
       </div>
 

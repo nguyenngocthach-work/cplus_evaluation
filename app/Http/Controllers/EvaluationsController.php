@@ -274,14 +274,25 @@ class EvaluationsController extends Controller
               $radarByLocationPaths[$ind->id] = file_exists($p) ? $p : null;
           }
 
+          // Generate score ring PNGs
+          $ringPaths = [];
+          $palette = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
+          $ci = 0;
+          foreach ($industries as $ind) {
+              $color = $palette[$ci % count($palette)];
+              $ringPaths[$ind->id] = $this->generateScoreRing($scores[$ind->id]['total'], $color, $project->project_id, $ind->id);
+              $ci++;
+          }
+
           return PDF::loadView('evaluations.pdf.export-all', [
               'project'     => $project,
               'scores'      => $scores,
               'scoringData' => $scoringData,
               'radarPath'   => file_exists($radarPath) ? $radarPath : null,
               'radarByLocationPaths' => $radarByLocationPaths,
+              'ringPaths'   => $ringPaths,
               'industries'  => $industries,
-          ])->setPaper('a4', 'landscape')  // landscape nếu nhiều cột
+          ])->setPaper('a4', 'portrait')
             ->download('Evaluation_' . $project->project_name . '.pdf');
       }
 
@@ -461,25 +472,114 @@ class EvaluationsController extends Controller
 
     public function exportLocation(Project $project, Industry $industry)
     {
-        ['scores' => $scores, 'scoringData' => $scoringData]
+        ['industries' => $industries, 'scores' => $scores, 'scoringData' => $scoringData]
             = $this->buildScores($project);
 
-        // Lấy data của đúng 1 location
         $locationScore = $scores[$industry->id] ?? null;
-
         if (!$locationScore) {
             return back()->with('error', 'Location not found in this project.');
         }
 
         $locationRadarPath = storage_path('app/public/evaluations/radar_' . $project->project_id . '_' . $industry->id . '.png');
 
+        $palette = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
+        $idx = array_search($industry->id, $industries->pluck('id')->toArray());
+        $ringColor = $palette[($idx === false ? 0 : $idx) % count($palette)];
+        $ringPath = $this->generateScoreRing($locationScore['total'], $ringColor, $project->project_id, $industry->id);
+
         return PDF::loadView('evaluations.pdf.single-location', [
             'project'       => $project,
             'industry'      => $industry,
-            'locationScore' => $locationScore,   // data của location này
-            'scoringData'   => $scoringData,     // để render danh sách criteria
+            'locationScore' => $locationScore,
+            'scoringData'   => $scoringData,
             'locationRadarPath' => file_exists($locationRadarPath) ? $locationRadarPath : null,
+            'ringColor'     => $ringColor,
+            'ringPath'      => $ringPath,
         ])->setPaper('a4', 'portrait')
             ->download('Evaluation_' . $project->project_name . '_' . $industry->industry_name . '.pdf');
+    }
+
+    private function generateScoreRing($score, $hexColor, $projectId, $industryId)
+    {
+        $score = max(0, min(100, (float) $score));
+
+        // Supersample 4x for smooth edges, then downsample
+        $scale   = 4;
+        $outSize = 120;
+        $size    = $outSize * $scale; // 480
+
+        $img = imagecreatetruecolor($size, $size);
+        imagealphablending($img, false);
+        imagesavealpha($img, true);
+        $transparent = imagecolorallocatealpha($img, 0, 0, 0, 127);
+        imagefill($img, 0, 0, $transparent);
+
+        if (function_exists('imageantialias')) {
+            imageantialias($img, true);
+        }
+
+        list($r, $g, $b) = sscanf($hexColor, "#%02x%02x%02x");
+        $mainColor = imagecolorallocate($img, $r, $g, $b);
+        $gray      = imagecolorallocate($img, 229, 231, 235); // #e5e7eb
+
+        $cx = $size / 2;
+        $cy = $size / 2;
+        $thickness = (int) round($size * 0.1);   // 48px at 4x
+        $outerR   = (int) round($size * 0.42);   // 201px
+        $innerR   = $outerR - $thickness;
+        $midR     = ($outerR + $innerR) / 2;
+        $capD     = $thickness; // cap diameter = ring thickness
+
+        // 1) Draw full gray ring (donut)
+        imagefilledellipse($img, $cx, $cy, $outerR * 2, $outerR * 2, $gray);
+        imagefilledellipse($img, $cx, $cy, $innerR * 2, $innerR * 2, $transparent);
+
+        // 2) Draw colored arc
+        if ($score > 0) {
+            $angle = ($score / 100) * 360; // degrees, clockwise from top
+
+            // Filled arc pie-slice in main color
+            imagefilledarc(
+                $img, $cx, $cy,
+                $outerR * 2, $outerR * 2,
+                -90, -90 + $angle,
+                $mainColor,
+                IMG_ARC_PIE
+            );
+
+            // Carve inner hole again so arc becomes a ring segment
+            imagefilledellipse($img, $cx, $cy, $innerR * 2, $innerR * 2, $transparent);
+
+            // Round caps at start and end of arc
+            $startRad = deg2rad(-90);
+            $endRad   = deg2rad(-90 + $angle);
+
+            $sx = (int) round($cx + cos($startRad) * $midR);
+            $sy = (int) round($cy + sin($startRad) * $midR);
+            $ex = (int) round($cx + cos($endRad)   * $midR);
+            $ey = (int) round($cy + sin($endRad)   * $midR);
+
+            imagefilledellipse($img, $sx, $sy, $capD, $capD, $mainColor);
+            imagefilledellipse($img, $ex, $ey, $capD, $capD, $mainColor);
+        }
+
+        // 3) Downsample to output size for crisp anti-aliased result
+        $out = imagecreatetruecolor($outSize, $outSize);
+        imagealphablending($out, false);
+        imagesavealpha($out, true);
+        $outTransparent = imagecolorallocatealpha($out, 0, 0, 0, 127);
+        imagefill($out, 0, 0, $outTransparent);
+        imagecopyresampled($out, $img, 0, 0, 0, 0, $outSize, $outSize, $size, $size);
+        imagedestroy($img);
+
+        $dir = storage_path('app/public/evaluations');
+        if (!file_exists($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $path = $dir . '/ring_' . $projectId . '_' . $industryId . '.png';
+        imagepng($out, $path);
+        imagedestroy($out);
+
+        return $path;
     }
 }
