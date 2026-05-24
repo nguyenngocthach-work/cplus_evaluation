@@ -313,12 +313,12 @@ body { font-family: 'Manrope', sans-serif; }
                       $maxChildScore  = $allChildScores->max();
                     @endphp
                     <td class="px-3 py-2.5 text-center">
-                      @if($cs)
+                      @if($cs && !$cs['isIgnored'])
                         <div class="flex flex-col items-center gap-0.5">
                           {{-- Input value --}}
                           <span class="text-[11px] text-gray-500 dark:text-gray-400">
                             @if($cs['typeId'] == 4)
-                              @if(strtolower($cs['value']) === 'yes')
+                              @if(strtolower($cs['value'] ?? '') === 'yes')
                                 <span class="text-green-600 font-bold">✓ Yes</span>
                               @else
                                 <span class="text-red-400">✗ No</span>
@@ -326,16 +326,16 @@ body { font-family: 'Manrope', sans-serif; }
                             @elseif($cs['typeId'] == 3)
                               @php $u = strtoupper((string) ($cs['value'] ?? '')); @endphp
                               <span class="font-bold {{ $u === '4H9R' ? 'text-blue-600' : ($u === 'ZERO' ? 'text-gray-500' : 'text-gray-600') }}">
-                                {{ $cs['value'] ?: '—' }}
+                                {{ ($cs['value'] !== null && $cs['value'] !== '') ? $cs['value'] : '—' }}
                               </span>
                             @elseif($cs['typeId'] == 6)
-                              <span class="text-violet-600 font-medium capitalize">{{ $cs['value'] ?: '—' }}</span>
+                              <span class="text-violet-600 font-medium capitalize">{{ ($cs['value'] !== null && $cs['value'] !== '') ? $cs['value'] : '—' }}</span>
                             @elseif($cs['typeId'] == 5)
-                              <span class="text-amber-800 font-medium">{{ $cs['value'] ?: '—' }}</span>
+                              <span class="text-amber-800 font-medium">{{ ($cs['value'] !== null && $cs['value'] !== '') ? $cs['value'] : '—' }}</span>
                             @elseif($cs['typeId'] == 7)
-                              <span class="font-medium text-slate-700 dark:text-slate-300">{{ $cs['value'] !== null && $cs['value'] !== '' ? $cs['value'] : '—' }}</span>
+                              <span class="font-medium text-slate-700 dark:text-slate-300">{{ ($cs['value'] !== null && $cs['value'] !== '') ? $cs['value'] : '—' }}</span>
                             @else
-                              {{ $cs['value'] ?: '—' }}
+                              {{ ($cs['value'] !== null && $cs['value'] !== '') ? $cs['value'] : '—' }}
                             @endif
                           </span>
                           {{-- Score --}}

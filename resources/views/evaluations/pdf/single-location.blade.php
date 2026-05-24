@@ -177,11 +177,13 @@ th {
             <tr class="child-row">
                 <td>
                     └ {{ $child['name'] }}
-                    @if($child['value'])
-                        ({{ $child['value'] }})
+                    @if(empty($child['isIgnored']))
+                        ({{ $child['value'] ?? '—' }})
+                    @else
+                        (—)
                     @endif
                 </td>
-                <td>{{ $child['score'] }}</td>
+                <td>{{ $child['isIgnored'] ? '—' : $child['score'] }}</td>
                 <td>{{ $child['maxScore'] }}</td>
             </tr>
         @endforeach

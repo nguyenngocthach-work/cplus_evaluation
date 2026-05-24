@@ -87,7 +87,8 @@ class EvaluationsController extends Controller
                 $childrenScores = [];
 
                 foreach ($parentData['children'] as $childId => $childData) {
-                    $childMaxScore = $parentWeight * (($childData['weight'][$iid] ?? 0) / 100);
+                    $cWeightRaw    = $childData['weight'][$iid] ?? 0;
+                    $childMaxScore = $parentWeight * ($cWeightRaw / 100);
                     $allValues     = array_filter($childData['values'], fn($v) => $v !== null && $v !== '');
                     $typeId        = $childData['typeIds'][$iid] ?? $childData['typeId'] ?? null;
                     $childScore    = $this->calculateChildScore(
@@ -97,14 +98,21 @@ class EvaluationsController extends Controller
                         $allValues,
                         $childMaxScore
                     );
+
+                    $isIgnored = ($childScore === null);
+                    if ($isIgnored) {
+                        $childScore = 0;
+                    }
+
                     $childrenScores[$childId] = [
-                        'name'     => $childData['name'],
-                        'score'    => round($childScore, 2),
-                        'maxScore' => round($childMaxScore, 2),
-                        'pct'      => $childMaxScore > 0 ? round($childScore / $childMaxScore * 100, 1) : 0,
-                        'value'    => $childData['values'][$iid] ?? null,
-                        'typeId'   => $typeId,
-                        'typeName' => $childData['typeName'] ?? null,
+                        'name'      => $childData['name'],
+                        'score'     => round($childScore, 2),
+                        'maxScore'  => round($childMaxScore, 2),
+                        'pct'       => (!$isIgnored && $childMaxScore > 0) ? round($childScore / $childMaxScore * 100, 1) : 0,
+                        'value'     => $childData['values'][$iid] ?? null,
+                        'typeId'    => $typeId,
+                        'typeName'  => $childData['typeName'] ?? null,
+                        'isIgnored' => $isIgnored,
                     ];
                     $parentScore += $childScore;
                 }
@@ -315,9 +323,9 @@ class EvaluationsController extends Controller
         mixed  $currentValue,
         array  $allValues,
         float  $maxScore
-    ): float {
+    ): ?float {
         if ($currentValue === null || $currentValue === '' || $maxScore <= 0) {
-            return 0;
+            return null;
         }
 
         // --- YES / NO ---
@@ -421,21 +429,25 @@ class EvaluationsController extends Controller
                 : (float) preg_replace('/[^0-9.]/', '', str_replace(',', '', (string) $v));
 
             $currentNum = $parseNum($currentValue);
-            if ($currentNum <= 0) {
-                return 0;
-            }
 
-            $numericAll = array_filter(
-                array_map($parseNum, $allValues),
-                fn($v) => $v > 0
-            );
+            $numericAll = array_map($parseNum, $allValues);
             if (empty($numericAll)) {
                 return 0;
             }
 
-            $best = min($numericAll);
+            $minValue = min($numericAll);
+            $maxValue = max($numericAll);
 
-            return min($maxScore, $maxScore * ($best / $currentNum));
+            // Edge Case: If all values are equal
+            if ($maxValue == $minValue) {
+                return $maxScore;
+            }
+
+            // Formula: score = ((maxValue - value) / (maxValue - minValue)) * maxScore
+            $score = (($maxValue - $currentNum) / ($maxValue - $minValue)) * $maxScore;
+
+            // Clamp and Round
+            return (float) max(0, min($maxScore, round($score, 2)));
         }
 
         return 0;
