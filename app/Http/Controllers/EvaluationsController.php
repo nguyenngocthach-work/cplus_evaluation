@@ -436,15 +436,14 @@ class EvaluationsController extends Controller
             }
 
             $minValue = min($numericAll);
-            $maxValue = max($numericAll);
 
-            // Edge Case: If all values are equal
-            if ($maxValue == $minValue) {
-                return $maxScore;
+            // Handle division by zero - if current value is 0, give max score
+            if ($currentNum == 0) {
+                return (float) $maxScore;
             }
 
-            // Formula: score = ((maxValue - value) / (maxValue - minValue)) * maxScore
-            $score = (($maxValue - $currentNum) / ($maxValue - $minValue)) * $maxScore;
+            // Formula: score = (minValue / currentValue) * maxScore
+            $score = ($minValue / $currentNum) * $maxScore;
 
             // Clamp and Round
             return (float) max(0, min($maxScore, round($score, 2)));
